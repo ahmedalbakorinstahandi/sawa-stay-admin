@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,6 +83,7 @@ export function FeatureDialog({
       }
     }
   };
+
   const form = useForm({
     resolver: zodResolver(featureFormSchema),
     defaultValues: feature
@@ -111,6 +112,37 @@ export function FeatureDialog({
         },
   });
 
+  // Update form values when the feature prop changes
+  useEffect(() => {
+    form.reset(
+      feature
+        ? {
+            name: {
+              ar: feature.name?.ar || "",
+              en: feature.name?.en || "",
+            },
+            description: {
+              ar: feature.description?.ar || "",
+              en: feature.description?.en || "",
+            },
+            icon: feature.icon,
+            is_visible:
+              feature.is_visible !== undefined ? feature.is_visible : true,
+          }
+        : {
+            name: {
+              ar: "",
+              en: "",
+            },
+            description: {
+              ar: "",
+              en: "",
+            },
+            is_visible: true,
+          }
+    );
+  }, [feature, form]);
+
   function onSubmit(values: z.infer<typeof featureFormSchema>) {
     setIsLoading(true);
 
@@ -133,6 +165,8 @@ export function FeatureDialog({
 
     // Call the onSave function with the form data
     onSave(formData);
+    setIsLoading(false);
+    onOpenChange(false);
   }
 
   return (
@@ -140,7 +174,7 @@ export function FeatureDialog({
       open={open}
       onOpenChange={(isOpen) => !isLoading && onOpenChange(isOpen)}
     >
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]  max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {feature ? "تعديل ميزة" : "إضافة ميزة جديدة"}

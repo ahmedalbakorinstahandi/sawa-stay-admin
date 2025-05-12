@@ -98,7 +98,53 @@ const listingFormSchema = z.object({
   // images vount more than 5
   images: z.array(z.string()).min(5, { message: "يجب تحميل 5 صور على الأقل" }),
 });
-
+const listingFormSchemaEdit = z.object({
+  title: multilingualTextSchema,
+  description: multilingualTextSchema,
+  property_type: PropertyType,
+  house_type_id: z.coerce.number().positive(),
+  // location: locationSchema,
+  // images: z.array(z.string()).default([]),
+  price: z.coerce.number().positive({
+    message: "السعر يجب أن يكون رقم موجب",
+  }),
+  currency: z.string().default("SYP"),
+  commission: z.coerce.number().nonnegative().default(0),
+  status: z
+    .enum(["draft", "in_review", "approved", "paused", "rejected"])
+    .default("draft"),
+  guests_count: z.coerce.number().positive().default(1),
+  bedrooms_count: z.coerce.number().positive().default(1),
+  beds_count: z.coerce.number().positive().default(1),
+  bathrooms_count: z.coerce.number().positive().default(1),
+  booking_capacity: z.coerce.number().positive().default(1),
+  min_booking_days: z.coerce.number().positive().default(1),
+  max_booking_days: z.coerce.number().positive().default(30),
+  is_contains_cameras: z
+    .union([z.boolean(), z.number()])
+    .transform((val) => Boolean(val))
+    .default(false),
+  camera_locations: z
+    .object({
+      ar: z.string().optional(),
+      en: z.string().optional(),
+    })
+    .optional(),
+  noise_monitoring_device: z
+    .union([z.boolean(), z.number()])
+    .transform((val) => Boolean(val))
+    .default(false),
+  weapons_on_property: z
+    .union([z.boolean(), z.number()])
+    .transform((val) => Boolean(val))
+    .default(false),
+  floor_number: z.coerce.number().nonnegative().optional(),
+  features: z.array(z.number()).default([]),
+  categories: z.array(z.number()).default([]),
+  host_id: z.number().optional(),
+  // images vount more than 5
+  // images: z.array(z.string()).min(5, { message: "يجب تحميل 5 صور على الأقل" }),
+});
 interface MultilingualText {
   ar: string;
   en: string;
@@ -115,13 +161,13 @@ interface CameraLocations {
   en?: string;
 }
 
-type ListingFormValues = {
+interface ListingFormValues {
   title: MultilingualText;
   description: MultilingualText;
   property_type: PropertyTypeEnum;
   house_type_id: number;
   location: Location;
-  images: string[];
+  images: (number | string | ImageType)[];
   price: number;
   currency: string;
   commission: number;
@@ -141,7 +187,7 @@ type ListingFormValues = {
   features: number[];
   categories: number[];
   host_id?: number;
-};
+}
 
 interface ListingDialogProps {
   open: boolean;
@@ -201,6 +247,7 @@ interface Listing {
   features: Feature[];
   categories: Category[];
   host_id?: number;
+  images_remove: number[];
 }
 
 interface RequestBody
@@ -211,6 +258,17 @@ interface RequestBody
   is_contains_cameras: 0 | 1;
   noise_monitoring_device: 0 | 1;
   weapons_on_property: 0 | 1;
+  images_remove: number[];
+}
+
+interface ImageType {
+  id: number | string;
+  url: string;
+}
+
+interface ImageResponse {
+  id: string | number;
+  url: string;
 }
 
 export function ListingDialog({
@@ -221,7 +279,7 @@ export function ListingDialog({
 }: ListingDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<ImageType[]>([]);
   const [features, setFeatures] = useState<Feature[]>([]);
   // house types
   const [houseTypes, setHouseTypes] = useState<any[]>([]);
@@ -231,7 +289,7 @@ export function ListingDialog({
   const { toast } = useToast();
 
   const form = useForm({
-    resolver: zodResolver(listingFormSchema),
+    resolver: zodResolver(listing ? listingFormSchemaEdit : listingFormSchema),
     defaultValues: listing || {
       title: { ar: "", en: "" },
       description: { ar: "", en: "" },
@@ -261,7 +319,8 @@ export function ListingDialog({
       categories: [],
     },
   });
-
+  // imageRemove
+  const [imageRemove, setImageRemove] = useState<number[]>([]);
   useEffect(() => {
     // Fetch features and categories
     const fetchData = async () => {
@@ -298,43 +357,84 @@ export function ListingDialog({
     value: category.id,
   }));
 
-  const handleImageDelete = (index: number) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  type ImageValue = number | string | ImageType;
+
+  const handleImageDelete = (url: ImageType) => {
+    // Remove from preview URLs
+    setPreviewUrls((prev) => prev.filter((item) => item.id !== url.id));
+
+    // If the image has a numeric ID, it's an existing image that needs to be removed
+    if (typeof url.id === "number") {
+      setImageRemove((prev) => [...prev, url.id as number]);
+    }
+
+    // Update form values
+    const currentImages = form.getValues("images") as (
+      | string
+      | number
+      | ImageType
+    )[];
     form.setValue(
       "images",
-      form.getValues("images").filter((_: string, i: number) => i !== index)
+      currentImages.filter((img) => {
+        if (typeof img === "object" && "id" in img) {
+          return img.id !== url.id;
+        }
+        return img !== url.id;
+      })
     );
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // i need use uploadImage function to upload image
-    const uploadedFiles = await Promise.all(
-      files.map((file) => uploadImage(file))
-    );
-    setImageFiles((prev) => [
-      ...prev,
-      ...uploadedFiles.map((f) => f.image_name),
-    ]);
-    setPreviewUrls((prev) => [
-      ...prev,
-      ...uploadedFiles.map((file) => file.image_url),
-    ]);
-    // setImageFiles((prev) => [...prev, ...files]);
 
-    // const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
-    // setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    try {
+      const uploadedFiles = await Promise.all(
+        files.map((file) => uploadImage(file))
+      );
+
+      const newImages = uploadedFiles.map((file) => ({
+        id: file.image_name,
+        url: file.image_url,
+      }));
+
+      setPreviewUrls((prev) => [...prev, ...newImages]);
+
+      // Update form images with the new image IDs
+      const currentImages = (form.getValues("images") as ImageValue[]) || [];
+      form.setValue("images", [
+        ...currentImages,
+        ...newImages.map((img) => img.id),
+      ]);
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحميل الصور",
+        variant: "destructive",
+      });
+    }
   };
 
   // if listing exist get listing.id an fetch data
   useEffect(() => {
     const fetchListingData = async () => {
       try {
-        const response = await api.get(`/admin/listings/${listing.id}`);
+        const response = await api.get(
+          `/admin/listings/${(listing as Listing).id}`
+        );
         const data = response.data.data;
-        // setImageFiles(data.images);
-        setPreviewUrls(data.images.map((image: string) => image));
+
+        // Convert image strings/objects into ImageType objects
+        const formattedImages: ImageType[] = data.images.map(
+          (image: string | ImageResponse) => ({
+            id: typeof image === "object" ? image.id : image,
+            url: typeof image === "object" ? image.url : image,
+          })
+        );
+
+        setPreviewUrls(formattedImages);
+
         form.reset({
           ...data,
           title: {
@@ -345,13 +445,12 @@ export function ListingDialog({
             ar: data.description.ar,
             en: data.description.en,
           },
-          // location: {
-          //   latitude: data.location.latitude,
-          //   longitude: data.location.longitude,
-          //   extra_address: data.location.extra_address,
-          // },
-          images: data.images,
-
+          location: {
+            latitude: data.location?.latitude || 0,
+            longitude: data.location?.longitude || 0,
+            extra_address: data.location?.extra_address || "",
+          },
+          images: formattedImages.map((img: ImageType) => img.id),
           price: data.price,
           currency: data.currency,
           commission: data.commission,
@@ -363,11 +462,9 @@ export function ListingDialog({
           booking_capacity: data.booking_capacity,
           min_booking_days: data.min_booking_days,
           max_booking_days: data.max_booking_days,
-          is_contains_cameras: data.is_contains_cameras,
-          is_contains_wifi: data.is_contains_wifi,
-          noise_monitoring_device: data.noise_monitoring_device,
-          is_contains_parking: data.is_contains_parking,
-          weapons_on_property: data.weapons_on_property,
+          is_contains_cameras: Boolean(data.is_contains_cameras),
+          noise_monitoring_device: Boolean(data.noise_monitoring_device),
+          weapons_on_property: Boolean(data.weapons_on_property),
           floor_number: data.floor_number,
           features: data.features.map((feature: Feature) => feature.id),
           categories: data.categories.map((category: Category) => category.id),
@@ -382,19 +479,9 @@ export function ListingDialog({
     }
   }, [listing]);
 
-  const onSubmit = async (values: ListingFormValues) => {
+  const onSubmit = async (values: any) => {
     setIsSubmitting(true);
     try {
-      // Upload images first if there are any new ones
-      // const uploadedImages = await Promise.all(
-      //   imageFiles.map(async (file) => {
-      //     const formData = new FormData();
-      //     formData.append("image", file);
-      //     const response = await api.post("/upload", formData);
-      //     return response.data.url;
-      //   })
-      // );
-
       // Prepare request body with proper boolean to number conversion
       const requestBody: RequestBody = {
         ...values,
@@ -403,29 +490,49 @@ export function ListingDialog({
         weapons_on_property: values.weapons_on_property ? 1 : 0,
         features: values.features,
         categories: values.categories,
-        // Combine existing images with newly uploaded ones
-        images: [...(listing?.images || imageFiles)],
+        // Only send image IDs in the images array
+        images: Array.isArray(values.images)
+          ? values.images.map((img: any) => (img ? img.id : img))
+          : [],
+        images_remove: imageRemove,
       };
+      console.log("request", requestBody);
 
       await onSave(requestBody);
       onOpenChange(false);
-      // toast({
-      //   title: "تم الحفظ",
-      //   description: "تم حفظ الإعلان بنجاح",
-      // });
+      setImageRemove([]);
+      setPreviewUrls([]);
+      form.reset();
     } catch (error: any) {
+      console.log(error);
+
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء حفظ الإعلان",
         variant: "destructive",
       });
     } finally {
-      // i need empty all values
-      setImageFiles([]);
-      setPreviewUrls([]);
-      form.reset();
+      setIsSubmitting(false);
     }
   };
+
+  // Update image preview render function
+  const renderImagePreview = (url: ImageType, index: number) => (
+    <div key={index} className="relative group">
+      <img
+        src={url.url}
+        alt={`Preview ${index + 1}`}
+        className="h-20 w-20 object-cover rounded-md"
+      />
+      <button
+        type="button"
+        onClick={() => handleImageDelete(url)}
+        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        ×
+      </button>
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -990,22 +1097,9 @@ export function ListingDialog({
                     يجب ان تكون اكثر من 5 صور
                   </FormDescription>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {previewUrls.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="h-20 w-20 object-cover rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleImageDelete(index)}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                    {previewUrls.map((url, index) =>
+                      renderImagePreview(url, index)
+                    )}
                   </div>
                   <FormMessage />
                 </FormItem>

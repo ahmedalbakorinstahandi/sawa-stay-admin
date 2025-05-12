@@ -28,6 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { uploadImage } from "@/lib/api";
 
 const formSchema = z.object({
   name: z.object({
@@ -81,7 +82,20 @@ export function HouseTypeDialog({
     is_visible:
       housetype?.is_visible !== undefined ? housetype.is_visible : true,
   };
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file) {
+        // use fun uploadImage
+        const image_upload = await uploadImage(file);
+        console.log(image_upload);
 
+        setPreviewUrl(image_upload.image_url);
+        setSelectedFile(image_upload.image_name);
+      }
+    }
+  };
   const form = useForm<HouseTypeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -121,11 +135,11 @@ export function HouseTypeDialog({
   return (
     <Dialog
       // i need scrollable
-      
+
       open={open}
       onOpenChange={(isOpen) => !isPending && onOpenChange(isOpen)}
     >
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]  max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {housetype ? "تعديل نوع المنزل" : "إضافة نوع منزل جديد"}
@@ -226,12 +240,7 @@ export function HouseTypeDialog({
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          setSelectedFile(e.target.files[0]);
-                          field.onChange(e.target.files[0]);
-                        }
-                      }}
+                      onChange={handleFileChange}
                     />
                   </FormControl>
                   <FormDescription>صورة تمثل نوع المنزل.</FormDescription>
@@ -243,6 +252,18 @@ export function HouseTypeDialog({
                       <img
                         src={housetype.icon_url || "/placeholder.svg"}
                         alt={housetype.name?.ar || ""}
+                        className="h-16 w-16 object-cover rounded-md"
+                      />
+                    </div>
+                  )}
+                  {previewUrl && selectedFile && (
+                    <div className="mt-2">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        معاينة الصورة الجديدة:
+                      </p>
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
                         className="h-16 w-16 object-cover rounded-md"
                       />
                     </div>

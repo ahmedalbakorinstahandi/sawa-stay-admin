@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,7 +70,7 @@ export function CategoryDialog({
   const { toast } = useToast();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const form = useForm<z.infer<typeof categoryFormSchema>>({
-    resolver : zodResolver(categoryFormSchema),
+    resolver: zodResolver(categoryFormSchema),
     defaultValues: category
       ? {
           name: {
@@ -109,6 +109,25 @@ export function CategoryDialog({
       }
     }
   };
+  // Update form values when the category prop changes
+  useEffect(() => {
+    if (category) {
+      form.reset({
+        name: {
+          ar: category.name?.ar || "",
+          en: category.name?.en || "",
+        },
+        description: {
+          ar: category.description?.ar || "",
+          en: category.description?.en || "",
+        },
+        is_visible:
+          category.is_visible !== undefined ? category.is_visible : true,
+      });
+      setPreviewUrl(category.icon_url || null);
+      setSelectedFile(null);
+    }
+  }, [category, form]);
   function onSubmit(values: z.infer<typeof categoryFormSchema>) {
     setIsLoading(true);
 
@@ -132,8 +151,8 @@ export function CategoryDialog({
     // Call the onSave function with the form data
     onSave(formData);
     // .then(() => {
-    //   setIsLoading(false);
-    //   onOpenChange(false);
+    setIsLoading(false);
+    onOpenChange(false);
 
     toast({
       title: category ? "تم تحديث التصنيف" : "تم إضافة التصنيف",
