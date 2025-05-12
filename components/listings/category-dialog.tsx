@@ -48,7 +48,7 @@ const categoryFormSchema = z.object({
     }),
   }),
   icon: z.any().optional(),
-  is_visible: z.boolean().default(true),
+  is_visible: z.boolean(),
 });
 
 interface CategoryDialogProps {
@@ -70,7 +70,7 @@ export function CategoryDialog({
   const { toast } = useToast();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const form = useForm<z.infer<typeof categoryFormSchema>>({
-    resolver: zodResolver(categoryFormSchema),
+    resolver : zodResolver(categoryFormSchema),
     defaultValues: category
       ? {
           name: {
@@ -130,29 +130,29 @@ export function CategoryDialog({
     }
 
     // Call the onSave function with the form data
-    onSave(formData)
-      .then(() => {
-        setIsLoading(false);
-        onOpenChange(false);
+    onSave(formData);
+    // .then(() => {
+    //   setIsLoading(false);
+    //   onOpenChange(false);
 
-        toast({
-          title: category ? "تم تحديث التصنيف" : "تم إضافة التصنيف",
-          description: category
-            ? `تم تحديث التصنيف "${values.name.ar}" بنجاح`
-            : `تم إضافة التصنيف "${values.name.ar}" بنجاح`,
-        });
-      })
-      .catch((error) => {
-        setIsLoading(false);
+    toast({
+      title: category ? "تم تحديث التصنيف" : "تم إضافة التصنيف",
+      description: category
+        ? `تم تحديث التصنيف "${values.name.ar}" بنجاح`
+        : `تم إضافة التصنيف "${values.name.ar}" بنجاح`,
+    });
+    // })
+    // .catch((error) => {
+    //   setIsLoading(false);
 
-        toast({
-          title: "خطأ في حفظ التصنيف",
-          description: "حدث خطأ أثناء حفظ التصنيف. يرجى المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
+    //   toast({
+    //     title: "خطأ في حفظ التصنيف",
+    //     description: "حدث خطأ أثناء حفظ التصنيف. يرجى المحاولة مرة أخرى.",
+    //     variant: "destructive",
+    //   });
 
-        console.error("Error saving category:", error);
-      });
+    //   console.error("Error saving category:", error);
+    // });
   }
 
   return (

@@ -230,7 +230,7 @@ export function ListingDialog({
   const [categories, setCategories] = useState<Category[]>([]);
   const { toast } = useToast();
 
-  const form = useForm<ListingFormValues>({
+  const form = useForm({
     resolver: zodResolver(listingFormSchema),
     defaultValues: listing || {
       title: { ar: "", en: "" },
@@ -303,7 +303,7 @@ export function ListingDialog({
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
     form.setValue(
       "images",
-      form.getValues("images").filter((_, i) => i !== index)
+      form.getValues("images").filter((_: string, i: number) => i !== index)
     );
   };
 
@@ -326,6 +326,61 @@ export function ListingDialog({
     // const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     // setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
   };
+
+  // if listing exist get listing.id an fetch data
+  useEffect(() => {
+    const fetchListingData = async () => {
+      try {
+        const response = await api.get(`/admin/listings/${listing.id}`);
+        const data = response.data.data;
+        // setImageFiles(data.images);
+        setPreviewUrls(data.images.map((image: string) => image));
+        form.reset({
+          ...data,
+          title: {
+            ar: data.title.ar,
+            en: data.title.en,
+          },
+          description: {
+            ar: data.description.ar,
+            en: data.description.en,
+          },
+          // location: {
+          //   latitude: data.location.latitude,
+          //   longitude: data.location.longitude,
+          //   extra_address: data.location.extra_address,
+          // },
+          images: data.images,
+
+          price: data.price,
+          currency: data.currency,
+          commission: data.commission,
+          status: data.status,
+          guests_count: data.guests_count,
+          bedrooms_count: data.bedrooms_count,
+          beds_count: data.beds_count,
+          bathrooms_count: data.bathrooms_count,
+          booking_capacity: data.booking_capacity,
+          min_booking_days: data.min_booking_days,
+          max_booking_days: data.max_booking_days,
+          is_contains_cameras: data.is_contains_cameras,
+          is_contains_wifi: data.is_contains_wifi,
+          noise_monitoring_device: data.noise_monitoring_device,
+          is_contains_parking: data.is_contains_parking,
+          weapons_on_property: data.weapons_on_property,
+          floor_number: data.floor_number,
+          features: data.features.map((feature: Feature) => feature.id),
+          categories: data.categories.map((category: Category) => category.id),
+          host_id: data.host_id,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (listing) {
+      fetchListingData();
+    }
+  }, [listing]);
 
   const onSubmit = async (values: ListingFormValues) => {
     setIsSubmitting(true);
