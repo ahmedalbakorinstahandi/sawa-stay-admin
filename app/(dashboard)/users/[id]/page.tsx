@@ -1,14 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   ArrowLeft,
   Calendar,
@@ -23,42 +36,35 @@ import {
   User,
   UserCheck,
   UserX,
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { api, usersAPI } from "@/lib/api";
+import Loading from "../loading";
+import UserDetailsLoading from "./loading";
+import axios from "axios";
 
-// Mock user data
-const userData = {
-  id: 1,
-  name: "أحمد محمد",
-  email: "ahmed@example.com",
-  phone: "+963 912 345 678",
-  avatar: "/placeholder.svg?height=128&width=128",
-  address: "دمشق، سوريا",
-  created_at: "2023-01-15T10:30:00Z",
-  updated_at: "2023-05-20T14:45:00Z",
-  status: "active",
-  verified: true,
-  role: "host",
-  bio: "مضيف نشط يقدم تجارب إقامة مميزة في دمشق وضواحيها. أهتم بتوفير أماكن إقامة مريحة ونظيفة للضيوف.",
-  listings_count: 5,
-  bookings_count: 12,
-  rating: 4.8,
-  reviews_count: 45,
-  total_earnings: 250000,
-  currency: "SYP",
-  last_login: "2023-06-10T08:15:00Z",
-  social_accounts: {
-    facebook: "https://facebook.com/ahmed",
-    instagram: "https://instagram.com/ahmed",
-    twitter: null,
-  },
-  identity_verified: true,
-  email_verified: true,
-  phone_verified: true,
+interface UserData {
+  id: number;
+  first_name: string;
+  last_name: string;
+  wallet_balance: number;
+  avatar: string | null;
+  avatar_url: string | null;
+  email: string;
+  email_verified: boolean;
+  country_code: string;
+  phone_number: string;
+  phone_verified: boolean;
+  role: string;
+  id_verified: string;
+  host_verified: string;
+  status: string;
+  is_verified: boolean;
+  created_at: string;
+  my_listings_count: number;
 }
 
-// Mock listings data
 const userListings = [
   {
     id: 1,
@@ -93,9 +99,8 @@ const userListings = [
     image: "/placeholder.svg?height=80&width=120",
     bookings_count: 0,
   },
-]
+];
 
-// Mock bookings data
 const userBookings = [
   {
     id: 1,
@@ -133,9 +138,8 @@ const userBookings = [
     status: "upcoming",
     created_at: "2023-05-30T09:15:00Z",
   },
-]
+];
 
-// Mock transactions data
 const userTransactions = [
   {
     id: 1,
@@ -177,82 +181,160 @@ const userTransactions = [
     description: "دفعة مستحقة عن حجوزات مكتملة",
     payment_method: "bank_transfer",
   },
-]
+];
 
-export default function UserDetailsPage({ params }: { params: { id: string } }) {
-  const [activeTab, setActiveTab] = useState("profile")
-  const router = useRouter()
-  const { toast } = useToast()
+export default function UserDetailsPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [activeTab, setActiveTab] = useState("profile");
+  const router = useRouter();
+  const { toast } = useToast();
 
-  // In a real application, you would fetch the user data based on the ID
-  // const userId = params.id;
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await usersAPI.get(parseInt(params.id));
+        if (response.success) {
+          setUserData(response.data);
+        } else {
+          toast({
+            title: "خطأ",
+            description: "حدث خطأ أثناء جلب بيانات المستخدم",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب بيانات المستخدم",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (params.id) {
+      fetchUserData();
+    }
+  }, [params.id, toast]);
+
+  if (!userData) {
+    return <UserDetailsLoading />;
+  }
 
   const handleStatusChange = (newStatus: string) => {
-    toast({
-      title: "تم تغيير حالة المستخدم",
-      description: `تم تغيير حالة المستخدم إلى "${newStatus === "active" ? "نشط" : "محظور"}" بنجاح`,
-    })
-  }
+    try {
+      api.put(`/admin/users/${userData.id}`, {
+        status: newStatus,
+      });
+      setUserData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          status: newStatus,
+        };
+      });
+      toast({
+        title: "نجاح",
+        description: `تم تغيير حالة المستخدم إلى ${newStatus}`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تغيير حالة المستخدم",
+        variant: "destructive",
+      });
+    }
+    router.refresh();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="success">نشط</Badge>
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-600">
+            نشط
+          </Badge>
+        );
       case "inactive":
-        return <Badge variant="secondary">غير نشط</Badge>
+        return <Badge variant="secondary">غير نشط</Badge>;
       case "blocked":
-        return <Badge variant="destructive">محظور</Badge>
+        return <Badge variant="destructive">محظور</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const getBookingStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="success">مكتمل</Badge>
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-600">
+            مكتمل
+          </Badge>
+        );
       case "upcoming":
-        return <Badge variant="warning">قادم</Badge>
+        return (
+          <Badge variant="default" className="bg-yellow-100 text-yellow-600">
+            قادم
+          </Badge>
+        );
       case "cancelled":
-        return <Badge variant="destructive">ملغي</Badge>
+        return <Badge variant="destructive">ملغي</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const getTransactionStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="success">مكتمل</Badge>
+        <Badge className="bg-green-100 text-green-600">مكتمل</Badge>;
       case "pending":
-        return <Badge variant="warning">قيد الانتظار</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-600">قيد الانتظار</Badge>
+        );
       case "failed":
-        return <Badge variant="destructive">فشل</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-600">قيد الانتظار</Badge>
+        );
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const getTransactionTypeBadge = (type: string) => {
     switch (type) {
       case "booking_payment":
-        return <Badge variant="outline">دفع حجز</Badge>
+        return <Badge variant="outline">دفع حجز</Badge>;
       case "host_payout":
         return (
           <Badge variant="outline" className="border-green-500 text-green-500">
             دفعة مستحقة
           </Badge>
-        )
+        );
       case "refund":
         return (
-          <Badge variant="outline" className="border-orange-500 text-orange-500">
+          <Badge
+            variant="outline"
+            className="border-orange-500 text-orange-500"
+          >
             استرداد
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="outline">{type}</Badge>
+        return <Badge variant="outline">{type}</Badge>;
     }
-  }
+  };
+
+  const getFullName = (user: UserData) => {
+    return `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  };
 
   return (
     <div className="space-y-6">
@@ -264,17 +346,26 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
           <h2 className="text-3xl font-bold tracking-tight">تفاصيل المستخدم</h2>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          {/* <Button
+            variant="outline"
+            onClick={() => router.push(`/users/${userData.id}/edit`)}
+          >
             <Edit className="ml-2 h-4 w-4" />
             تعديل
-          </Button>
+          </Button> */}
           {userData.status === "active" ? (
-            <Button variant="destructive" onClick={() => handleStatusChange("blocked")}>
+            <Button
+              variant="destructive"
+              onClick={() => handleStatusChange("banneded")}
+            >
               <UserX className="ml-2 h-4 w-4" />
               حظر المستخدم
             </Button>
           ) : (
-            <Button variant="default" onClick={() => handleStatusChange("active")}>
+            <Button
+              variant="default"
+              onClick={() => handleStatusChange("active")}
+            >
               <UserCheck className="ml-2 h-4 w-4" />
               تفعيل المستخدم
             </Button>
@@ -291,17 +382,29 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-3">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={userData.avatar || "/placeholder.svg"} alt={userData.name} />
-                <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+                <AvatarImage
+                  src={userData.avatar_url || "/placeholder.svg"}
+                  alt={getFullName(userData)}
+                />
+                <AvatarFallback>
+                  {getFullName(userData).charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <div className="text-center">
-                <h3 className="text-xl font-semibold">{userData.name}</h3>
-                <p className="text-sm text-muted-foreground">{userData.role === "host" ? "مضيف" : "مستخدم"}</p>
+                <h3 className="text-xl font-semibold">
+                  {getFullName(userData)}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {userData.role === "host" ? "مضيف" : "مستخدم"}
+                </p>
               </div>
               <div className="flex items-center gap-1">
                 {getStatusBadge(userData.status)}
-                {userData.verified && (
-                  <Badge variant="outline" className="border-blue-500 text-blue-500">
+                {userData.is_verified && (
+                  <Badge
+                    variant="outline"
+                    className="border-blue-500 text-blue-500"
+                  >
                     <Shield className="ml-1 h-3 w-3" /> موثق
                   </Badge>
                 )}
@@ -315,21 +418,18 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                 <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="font-medium">البريد الإلكتروني</p>
-                  <p className="text-sm text-muted-foreground">{userData.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {userData.email}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Phone className="mt-0.5 h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="font-medium">رقم الهاتف</p>
-                  <p className="text-sm text-muted-foreground">{userData.phone}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">العنوان</p>
-                  <p className="text-sm text-muted-foreground">{userData.address}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {userData.country_code} {userData.phone_number}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
@@ -348,281 +448,372 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg border p-3 text-center">
                 <p className="text-sm text-muted-foreground">الإعلانات</p>
-                <p className="text-2xl font-bold">{userData.listings_count}</p>
-              </div>
-              <div className="rounded-lg border p-3 text-center">
-                <p className="text-sm text-muted-foreground">الحجوزات</p>
-                <p className="text-2xl font-bold">{userData.bookings_count}</p>
-              </div>
-              <div className="rounded-lg border p-3 text-center">
-                <p className="text-sm text-muted-foreground">التقييم</p>
-                <div className="flex items-center justify-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <p className="text-2xl font-bold">{userData.rating}</p>
-                </div>
-              </div>
-              <div className="rounded-lg border p-3 text-center">
-                <p className="text-sm text-muted-foreground">المراجعات</p>
-                <p className="text-2xl font-bold">{userData.reviews_count}</p>
+                <p className="text-2xl font-bold">
+                  {userData.my_listings_count}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="md:col-span-2">
-          <CardHeader>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <CardHeader>
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="profile" className="flex items-center gap-1">
+                <TabsTrigger
+                  value="profile"
+                  className="flex items-center gap-1"
+                >
                   <User className="h-4 w-4" />
                   <span>الملف الشخصي</span>
                 </TabsTrigger>
-                <TabsTrigger value="listings" className="flex items-center gap-1">
+                <TabsTrigger
+                  value="listings"
+                  className="flex items-center gap-1"
+                >
                   <Home className="h-4 w-4" />
                   <span>الإعلانات</span>
                 </TabsTrigger>
-                <TabsTrigger value="bookings" className="flex items-center gap-1">
+                <TabsTrigger
+                  value="bookings"
+                  className="flex items-center gap-1"
+                >
                   <Calendar className="h-4 w-4" />
                   <span>الحجوزات</span>
                 </TabsTrigger>
-                <TabsTrigger value="transactions" className="flex items-center gap-1">
+                <TabsTrigger
+                  value="transactions"
+                  className="flex items-center gap-1"
+                >
                   <CreditCard className="h-4 w-4" />
                   <span>المعاملات</span>
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
-          </CardHeader>
-          <CardContent>
-            <TabsContent value="profile" className="mt-0">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">نبذة عن المستخدم</h3>
-                  <p className="mt-2 text-muted-foreground">{userData.bio}</p>
-                </div>
+            </CardHeader>
+            <CardContent>
+              <TabsContent value="profile" className="mt-0">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">نبذة عن المستخدم</h3>
+                    <p className="mt-2 text-muted-foreground">
+                      اكتب نص معبر عن المستخدم هنا. يمكنك إضافة معلومات إضافية
+                      مثل الاهتمامات، الهوايات، أو أي شيء آخر تود مشاركته.
+                      <br />
+                    </p>
+                  </div>
 
-                <Separator />
+                  {/* <Separator /> */}
 
-                <div>
-                  <h3 className="text-lg font-semibold">حالة التحقق</h3>
-                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="flex items-center gap-2 rounded-lg border p-3">
-                      <div
-                        className={`rounded-full p-1 ${userData.identity_verified ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
-                      >
-                        {userData.identity_verified ? <UserCheck className="h-5 w-5" /> : <UserX className="h-5 w-5" />}
+                  <div>
+                    <h3 className="text-lg font-semibold">حالة التحقق</h3>
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="flex items-center gap-2 rounded-lg border p-3">
+                        <div
+                          className={`rounded-full p-1 ${
+                            userData.is_verified
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {userData.is_verified ? (
+                            <UserCheck className="h-5 w-5" />
+                          ) : (
+                            <UserX className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">الهوية</p>
+                          <p className="text-sm text-muted-foreground">
+                            {userData.is_verified
+                              ? "تم التحقق"
+                              : "لم يتم التحقق"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">الهوية</p>
-                        <p className="text-sm text-muted-foreground">
-                          {userData.identity_verified ? "تم التحقق" : "لم يتم التحقق"}
-                        </p>
+                      <div className="flex items-center gap-2 rounded-lg border p-3">
+                        <div
+                          className={`rounded-full p-1 ${
+                            userData.email_verified
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {userData.email_verified ? (
+                            <Mail className="h-5 w-5" />
+                          ) : (
+                            <Mail className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">البريد الإلكتروني</p>
+                          <p className="text-sm text-muted-foreground">
+                            {userData.email_verified
+                              ? "تم التحقق"
+                              : "لم يتم التحقق"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-lg border p-3">
+                        <div
+                          className={`rounded-full p-1 ${
+                            userData.phone_verified
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {userData.phone_verified ? (
+                            <Phone className="h-5 w-5" />
+                          ) : (
+                            <Phone className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">رقم الهاتف</p>
+                          <p className="text-sm text-muted-foreground">
+                            {userData.phone_verified
+                              ? "تم التحقق"
+                              : "لم يتم التحقق"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 rounded-lg border p-3">
-                      <div
-                        className={`rounded-full p-1 ${userData.email_verified ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
-                      >
-                        {userData.email_verified ? <Mail className="h-5 w-5" /> : <Mail className="h-5 w-5" />}
-                      </div>
-                      <div>
-                        <p className="font-medium">البريد الإلكتروني</p>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="text-lg font-semibold">معلومات إضافية</h3>
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="rounded-lg border p-3">
                         <p className="text-sm text-muted-foreground">
-                          {userData.email_verified ? "تم التحقق" : "لم يتم التحقق"}
+                          آخر تسجيل دخول
+                        </p>
+                        <p className="font-medium">
+                          {new Date(userData.created_at).toLocaleDateString(
+                            "ar-SY"
+                          )}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-lg border p-3">
-                      <div
-                        className={`rounded-full p-1 ${userData.phone_verified ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
-                      >
-                        {userData.phone_verified ? <Phone className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
-                      </div>
-                      <div>
-                        <p className="font-medium">رقم الهاتف</p>
+                      <div className="rounded-lg border p-3">
                         <p className="text-sm text-muted-foreground">
-                          {userData.phone_verified ? "تم التحقق" : "لم يتم التحقق"}
+                          إجمالي الأرباح
                         </p>
+                        <p className="font-medium">16.000.000 $</p>
                       </div>
                     </div>
                   </div>
                 </div>
+              </TabsContent>
 
-                <Separator />
+              <TabsContent value="listings" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">إعلانات المستخدم</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push("/listings")}
+                    >
+                      عرض الكل
+                    </Button>
+                  </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold">معلومات إضافية</h3>
-                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="rounded-lg border p-3">
-                      <p className="text-sm text-muted-foreground">آخر تسجيل دخول</p>
-                      <p className="font-medium">{new Date(userData.last_login).toLocaleString("ar-SY")}</p>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <p className="text-sm text-muted-foreground">إجمالي الأرباح</p>
-                      <p className="font-medium">
-                        {userData.total_earnings} {userData.currency}
+                  {userListings.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-8 text-center">
+                      <h4 className="text-lg font-semibold">لا توجد إعلانات</h4>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        لم يقم هذا المستخدم بإضافة أي إعلانات بعد.
                       </p>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="listings" className="mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">إعلانات المستخدم</h3>
-                  <Button variant="outline" size="sm" onClick={() => router.push("/listings")}>
-                    عرض الكل
-                  </Button>
-                </div>
-
-                {userListings.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-8 text-center">
-                    <h4 className="text-lg font-semibold">لا توجد إعلانات</h4>
-                    <p className="mt-2 text-sm text-muted-foreground">لم يقم هذا المستخدم بإضافة أي إعلانات بعد.</p>
-                  </div>
-                ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>الإعلان</TableHead>
-                          <TableHead>نوع العقار</TableHead>
-                          <TableHead>السعر</TableHead>
-                          <TableHead>الحالة</TableHead>
-                          <TableHead>الحجوزات</TableHead>
-                          <TableHead>تاريخ الإنشاء</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {userListings.map((listing) => (
-                          <TableRow key={listing.id}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-3">
-                                <Image
-                                  src={listing.image || "/placeholder.svg"}
-                                  alt={listing.title}
-                                  width={80}
-                                  height={60}
-                                  className="h-12 w-16 rounded-md object-cover"
-                                />
-                                <span>{listing.title}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{listing.property_type}</TableCell>
-                            <TableCell>
-                              {listing.price} {listing.currency}
-                            </TableCell>
-                            <TableCell>{getStatusBadge(listing.status)}</TableCell>
-                            <TableCell>{listing.bookings_count}</TableCell>
-                            <TableCell>{new Date(listing.created_at).toLocaleDateString("ar-SY")}</TableCell>
+                  ) : (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>الإعلان</TableHead>
+                            <TableHead>نوع العقار</TableHead>
+                            <TableHead>السعر</TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead>الحجوزات</TableHead>
+                            <TableHead>تاريخ الإنشاء</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="bookings" className="mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">حجوزات المستخدم</h3>
-                  <Button variant="outline" size="sm" onClick={() => router.push("/bookings")}>
-                    عرض الكل
-                  </Button>
+                        </TableHeader>
+                        <TableBody>
+                          {userListings.map((listing) => (
+                            <TableRow key={listing.id}>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-3">
+                                  <Image
+                                    src={listing.image || "/placeholder.svg"}
+                                    alt={listing.title}
+                                    width={80}
+                                    height={60}
+                                    className="h-12 w-16 rounded-md object-cover"
+                                  />
+                                  <span>{listing.title}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{listing.property_type}</TableCell>
+                              <TableCell>
+                                {listing.price} {listing.currency}
+                              </TableCell>
+                              <TableCell>
+                                {getStatusBadge(listing.status)}
+                              </TableCell>
+                              <TableCell>{listing.bookings_count}</TableCell>
+                              <TableCell>
+                                {new Date(
+                                  listing.created_at
+                                ).toLocaleDateString("ar-SY")}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
+              </TabsContent>
 
-                {userBookings.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-8 text-center">
-                    <h4 className="text-lg font-semibold">لا توجد حجوزات</h4>
-                    <p className="mt-2 text-sm text-muted-foreground">لم يقم هذا المستخدم بأي حجوزات بعد.</p>
+              <TabsContent value="bookings" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">حجوزات المستخدم</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push("/bookings")}
+                    >
+                      عرض الكل
+                    </Button>
                   </div>
-                ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>الإعلان</TableHead>
-                          <TableHead>المضيف</TableHead>
-                          <TableHead>تاريخ الوصول</TableHead>
-                          <TableHead>تاريخ المغادرة</TableHead>
-                          <TableHead>المبلغ</TableHead>
-                          <TableHead>الحالة</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {userBookings.map((booking) => (
-                          <TableRow key={booking.id}>
-                            <TableCell className="font-medium">{booking.listing_title}</TableCell>
-                            <TableCell>{booking.host_name}</TableCell>
-                            <TableCell>{new Date(booking.check_in).toLocaleDateString("ar-SY")}</TableCell>
-                            <TableCell>{new Date(booking.check_out).toLocaleDateString("ar-SY")}</TableCell>
-                            <TableCell>
-                              {booking.total_price} {booking.currency}
-                            </TableCell>
-                            <TableCell>{getBookingStatusBadge(booking.status)}</TableCell>
+
+                  {userBookings.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-8 text-center">
+                      <h4 className="text-lg font-semibold">لا توجد حجوزات</h4>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        لم يقم هذا المستخدم بأي حجوزات بعد.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>الإعلان</TableHead>
+                            <TableHead>المضيف</TableHead>
+                            <TableHead>تاريخ الوصول</TableHead>
+                            <TableHead>تاريخ المغادرة</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                            <TableHead>الحالة</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="transactions" className="mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">معاملات المستخدم</h3>
-                  <Button variant="outline" size="sm" onClick={() => router.push("/transactions")}>
-                    عرض الكل
-                  </Button>
+                        </TableHeader>
+                        <TableBody>
+                          {userBookings.map((booking) => (
+                            <TableRow key={booking.id}>
+                              <TableCell className="font-medium">
+                                {booking.listing_title}
+                              </TableCell>
+                              <TableCell>{booking.host_name}</TableCell>
+                              <TableCell>
+                                {new Date(booking.check_in).toLocaleDateString(
+                                  "ar-SY"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(booking.check_out).toLocaleDateString(
+                                  "ar-SY"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {booking.total_price} {booking.currency}
+                              </TableCell>
+                              <TableCell>
+                                {getBookingStatusBadge(booking.status)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
+              </TabsContent>
 
-                {userTransactions.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-8 text-center">
-                    <h4 className="text-lg font-semibold">لا توجد معاملات</h4>
-                    <p className="mt-2 text-sm text-muted-foreground">لم يقم هذا المستخدم بأي معاملات مالية بعد.</p>
+              <TabsContent value="transactions" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">معاملات المستخدم</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push("/transactions")}
+                    >
+                      عرض الكل
+                    </Button>
                   </div>
-                ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>رقم المعاملة</TableHead>
-                          <TableHead>النوع</TableHead>
-                          <TableHead>الوصف</TableHead>
-                          <TableHead>المبلغ</TableHead>
-                          <TableHead>طريقة الدفع</TableHead>
-                          <TableHead>الحالة</TableHead>
-                          <TableHead>التاريخ</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {userTransactions.map((transaction) => (
-                          <TableRow key={transaction.id}>
-                            <TableCell className="font-medium">#{transaction.id}</TableCell>
-                            <TableCell>{getTransactionTypeBadge(transaction.type)}</TableCell>
-                            <TableCell>{transaction.description}</TableCell>
-                            <TableCell>
-                              {transaction.amount} {transaction.currency}
-                            </TableCell>
-                            <TableCell>{transaction.payment_method}</TableCell>
-                            <TableCell>{getTransactionStatusBadge(transaction.status)}</TableCell>
-                            <TableCell>{new Date(transaction.created_at).toLocaleDateString("ar-SY")}</TableCell>
+
+                  {userTransactions.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-8 text-center">
+                      <h4 className="text-lg font-semibold">لا توجد معاملات</h4>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        لم يقم هذا المستخدم بأي معاملات مالية بعد.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>رقم المعاملة</TableHead>
+                            <TableHead>النوع</TableHead>
+                            <TableHead>الوصف</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                            <TableHead>طريقة الدفع</TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead>التاريخ</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </CardContent>
+                        </TableHeader>
+                        <TableBody>
+                          {userTransactions.map((transaction) => (
+                            <TableRow key={transaction.id}>
+                              <TableCell className="font-medium">
+                                #{transaction.id}
+                              </TableCell>
+                              <TableCell>
+                                {getTransactionTypeBadge(transaction.type)}
+                              </TableCell>
+                              <TableCell>{transaction.description}</TableCell>
+                              <TableCell>
+                                {transaction.amount} {transaction.currency}
+                              </TableCell>
+                              <TableCell>
+                                {transaction.payment_method}
+                              </TableCell>
+                              <TableCell>
+                                {getTransactionStatusBadge(transaction.status)}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(
+                                  transaction.created_at
+                                ).toLocaleDateString("ar-SY")}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </CardContent>
+          </Tabs>
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -48,7 +48,7 @@ const formSchema = z.object({
     }),
   }),
   icon: z.any().optional(),
-  is_visible: z.boolean().default(true),
+  is_visible: z.boolean(),
 });
 
 type HouseTypeFormValues = z.infer<typeof formSchema>;
@@ -122,14 +122,9 @@ export function HouseTypeDialog({
     }
 
     // Call the onSave function with the form data
-    onSave(formData)
-      .then(() => {
-        setIsPending(false);
-        onOpenChange(false);
-      })
-      .catch(() => {
-        setIsPending(false);
-      });
+    onSave(formData);
+    setIsPending(false);
+    onOpenChange(false);
   }
 
   return (

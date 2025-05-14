@@ -34,18 +34,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadImage, usersAPI } from "@/lib/api";
+import { Textarea } from "../ui/textarea";
 
 // Schema for editing - all fields are optional without validation
 const editUserSchema = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   email: z.string().optional(),
-  host_verified: z.enum(["none", "approved"]).optional(),
+  id_verified: z.enum(["none", "approved"]).optional(),
   // phone: z.string().optional(),
   // role: z.enum(["user", "admin", "host"]).optional(),
   avatar: z.string().optional(),
   // password: z.string().optional(),
-  status: z.enum(["active", "inactive", "banned"]).optional(),
+  status: z.enum(["active", "banneded"]).optional(),
   language: z.string().optional(),
 });
 
@@ -60,7 +61,8 @@ const createUserSchema = z.object({
   email: z.string().email({
     message: "يرجى إدخال بريد إلكتروني صحيح",
   }),
-  host_verified: z.enum(["none", "approved"]),
+  id_verified: z.enum(["none", "approved"]),
+  bank_details: z.string().optional(),
   phone: z.string().min(9, {
     message: "رقم الهاتف يجب أن يكون أكثر من 9 أرقام",
   }),
@@ -69,7 +71,7 @@ const createUserSchema = z.object({
   password: z.string().min(8, {
     message: "كلمة المرور يجب أن تكون أكثر من 8 أحرف",
   }),
-  status: z.enum(["active", "inactive", "banned"]),
+  status: z.enum(["active", "banneded"]),
   language: z.string(),
 });
 
@@ -93,7 +95,11 @@ export function UserDialog({
   type UserFormValues = z.infer<typeof createUserSchema>;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(user ? editUserSchema : createUserSchema),
+    resolver: zodResolver(
+      user
+        ? (editUserSchema as unknown as z.ZodType<UserFormValues>)
+        : createUserSchema
+    ),
     defaultValues: user
       ? {
           first_name: user.first_name || "",
@@ -101,10 +107,11 @@ export function UserDialog({
           email: user.email || "",
           avatar: user.avatar || "",
           // country_code: user.country_code || "+963",
-          host_verified: user.host_verified || "none",
-          phone: user.phone_number || "",
+          id_verified: user.id_verified || "none",
+          bank_details: user.bank_details || "",
+          phone: user.country_code + user.phone_number || "",
           role: (user.role as "user" | "admin" | "host") || "user",
-          status: (user.status as "active" | "inactive" | "banned") || "active",
+          status: (user.status as "active") || "banneded" || "active",
           language: user.language || "ar",
           // password: "",
           password: user.password || "",
@@ -115,8 +122,9 @@ export function UserDialog({
           email: "",
           avatar: "",
           // country_code: "+963",
+          bank_details: "",
           phone: "",
-          host_verified: "none",
+          id_verified: "none",
           role: "user",
           password: "",
           status: "active",
@@ -124,16 +132,20 @@ export function UserDialog({
         },
   });
   useEffect(() => {
+    // user
+    console.log("user", user);
+
     if (user) {
       form.reset({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
+        bank_details: user.bank_details || "",
         avatar: user.avatar || "",
-        host_verified: user.host_verified || "none",
-        phone: user.phone || "",
+        id_verified: user.id_verified || "none",
+        phone: user.country_code + user.phone_number || "",
         role: (user.role as "user" | "admin" | "host") || "user",
-        status: (user.status as "active" | "inactive" | "banned") || "active",
+        status: (user.status as "active" | "banneded") || "active",
         language: user.language || "ar",
         password: user.password || "",
       });
@@ -144,7 +156,8 @@ export function UserDialog({
         email: "",
         avatar: "",
         phone: "",
-        host_verified: "none",
+        bank_details: "",
+        id_verified: "none",
         role: "user",
         password: "",
         status: "active",
@@ -174,7 +187,6 @@ export function UserDialog({
 
       if (user?.id) {
         // Update existing user
-        delete formData.password; // Remove password from edit requests unless specifically changed
         response = await usersAPI.update(user.id, formData);
       } else {
         // Create new user - all required fields should be present
@@ -312,7 +324,7 @@ export function UserDialog({
               name="avatar"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>أيقونة التصنيف</FormLabel>
+                  <FormLabel>صورة المستخدم</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
@@ -320,7 +332,10 @@ export function UserDialog({
                       onChange={handleFileChange}
                     />
                   </FormControl>
-                  <FormDescription>صورة تمثل التصنيف</FormDescription>
+                  <FormDescription>
+                    يمكنك تحميل صورة جديدة للمستخدم. إذا لم تقم بتحميل صورة،
+                    سيتم استخدام الصورة الحالية.
+                  </FormDescription>
                   {user?.avatar && !selectedFile && (
                     <div className="mt-2">
                       <p className="text-sm text-muted-foreground mb-2">
@@ -412,49 +427,25 @@ export function UserDialog({
 
             {/* </div> */}
             <div className="grid grid-cols-2 gap-4">
+              {/* "id_verified": "none", // required|in:none,approved */}
               <FormField
                 control={form.control}
-                name="role"
+                name="id_verified"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>الدور</FormLabel>
+                    <FormLabel>الحساب مضيف؟</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر الدور" />
+                          <SelectValue placeholder="اختر حالة المستخدم" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="user">مستخدم</SelectItem>
-                        <SelectItem value="admin">مدير</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* "host_verified": "none", // required|in:none,approved */}
-              <FormField
-                control={form.control}
-                name="host_verified"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>التحقق من الهوية</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر حالة التحقق" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">غير متحقق</SelectItem>
-                        <SelectItem value="approved">تم التحقق</SelectItem>
+                        <SelectItem value="none">لا </SelectItem>
+                        <SelectItem value="approved">نعم </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -479,38 +470,25 @@ export function UserDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="active">نشط</SelectItem>
-                        <SelectItem value="inactive">غير نشط</SelectItem>
-                        <SelectItem value="banned">محظور</SelectItem>
+                        <SelectItem value="banneded">محظور</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* bank_details */}
             </div>
             <FormField
               control={form.control}
-              name="language"
+              name="bank_details"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>اللغة المفضلة</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر اللغة" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="ar">العربية</SelectItem>
-                      <SelectItem value="en">الإنجليزية</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    اللغة المفضلة للمستخدم في التطبيق
-                  </FormDescription>
+                  <FormLabel>تفاصيل البنك</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

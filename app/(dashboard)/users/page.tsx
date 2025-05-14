@@ -86,7 +86,10 @@ export default function UsersPage() {
       if (statusFilter !== "all") filters.status = statusFilter;
       if (roleFilter === "host") {
         filters.role = "user";
-        filters.host_verified = "approved";
+        filters.id_verified = "approved";
+      } else if (roleFilter === "user") {
+        filters.role = "user";
+        filters.id_verified = "none";
       }
       if (searchTerm) filters.search = searchTerm;
 
@@ -133,34 +136,48 @@ export default function UsersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="default">نشط</Badge>;
-      case "inactive":
-        return <Badge variant="secondary">غير نشط</Badge>;
-      case "banned":
-        return <Badge variant="destructive">محظور</Badge>;
+        return (
+          <Badge variant="outline" className="border-green-500 text-green-500">
+            نشط
+          </Badge>
+        );
+
+      case "banneded":
+        return (
+          <Badge variant="outline" className="border-red-500 text-red-500">
+            محظور
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
   };
 
-  const getRoleBadge = (role: string, host_verified: string) => {
+  const getRoleBadge = (role: string, id_verified: string) => {
+    const badgeStyles = {
+      user: "border-blue-500 text-blue-500",
+      admin: "border-purple-500 text-purple-500",
+    };
+
     if (role === "user") {
-      if (host_verified === "approved") {
-        return (
-          <Badge variant="outline" className="border-blue-500 text-blue-500">
-            مضيف
-          </Badge>
-        );
-      } else if (host_verified === "none") {
-        return <Badge variant="outline">مستخدم</Badge>;
-      }
-    } else if (role === "admin") {
       return (
-        <Badge variant="outline" className="border-purple-500 text-purple-500">
+        <Badge
+          variant="outline"
+          className={id_verified === "approved" ? badgeStyles.user : undefined}
+        >
+          {id_verified === "approved" ? "مضيف" : "مستخدم"}
+        </Badge>
+      );
+    }
+
+    if (role === "admin") {
+      return (
+        <Badge variant="outline" className={badgeStyles.admin}>
           مدير
         </Badge>
       );
     }
+
     return <Badge variant="outline">{role}</Badge>;
   };
 
@@ -298,8 +315,7 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="all">جميع الحالات</SelectItem>
                   <SelectItem value="active">نشط</SelectItem>
-                  <SelectItem value="inactive">غير نشط</SelectItem>
-                  <SelectItem value="banned">محظور</SelectItem>
+                  <SelectItem value="banneded">محظور</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -395,7 +411,7 @@ export default function UsersPage() {
                           {user.country_code} {user.phone_number}
                         </TableCell>
                         <TableCell>
-                          {getRoleBadge(user.role, user.host_verified)}
+                          {getRoleBadge(user.role, user.id_verified)}
                         </TableCell>
                         <TableCell>{getStatusBadge(user.status)}</TableCell>
                         <TableCell>
@@ -426,7 +442,7 @@ export default function UsersPage() {
                                 <Edit className="ml-2 h-4 w-4" />
                                 تعديل
                               </DropdownMenuItem>
-                              {user.status !== "active" && (
+                              {/* {user.status !== "active" && (
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleUpdateUserStatus(user, "active")
@@ -445,7 +461,7 @@ export default function UsersPage() {
                                   <UserX className="ml-2 h-4 w-4" />
                                   حظر
                                 </DropdownMenuItem>
-                              )}
+                              )} */}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive"
