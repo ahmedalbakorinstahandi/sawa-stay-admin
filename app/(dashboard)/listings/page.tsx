@@ -644,6 +644,7 @@ export default function ListingsPage() {
             title: "تم تحديث الميزة",
             description: `تم تحديث الميزة بنجاح`,
           });
+          setIsFeatureDialogOpen(false);
           fetchFeatures();
         } else {
           toast({
@@ -664,6 +665,7 @@ export default function ListingsPage() {
             description: `تم إضافة الميزة بنجاح`,
           });
           fetchFeatures();
+          setIsFeatureDialogOpen(false);
         } else {
           toast({
             title: "خطأ في إضافة الميزة",

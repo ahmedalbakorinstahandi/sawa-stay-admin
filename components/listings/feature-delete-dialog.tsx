@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,40 +9,66 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dialog";
+import { Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 interface FeatureDeleteDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  feature: any
-  onDelete: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  feature: any;
+  onDelete: () => void;
 }
 
-export function FeatureDeleteDialog({ open, onOpenChange, feature, onDelete }: FeatureDeleteDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+export function FeatureDeleteDialog({
+  open,
+  onOpenChange,
+  feature,
+  onDelete,
+}: FeatureDeleteDialogProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleDelete = () => {
-    if (!feature) return
+  const handleDelete = async () => {
+    if (!feature) return;
 
-    setIsLoading(true)
-
+    setIsLoading(true);
     // Simulate API call
+    // try {
+    //   const response = await api.delete(`/admin/features/${feature.id}`);
+    //   if (response.data?.success) {
+    //     toast({
+    //       title: "تم حذف الميزة",
+    //       description: `تم حذف الميزة "${feature.name?.ar}" بنجاح`,
+    //     });
+    //     setIsLoading(false);
+    //     onOpenChange(false);
+    //     onDelete();
+    //   } else {
+    //     toast({
+    //       title: "فشل الحذف",
+    //       description: `فشل حذف الميزة "${feature.name?.ar}"`,
+    //     });
+    //   }
+    // } catch (error) {
+    //   toast({
+    //     title: "خطأ",
+    //     description: `حدث خطأ أثناء حذف الميزة "${feature.name?.ar}"`,
+    //   });
+    // }
     setTimeout(() => {
-      setIsLoading(false)
-      onOpenChange(false)
-      onDelete()
-
+      setIsLoading(false);
+      onOpenChange(false);
+      onDelete();
       toast({
         title: "تم حذف الميزة",
         description: `تم حذف الميزة "${feature.name}" بنجاح`,
-      })
-    }, 1000)
-  }
+      });
+    }, 1000);
+  };
 
-  if (!feature) return null
+  if (!feature) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,14 +76,24 @@ export function FeatureDeleteDialog({ open, onOpenChange, feature, onDelete }: F
         <DialogHeader>
           <DialogTitle>حذف الميزة</DialogTitle>
           <DialogDescription>
-            هل أنت متأكد من رغبتك في حذف الميزة "{feature.name}"؟ هذا الإجراء لا يمكن التراجع عنه.
+            هل أنت متأكد من رغبتك في حذف الميزة "{feature.name?.ar}"؟ هذا
+            الإجراء لا يمكن التراجع عنه.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
             إلغاء
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={isLoading} className="flex items-center gap-2">
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -73,5 +109,5 @@ export function FeatureDeleteDialog({ open, onOpenChange, feature, onDelete }: F
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -35,17 +35,13 @@ const featureFormSchema = z.object({
     ar: z.string().min(2, {
       message: "اسم الميزة يجب أن يكون أكثر من حرفين",
     }),
-    en: z.string().min(2, {
-      message: "اسم الميزة يجب أن يكون أكثر من حرفين",
-    }),
+    en: z.string().optional(),
   }),
   description: z.object({
     ar: z.string().min(5, {
       message: "وصف الميزة يجب أن يكون أكثر من 5 أحرف",
     }),
-    en: z.string().min(5, {
-      message: "وصف الميزة يجب أن يكون أكثر من 5 أحرف",
-    }),
+    en: z.string().optional(),
   }),
   icon: z.any().optional(),
   is_visible: z.boolean().default(true),
@@ -151,9 +147,9 @@ export function FeatureDialog({
 
     // Add multilingual fields
     formData.append("name[ar]", values.name.ar);
-    formData.append("name[en]", values.name.en);
+    formData.append("name[en]", values.name.en ?? "");
     formData.append("description[ar]", values.description.ar);
-    formData.append("description[en]", values.description.en);
+    formData.append("description[en]", values.description.en ?? "");
 
     // Add other fields
     formData.append("is_visible", values.is_visible ? "1" : "0");
@@ -165,8 +161,9 @@ export function FeatureDialog({
 
     // Call the onSave function with the form data
     onSave(formData);
+    
     setIsLoading(false);
-    onOpenChange(false);
+    // onOpenChange(false);
   }
 
   return (
