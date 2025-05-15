@@ -47,6 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { uploadImage } from "@/lib/upload-helpers";
 import { useToast } from "@/hooks/use-toast";
+import { MultiSelect } from "@/components/ui/multi-select";
 // نوع بيانات الإعلان
 interface Listing {
   id: number;
@@ -140,6 +141,7 @@ interface HouseType {
 
 interface Feature {
   id: number;
+  icon_url: string;
   name: {
     ar: string;
     en: string;
@@ -148,6 +150,7 @@ interface Feature {
 
 interface Category {
   id: number;
+  icon_url: string;
   name: {
     ar: string;
     en: string;
@@ -169,7 +172,7 @@ const listingSchema = z.object({
     required_error: "يرجى اختيار نوع الإعلان",
   }),
   price: z.number().min(1, { message: "يجب أن يكون السعر أكبر من صفر" }),
-  currency: z.string(),
+  currency: z.string().optional(),
   guests_count: z
     .number()
     .min(1, { message: "يجب أن يكون عدد الضيوف 1 على الأقل" }),
@@ -195,8 +198,8 @@ const listingSchema = z.object({
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
   max_booking_days: z.number().min(1),
-  check_in: z.string(),
-  check_out: z.string(),
+  check_in: z.string().optional(),
+  check_out: z.string().optional(),
   allow_pets: z.boolean({
     required_error: "لا يمكن تخطي السماح بالحيوانات الأليفة",
   }),
@@ -307,19 +310,19 @@ export default function EditListingPage() {
         }
 
         // جلب أنواع الإعلانات
-        const houseTypesResponse = await api.get("/general/house-types");
+        const houseTypesResponse = await api.get("/admin/house-types");
         if (houseTypesResponse.data.success && houseTypesResponse.data) {
           setHouseTypes(houseTypesResponse.data.data);
         }
 
         // جلب الميزات
-        const featuresResponse = await api.get("/general/features");
+        const featuresResponse = await api.get("/admin/features");
         if (featuresResponse.data.success && featuresResponse.data) {
           setFeatures(featuresResponse.data.data);
         }
 
         // جلب الفئات
-        const categoriesResponse = await api.get("/general/categories");
+        const categoriesResponse = await api.get("/admin/categories");
         if (categoriesResponse.data.success && categoriesResponse.data) {
           setCategories(categoriesResponse.data.data);
         }
@@ -368,16 +371,23 @@ export default function EditListingPage() {
   const addImageToDelete = (imageId: number) => {
     setImagesToDelete((prev) => [...prev, imageId]);
   };
-
+  const categoryOptions = categories.map((category) => ({
+    label: category.name?.ar || "",
+    value: category.id,
+  }));
   // رفع صور الإعلان
   const uploadPropertyImages = async () => {
     if (propertyImages.length === 0) return [];
+    console.log("propertyImages", propertyImages);
 
     setUploadingImages(true);
     const uploadedPaths: string[] = [];
 
     try {
       for (const image of propertyImages) {
+        // Skip empty File objects (e.g., if user didn't select any image)
+        if (!image || !(image instanceof File) || image.size === 0) continue;
+
         const result = await uploadImage(image, "listings");
         if (result.success && result.url) {
           uploadedPaths.push(result.url);
@@ -575,7 +585,7 @@ export default function EditListingPage() {
                           >
                             <CardContent className="p-6 flex flex-col items-center text-center">
                               <Home className="h-12 w-12 mb-4 text-rose-500" />
-                              <h3 className="font-medium">منزل</h3>
+                              <h3 className="font-medium">مسكن بالكامل</h3>
                               <p className="text-sm text-gray-500 mt-1">
                                 منزل مستقل أو فيلا
                               </p>
@@ -613,7 +623,7 @@ export default function EditListingPage() {
                           >
                             <CardContent className="p-6 flex flex-col items-center text-center">
                               <Warehouse className="h-12 w-12 mb-4 text-rose-500" />
-                              <h3 className="font-medium">بيت ضيافة</h3>
+                              <h3 className="font-medium">شقة مشتركة </h3>
                               <p className="text-sm text-gray-500 mt-1">
                                 مكان مخصص للضيوف
                               </p>
@@ -681,7 +691,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() => decrementValue("guests_count", 1)}
                               disabled={field.value <= 1}
                             >
@@ -702,7 +712,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() => incrementValue("guests_count", 16)}
                             >
                               <span>+</span>
@@ -726,7 +736,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() =>
                                 decrementValue("bedrooms_count", 1)
                               }
@@ -749,7 +759,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() =>
                                 incrementValue("bedrooms_count", 10)
                               }
@@ -775,7 +785,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() => decrementValue("beds_count", 1)}
                               disabled={field.value <= 1}
                             >
@@ -796,7 +806,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() => incrementValue("beds_count", 20)}
                             >
                               <span>+</span>
@@ -820,7 +830,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() => {
                                 const newValue = Math.max(
                                   field.value - 0.5,
@@ -848,7 +858,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() => {
                                 const newValue = Math.min(
                                   field.value + 0.5,
@@ -878,7 +888,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() => decrementValue("floor_number", 0)}
                               disabled={field.value <= 0}
                             >
@@ -899,7 +909,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() => incrementValue("floor_number", 50)}
                             >
                               <span>+</span>
@@ -932,7 +942,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() => decrementValue("price", 0)}
                               disabled={field.value <= 0}
                             >
@@ -953,8 +963,8 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
-                              onClick={() => incrementValue("price")}
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => incrementValue("price", 9999999)}
                             >
                               <span>+</span>
                             </Button>
@@ -965,7 +975,7 @@ export default function EditListingPage() {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="currency"
                     render={({ field }) => (
@@ -993,7 +1003,7 @@ export default function EditListingPage() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   <FormField
                     control={form.control}
@@ -1007,7 +1017,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() =>
                                 decrementValue("min_booking_days", 1)
                               }
@@ -1030,7 +1040,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() =>
                                 incrementValue("min_booking_days", 30)
                               }
@@ -1056,7 +1066,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-r-none"
+                              className="h-10 w-10 rounded-l-none"
                               onClick={() =>
                                 decrementValue("max_booking_days", 1)
                               }
@@ -1079,7 +1089,7 @@ export default function EditListingPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-10 w-10 rounded-l-none"
+                              className="h-10 w-10 rounded-r-none"
                               onClick={() =>
                                 incrementValue("max_booking_days", 365)
                               }
@@ -1092,8 +1102,39 @@ export default function EditListingPage() {
                       </FormItem>
                     )}
                   />
-
                   <FormField
+                    control={form.control}
+                    name="house_type_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>نوع المنزل</FormLabel>
+                        <Select
+                          onValueChange={(value) =>
+                            field.onChange(Number.parseInt(value))
+                          }
+                          defaultValue={field.value?.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر نوع الاعلان" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {houseTypes.map((category: any) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.id.toString()}
+                              >
+                                {category.name?.ar}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* <FormField
                     control={form.control}
                     name="check_in"
                     render={({ field }) => (
@@ -1105,8 +1146,8 @@ export default function EditListingPage() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
-
+                  /> */}
+                  {/* 
                   <FormField
                     control={form.control}
                     name="check_out"
@@ -1119,7 +1160,7 @@ export default function EditListingPage() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
               </CardContent>
             </Card>
@@ -1148,7 +1189,7 @@ export default function EditListingPage() {
                                 key={feature.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-rose-100 text-rose-700"
+                                    ? "bg-green-100 text-green-700"
                                     : "bg-gray-100 hover:bg-gray-200"
                                 }`}
                                 onClick={() => {
@@ -1170,7 +1211,15 @@ export default function EditListingPage() {
                                 {isSelected && (
                                   <Check className="h-4 w-4 ml-2 flex-shrink-0" />
                                 )}
-                                <span className="text-sm">
+                                <span className="flex items-center text-sm">
+                                  {feature.icon_url && (
+                                    <img
+                                      src={feature.icon_url}
+                                      alt=""
+                                      className="h-4 w-4 ml-2 inline-block"
+                                      loading="lazy"
+                                    />
+                                  )}
                                   {feature.name.ar}
                                 </span>
                               </div>
@@ -1200,7 +1249,7 @@ export default function EditListingPage() {
                                 key={category.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-rose-100 text-rose-700"
+                                    ? "bg-green-100 text-green-700"
                                     : "bg-gray-100 hover:bg-gray-200"
                                 }`}
                                 onClick={() => {
@@ -1222,7 +1271,15 @@ export default function EditListingPage() {
                                 {isSelected && (
                                   <Check className="h-4 w-4 ml-2 flex-shrink-0" />
                                 )}
-                                <span className="text-sm">
+                                <span className="flex items-center text-sm">
+                                  {category.icon_url && (
+                                    <img
+                                      src={category.icon_url}
+                                      alt=""
+                                      className="h-4 w-4 ml-2 inline-block"
+                                      loading="lazy"
+                                    />
+                                  )}
                                   {category.name.ar}
                                 </span>
                               </div>
@@ -1367,7 +1424,7 @@ export default function EditListingPage() {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="weapons_on_property"
                     render={({ field }) => (
@@ -1409,8 +1466,8 @@ export default function EditListingPage() {
                         </FormControl>
                       </FormItem>
                     )}
-                  />
-
+                  /> */}
+                  {/* 
                   <FormField
                     control={form.control}
                     name="allow_pets"
@@ -1446,7 +1503,7 @@ export default function EditListingPage() {
                         </FormControl>
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
               </CardContent>
             </Card>
@@ -1580,7 +1637,6 @@ export default function EditListingPage() {
                   <div className="text-sm text-gray-500">
                     <p>نصائح للصور:</p>
                     <ul className="list-disc list-inside mx-4 mt-1 space-y-1">
-                      <li>أضف على الأقل 5 صور عالية الجودة</li>
                       <li>أضف صوراً لجميع الغرف والمساحات المتاحة للضيوف</li>
                       <li>أضف صوراً للمناظر والإطلالات إن وجدت</li>
                       <li>تجنب استخدام الصور التي تحتوي على علامات مائية</li>

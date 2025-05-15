@@ -1,3 +1,4 @@
+import { api } from "./api"
 
 export interface UploadResponse {
     success: boolean
@@ -11,18 +12,21 @@ export async function uploadImage(
 ): Promise<UploadResponse> {
     folder = folder || "listings"
     try {
+        // console.log("Uploading image to folder:", folder)
+        // console.log("File to upload:", file);
+        
         const formData = new FormData()
         formData.append("image", file)
         formData.append("folder", folder)
 
-        // const response = await api.post("/general/images/upload", formData)
-        const responseR = await fetch(
-            process.env.NEXT_PUBLIC_BASE_API +
-            "/general/images/upload", {
-            method: "POST",
-            body: formData,
-        })
-        const response = await responseR.json()
+        const responseR = await api.post(
+            "/general/images/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            }
+        )
+        const response = responseR.data
         console.log(response);
 
         if (!response.success) {

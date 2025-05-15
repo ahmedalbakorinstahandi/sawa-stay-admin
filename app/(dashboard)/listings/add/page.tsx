@@ -967,7 +967,7 @@ export default function ListingDialog() {
                     selected={field.value || []}
                     onChange={field.onChange}
                     placeholder="اختر التصنيفات"
-                    searchPlaceholder="ابحث عن التصنيفات..."
+                    searchPlaceholder="ابحث عن نوع المنزل..."
                     emptyMessage="لم يتم العثور على تصنيفات"
                   />
                 </FormControl>
