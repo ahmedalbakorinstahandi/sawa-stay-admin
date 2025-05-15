@@ -1,14 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowLeft,
   CheckCircle,
@@ -29,9 +35,12 @@ import {
   PocketIcon as Pool,
   AirVent,
   Heart,
-} from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Mock data for a single listing
 const listingData = {
@@ -142,141 +151,212 @@ const listingData = {
       amount: 250000,
     },
   ],
-}
+};
 
 export default function ListingDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [listing, setListing] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeImage, setActiveImage] = useState<string | null>(null)
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [listing, setListing] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call to fetch listing details
     const fetchListing = async () => {
       try {
-        // In a real app, you would fetch the listing from an API
-        // const response = await fetch(`/api/listings/${params.id}`)
-        // const data = await response.json()
+        setLoading(true);
+        const response = await api.get(`/admin/listings/${params.id}`);
+        const result = await response.data;
 
-        // Using mock data for demonstration
-        setTimeout(() => {
-          setListing(listingData)
-          setActiveImage(listingData.images[0].url)
-          setLoading(false)
-        }, 1000)
+        if (result.success && result.data) {
+          // Transform API data to match UI structure
+          const transformedData = {
+            id: result.data.id,
+            title: result.data.title.ar, // Using Arabic title
+            description: result.data.description.ar, // Using Arabic description
+            host: {
+              id: result.data.host.id,
+              name: `${result.data.host.first_name} ${result.data.host.last_name}`,
+              email: result.data.host.email,
+              phone: `${result.data.host.country_code}${result.data.host.phone_number}`,
+              avatar: result.data.host.avatar_url,
+              rating: 4.8, // Default since not in API
+              reviews_count: 0, // Default since not in API
+              joined_at: result.data.host.created_at,
+              verified: result.data.host.is_verified,
+            },
+            property_type: result.data.property_type,
+            category_id: result.data.categories[0]?.id,
+            category_name: result.data.categories[0]?.name.ar,
+            price: result.data.price,
+            currency: result.data.currency,
+            commission: result.data.commission,
+            status: result.data.status,
+            guests_count: result.data.guests_count,
+            bedrooms_count: result.data.bedrooms_count,
+            beds_count: result.data.beds_count,
+            bathrooms_count: result.data.bathrooms_count,
+            size: 120, // Not provided in API
+            booking_capacity: result.data.booking_capacity,
+            allow_pets: result.data.rule?.allows_pets || false,
+            created_at: result.data.created_at,
+            updated_at: result.data.created_at,
+            images: result.data.images.map((img: any) => ({
+              id: img.id,
+              url: img.url,
+              is_primary: img.id === result.data.images[0].id, // First image is primary
+            })),
+            address: {
+              street: result.data.address.street_address,
+              city: result.data.address.city?.name.ar || "",
+              state: result.data.address.state,
+              country: result.data.address.country,
+              zip_code: result.data.address.zip_code,
+              latitude: result.data.address.latitude,
+              longitude: result.data.address.longitude,
+            },
+            features: result.data.features.map((feature: any) => ({
+              id: feature.id,
+              name: feature.name.ar,
+              icon: feature.icon_url,
+            })),
+            rating: 4.7, // Default since not in API
+            reviews_count: result.data.reviews.length,
+            favorites_count: 0, // Not provided in API
+            views_count: 0, // Not provided in API
+            bookings_count: 0, // Not provided in API
+            cancellations_count: 0, // Not provided in API
+            admin_notes: "", // Not provided in API
+            recent_bookings: [], // Not provided in API, using empty array
+          };
+          setActiveImage(transformedData.images[0]?.url || null);
+          setListing(transformedData);
+        } else {
+          // If API request fails or returns invalid data, use static data
+          setListing(listingData);
+          toast({
+            variant: "default",
+            title: "تم استخدام البيانات الاحتياطية",
+            description: "لم نتمكن من جلب البيانات المحدثة من الخادم.",
+          });
+        }
       } catch (error) {
-        console.error("Error fetching listing:", error)
+        console.error("Error fetching listing:", error);
+        // Fallback to static data
+        setListing(listingData);
         toast({
           variant: "destructive",
           title: "خطأ في جلب بيانات الإعلان",
-          description: "حدث خطأ أثناء محاولة جلب بيانات الإعلان. يرجى المحاولة مرة أخرى.",
-        })
-        setLoading(false)
+          description:
+            "حدث خطأ أثناء محاولة جلب بيانات الإعلان. تم استخدام البيانات الاحتياطية.",
+        });
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    fetchListing()
-  }, [params.id, toast])
+    fetchListing();
+  }, [params.id, toast]);
 
   const handleGoBack = () => {
-    router.back()
-  }
+    router.back();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
         return (
-          <Badge variant="success" className="flex items-center gap-1">
+          <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
             معتمد
           </Badge>
-        )
+        );
       case "in_review":
         return (
-          <Badge variant="warning" className="flex items-center gap-1">
+          <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1">
             <Eye className="h-3 w-3" />
             قيد المراجعة
           </Badge>
-        )
+        );
       case "draft":
         return (
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge className="bg-gray-100 text-gray-800 flex items-center gap-1">
             <PauseCircle className="h-3 w-3" />
             مسودة
           </Badge>
-        )
+        );
       case "rejected":
         return (
-          <Badge variant="destructive" className="flex items-center gap-1">
+          <Badge className="bg-red-100 text-red-800 flex items-center gap-1">
             <XCircle className="h-3 w-3" />
             مرفوض
           </Badge>
-        )
+        );
       case "paused":
         return (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge className="bg-yellow-100 text-yellow-800 flex items-center gap-1">
             <PauseCircle className="h-3 w-3" />
-            مت��قف
+            متوقف
           </Badge>
-        )
+        );
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const getBookingStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="success">مكتمل</Badge>
+        return <Badge className="bg-green-100 text-green-800">مكتمل</Badge>;
       case "confirmed":
-        return <Badge variant="default">مؤكد</Badge>
+        return <Badge className="bg-blue-100 text-blue-800">مؤكد</Badge>;
       case "pending":
-        return <Badge variant="warning">قيد الانتظار</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">قيد الانتظار</Badge>
+        );
       case "cancelled":
-        return <Badge variant="destructive">ملغي</Badge>
+        return <Badge className="bg-red-100 text-red-800">ملغي</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("ar-SY", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   const getPropertyTypeLabel = (type: string) => {
     switch (type) {
       case "House":
-        return "منزل"
+        return "منزل";
       case "Apartment":
-        return "شقة"
+        return "شقة";
       case "Guesthouse":
-        return "غرفة مشتركة"
+        return "غرفة مشتركة";
       default:
-        return type
+        return type;
     }
-  }
+  };
 
   const getFeatureIcon = (iconName: string) => {
     switch (iconName) {
       case "Wifi":
-        return <Wifi className="h-4 w-4" />
+        return <Wifi className="h-4 w-4" />;
       case "Car":
-        return <Car className="h-4 w-4" />
+        return <Car className="h-4 w-4" />;
       case "AirVent":
-        return <AirVent className="h-4 w-4" />
+        return <AirVent className="h-4 w-4" />;
       case "Pool":
-        return <Pool className="h-4 w-4" />
+        return <Pool className="h-4 w-4" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -307,7 +387,7 @@ export default function ListingDetailsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!listing) {
@@ -316,14 +396,15 @@ export default function ListingDetailsPage() {
         <XCircle className="h-16 w-16 text-destructive" />
         <h2 className="text-2xl font-bold">لم يتم العثور على الإعلان</h2>
         <p className="text-muted-foreground">
-          لم نتمكن من العثور على إعلان بالمعرف {params.id}. قد يكون الإعلان غير موجود أو تم حذفه.
+          لم نتمكن من العثور على إعلان بالمعرف {params.id}. قد يكون الإعلان غير
+          موجود أو تم حذفه.
         </p>
         <Button onClick={handleGoBack}>
           <ArrowLeft className="ml-2 h-4 w-4" />
           العودة
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -337,15 +418,18 @@ export default function ListingDetailsPage() {
           {getStatusBadge(listing.status)}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Printer className="ml-2 h-4 w-4" />
             طباعة
           </Button>
           <Button variant="outline">
             <Eye className="ml-2 h-4 w-4" />
             معاينة
-          </Button>
-          <Button>
+          </Button> */}
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/listings/${listing.id}/edit`)}
+          >
             <Edit className="ml-2 h-4 w-4" />
             تعديل
           </Button>
@@ -357,7 +441,12 @@ export default function ListingDetailsPage() {
           <CardContent className="p-0">
             <div className="relative aspect-video overflow-hidden">
               {activeImage && (
-                <Image src={activeImage || "/placeholder.svg"} alt={listing.title} fill className="object-cover" />
+                <Image
+                  src={activeImage || "/placeholder.svg"}
+                  alt={listing.title}
+                  fill
+                  className="object-cover"
+                />
               )}
             </div>
             <div className="flex p-2 gap-2 overflow-x-auto">
@@ -369,7 +458,12 @@ export default function ListingDetailsPage() {
                   }`}
                   onClick={() => setActiveImage(image.url)}
                 >
-                  <Image src={image.url || "/placeholder.svg"} alt={listing.title} fill className="object-cover" />
+                  <Image
+                    src={image.url || "/placeholder.svg"}
+                    alt={listing.title}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               ))}
             </div>
@@ -382,14 +476,19 @@ export default function ListingDetailsPage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center text-center">
             <Avatar className="h-24 w-24 mb-4">
-              <AvatarImage src={listing.host.avatar || "/placeholder.svg"} alt={listing.host.name} />
+              <AvatarImage
+                src={listing.host.avatar || "/placeholder.svg"}
+                alt={listing.host.name}
+              />
               <AvatarFallback>{listing.host.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <h3 className="text-xl font-semibold">{listing.host.name}</h3>
             <div className="flex items-center gap-1 mt-1">
               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
               <span>{listing.host.rating}</span>
-              <span className="text-muted-foreground">({listing.host.reviews_count} تقييم)</span>
+              <span className="text-muted-foreground">
+                ({listing.host.reviews_count} تقييم)
+              </span>
             </div>
             <p className="text-muted-foreground mt-1">{listing.host.email}</p>
             <p className="text-muted-foreground">{listing.host.phone}</p>
@@ -399,7 +498,9 @@ export default function ListingDetailsPage() {
                 مُتحقق
               </Badge>
             )}
-            <p className="text-sm text-muted-foreground mt-2">انضم في {formatDate(listing.host.joined_at)}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              انضم في {formatDate(listing.host.joined_at)}
+            </p>
             <Button variant="outline" className="mt-4 w-full">
               <User className="ml-2 h-4 w-4" />
               عرض ملف المضيف
@@ -426,23 +527,37 @@ export default function ListingDetailsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                     <Users className="h-6 w-6 text-primary mb-2" />
-                    <span className="text-sm text-muted-foreground">الضيوف</span>
-                    <span className="font-semibold">{listing.guests_count}</span>
+                    <span className="text-sm text-muted-foreground">
+                      الضيوف
+                    </span>
+                    <span className="font-semibold">
+                      {listing.guests_count}
+                    </span>
                   </div>
                   <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                     <Bed className="h-6 w-6 text-primary mb-2" />
-                    <span className="text-sm text-muted-foreground">غرف النوم</span>
-                    <span className="font-semibold">{listing.bedrooms_count}</span>
+                    <span className="text-sm text-muted-foreground">
+                      غرف النوم
+                    </span>
+                    <span className="font-semibold">
+                      {listing.bedrooms_count}
+                    </span>
                   </div>
                   <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                     <Bed className="h-6 w-6 text-primary mb-2" />
-                    <span className="text-sm text-muted-foreground">الأسرّة</span>
+                    <span className="text-sm text-muted-foreground">
+                      الأسرّة
+                    </span>
                     <span className="font-semibold">{listing.beds_count}</span>
                   </div>
                   <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                     <Bath className="h-6 w-6 text-primary mb-2" />
-                    <span className="text-sm text-muted-foreground">الحمامات</span>
-                    <span className="font-semibold">{listing.bathrooms_count}</span>
+                    <span className="text-sm text-muted-foreground">
+                      الحمامات
+                    </span>
+                    <span className="font-semibold">
+                      {listing.bathrooms_count}
+                    </span>
                   </div>
                 </div>
 
@@ -454,23 +569,35 @@ export default function ListingDetailsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">نوع العقار</span>
-                        <span className="font-medium">{getPropertyTypeLabel(listing.property_type)}</span>
+                        <span className="text-muted-foreground">
+                          نوع العقار
+                        </span>
+                        <span className="font-medium">
+                          {getPropertyTypeLabel(listing.property_type)}
+                        </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">التصنيف</span>
-                        <span className="font-medium">{listing.category_name}</span>
+                        <span className="font-medium">
+                          {listing.category_name}
+                        </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">المساحة</span>
-                        <span className="font-medium">{listing.size} متر مربع</span>
+                        <span className="font-medium">
+                          {listing.size} متر مربع
+                        </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">السماح بالحيوانات الأليفة</span>
-                        <span className="font-medium">{listing.allow_pets ? "نعم" : "لا"}</span>
+                        <span className="text-muted-foreground">
+                          السماح بالحيوانات الأليفة
+                        </span>
+                        <span className="font-medium">
+                          {listing.allow_pets ? "نعم" : "لا"}
+                        </span>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -484,19 +611,11 @@ export default function ListingDetailsPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">العمولة</span>
                         <span className="font-medium">
-                          {listing.commission.toLocaleString()} {listing.currency}
+                          {listing.commission.toLocaleString()}{" "}
+                          {listing.currency}
                         </span>
                       </div>
                       <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">سعة الحجز</span>
-                        <span className="font-medium">{listing.booking_capacity} يوم</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">تاريخ الإنشاء</span>
-                        <span className="font-medium">{formatDate(listing.created_at)}</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -504,9 +623,17 @@ export default function ListingDetailsPage() {
               <TabsContent value="features" className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {listing.features.map((feature: any) => (
-                    <div key={feature.id} className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <div
+                      key={feature.id}
+                      className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg"
+                    >
                       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                        {getFeatureIcon(feature.icon)}
+                        {/* {feature.icon} */}
+                        <img
+                          src={feature.icon}
+                          alt={feature.name}
+                          className="h-6 w-6 text-primary"
+                        />
                       </div>
                       <span className="font-medium">{feature.name}</span>
                     </div>
@@ -518,16 +645,42 @@ export default function ListingDetailsPage() {
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h3 className="font-semibold">العنوان</h3>
-                      <p>
-                        {listing.address.street}، {listing.address.city}، {listing.address.state}،{" "}
-                        {listing.address.country}
+                      <h3 className="font-semibold text-lg">العنوان</h3>
+                      <p className="text-muted-foreground">
+                        {listing.address.street}، {listing.address.city}،{" "}
+                        {listing.address.state}، {listing.address.country}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <p className="text-muted-foreground">هنا يمكن عرض خريطة الموقع</p>
+                <div
+                  className="bg-muted/50 rounded-lg overflow-hidden"
+                  style={{ height: "300px" }}
+                >
+                  <MapContainer
+                    center={[
+                      listing.address.latitude,
+                      listing.address.longitude,
+                    ]}
+                    zoom={13}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker
+                      position={[
+                        listing.address.latitude,
+                        listing.address.longitude,
+                      ]}
+                    >
+                      <Popup>
+                        {listing.address.street}, {listing.address.city},{" "}
+                        {listing.address.state}, {listing.address.country}
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
                 </div>
               </TabsContent>
               <TabsContent value="bookings" className="space-y-4 mt-4">
@@ -544,18 +697,30 @@ export default function ListingDetailsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {listing.recent_bookings.map((booking: any) => (
-                        <tr key={booking.id} className="border-b">
-                          <td className="p-2">#{booking.id}</td>
-                          <td className="p-2">{booking.guest_name}</td>
-                          <td className="p-2">{booking.check_in}</td>
-                          <td className="p-2">{booking.check_out}</td>
-                          <td className="p-2">
-                            {booking.amount.toLocaleString()} {listing.currency}
+                      {listing.recent_bookings.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-4 text-center">
+                            لا توجد حجوزات حديثة
                           </td>
-                          <td className="p-2">{getBookingStatusBadge(booking.status)}</td>
                         </tr>
-                      ))}
+                      ) : (
+                        listing.recent_bookings.length > 0 &&
+                        listing.recent_bookings.map((booking: any) => (
+                          <tr key={booking.id} className="border-b">
+                            <td className="p-2">#{booking.id}</td>
+                            <td className="p-2">{booking.guest_name}</td>
+                            <td className="p-2">{booking.check_in}</td>
+                            <td className="p-2">{booking.check_out}</td>
+                            <td className="p-2">
+                              {booking.amount.toLocaleString()}{" "}
+                              {listing.currency}
+                            </td>
+                            <td className="p-2">
+                              {getBookingStatusBadge(booking.status)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -574,33 +739,46 @@ export default function ListingDetailsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
+                <div className="flex flex-col items-center justify-center پ-4 bg-muted/50 rounded-lg">
                   <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 mb-1" />
                   <span className="text-sm text-muted-foreground">التقييم</span>
                   <span className="font-semibold text-lg">
-                    {listing.rating} <span className="text-xs text-muted-foreground">({listing.reviews_count})</span>
+                    {listing.rating}{" "}
+                    <span className="text-xs text-muted-foreground">
+                      ({listing.reviews_count})
+                    </span>
                   </span>
                 </div>
-                <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
+                <div className="flex flex-col items-center justify-center پ-4 bg-muted/50 rounded-lg">
                   <Heart className="h-5 w-5 text-red-500 mb-1" />
                   <span className="text-sm text-muted-foreground">المفضلة</span>
-                  <span className="font-semibold text-lg">{listing.favorites_count}</span>
+                  <span className="font-semibold text-lg">
+                    {listing.favorites_count}
+                  </span>
                 </div>
-                <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
+                <div className="flex flex-col items-center justify-center پ-4 bg-muted/50 rounded-lg">
                   <Eye className="h-5 w-5 text-blue-500 mb-1" />
-                  <span className="text-sm text-muted-foreground">المشاهدات</span>
-                  <span className="font-semibold text-lg">{listing.views_count}</span>
+                  <span className="text-sm text-muted-foreground">
+                    المشاهدات
+                  </span>
+                  <span className="font-semibold text-lg">
+                    {listing.views_count}
+                  </span>
                 </div>
-                <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
+                <div className="flex flex-col items-center justify-center پ-4 bg-muted/50 rounded-lg">
                   <Calendar className="h-5 w-5 text-green-500 mb-1" />
-                  <span className="text-sm text-muted-foreground">الحجوزات</span>
-                  <span className="font-semibold text-lg">{listing.bookings_count}</span>
+                  <span className="text-sm text-muted-foreground">
+                    الحجوزات
+                  </span>
+                  <span className="font-semibold text-lg">
+                    {listing.bookings_count}
+                  </span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>الإجراءات</CardTitle>
             </CardHeader>
@@ -637,9 +815,9 @@ export default function ListingDetailsPage() {
                 <p>{listing.admin_notes}</p>
               </CardContent>
             </Card>
-          )}
+          )} */}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -400,7 +400,7 @@ export function UserDialog({
                 <FormItem className="col-span-2">
                   <FormLabel>رقم الهاتف</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} style={{ unicodeBidi: "plaintext" }} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -433,7 +433,7 @@ export function UserDialog({
                 name="id_verified"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>الحساب مضيف؟</FormLabel>
+                    <FormLabel>الحساب مؤكد؟</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}

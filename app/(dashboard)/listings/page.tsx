@@ -949,6 +949,19 @@ export default function ListingsPage() {
                                     <Eye className="ml-2 h-4 w-4" />
                                     عرض
                                   </DropdownMenuItem>
+                                  {/* go to listings/id/rules */}
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      router.push(
+                                        `/listings/${listing.id}/rules`
+                                      )
+                                    }
+                                  >
+                                    <ListFilter className="ml-2 h-4 w-4" />
+                                    إدارة القوانين
+                                  </DropdownMenuItem>
+                                  {/* go to listings/id/price */}
+
                                   {/* go to listings/id/celander */}
                                   <DropdownMenuItem
                                     onClick={() =>

@@ -47,6 +47,7 @@
     "framer-motion": "^12.11.0",
     "input-otp": "1.4.1",
     "js-cookie": "latest",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
@@ -54,6 +55,7 @@
     "react-day-picker": "latest",
     "react-dom": "^19",
     "react-hook-form": "latest",
+    "react-leaflet": "^5.0.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
     "sonner": "^1.7.1",
@@ -63,6 +65,7 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.17",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

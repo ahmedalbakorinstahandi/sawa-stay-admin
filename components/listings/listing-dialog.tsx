@@ -36,6 +36,7 @@ import * as z from "zod";
 import { MapPin, Save, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api, uploadImage } from "@/lib/api";
+import { LocationPicker } from "../map/location-picker";
 
 const multilingualTextSchema = z.object({
   ar: z.string().min(1, { message: "هذا الحقل مطلوب" }),
@@ -46,6 +47,7 @@ const locationSchema = z.object({
   latitude: z.coerce.number(),
   longitude: z.coerce.number(),
   extra_address: z.string().optional(),
+  street_address: z.string().optional(),
 });
 
 const PropertyType = z.enum(["House", "Apartment", "Guesthouse"]);
@@ -61,7 +63,7 @@ const listingFormSchema = z.object({
   price: z.coerce.number().positive({
     message: "السعر يجب أن يكون رقم موجب",
   }),
-  currency: z.string().default("USD"),
+  // currency: z.string().default("USD"),
   commission: z.coerce.number().nonnegative().default(0),
   status: z
     .enum(["draft", "in_review", "approved", "paused", "rejected"])
@@ -96,7 +98,9 @@ const listingFormSchema = z.object({
   categories: z.array(z.number()).default([]),
   host_id: z.number().optional(),
   // images vount more than 5
-  images: z.array(z.string()).min(5, { message: "يجب تحميل 5 صور على الأقل" }),
+  images: z
+    .array(z.union([z.string(), z.number()]))
+    .min(5, { message: "يجب تحميل 5 صور على الأقل" }),
 });
 const listingFormSchemaEdit = z.object({
   title: multilingualTextSchema,
@@ -108,7 +112,7 @@ const listingFormSchemaEdit = z.object({
   price: z.coerce.number().positive({
     message: "السعر يجب أن يكون رقم موجب",
   }),
-  currency: z.string().default("USD"),
+  // currency: z.string().default("USD"),
   commission: z.coerce.number().nonnegative().default(0),
   status: z
     .enum(["draft", "in_review", "approved", "paused", "rejected"])
@@ -154,6 +158,7 @@ interface Location {
   latitude: number;
   longitude: number;
   extra_address?: string;
+  street_address?: string;
 }
 
 interface CameraLocations {
@@ -169,7 +174,7 @@ interface ListingFormValues {
   location: Location;
   images: (number | string | ImageType)[];
   price: number;
-  currency: string;
+  // currency: string;
   commission: number;
   status: "draft" | "in_review" | "approved" | "paused" | "rejected";
   guests_count: number;
@@ -229,7 +234,7 @@ interface Listing {
   location: Location;
   images: string[];
   price: number;
-  currency: string;
+  // currency: string;
   commission: number;
   status: string;
   guests_count: number;
@@ -299,6 +304,7 @@ export function ListingDialog({
         latitude: 0,
         longitude: 0,
         extra_address: "",
+        street_address: "",
       },
       images: [],
       price: 0,
@@ -329,7 +335,7 @@ export function ListingDialog({
           await Promise.all([
             api.get("/admin/features"),
             api.get("/admin/categories"),
-            api.get("/admin/users"),
+            api.get("/admin/users?id_verified=approved&role=user"),
             api.get("/admin/house-types"),
           ]);
         setFeatures(featuresRes.data.data);
@@ -387,6 +393,7 @@ export function ListingDialog({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
     try {
       const uploadedFiles = await Promise.all(
@@ -400,12 +407,13 @@ export function ListingDialog({
 
       setPreviewUrls((prev) => [...prev, ...newImages]);
 
-      // Update form images with the new image IDs
-      const currentImages = (form.getValues("images") as ImageValue[]) || [];
-      form.setValue("images", [
-        ...currentImages,
-        ...newImages.map((img) => img.id),
-      ]);
+      // Get current images array and filter out any nulls/undefined
+      const currentImages = form.getValues("images") || [];
+      const validCurrentImages = currentImages.filter(Boolean);
+
+      // Add new image IDs to the form
+      const newImageIds = newImages.map((img) => img.id).filter(Boolean);
+      form.setValue("images", [...validCurrentImages, ...newImageIds]);
     } catch (error) {
       console.error("Error uploading images:", error);
       toast({
@@ -449,10 +457,11 @@ export function ListingDialog({
             latitude: data.location?.latitude || 0,
             longitude: data.location?.longitude || 0,
             extra_address: data.location?.extra_address || "",
+            street_address: data.location?.street_address || "",
           },
           images: formattedImages.map((img: ImageType) => img.id),
           price: data.price,
-          currency: data.currency,
+          // currency: data.currency,
           commission: data.commission,
           status: data.status,
           guests_count: data.guests_count,
@@ -490,13 +499,12 @@ export function ListingDialog({
         weapons_on_property: values.weapons_on_property ? 1 : 0,
         features: values.features,
         categories: values.categories,
-        // Only send image IDs in the images array
+        // Correctly handle images array
         images: Array.isArray(values.images)
-          ? values.images.map((img: any) => (img ? img.id : img))
+          ? values.images.filter(Boolean)
           : [],
         images_remove: imageRemove,
       };
-      console.log("request", requestBody);
 
       await onSave(requestBody);
       onOpenChange(false);
@@ -613,96 +621,96 @@ export function ListingDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <FormField
-                control={form.control}
-                name="property_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>نوع العقار</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر نوع العقار" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="House">منزل</SelectItem>
-                        <SelectItem value="Apartment">شقة</SelectItem>
-                        <SelectItem value="Guesthouse">غرفة مشتركة</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
-              {/* host_id */}
-              <FormField
-                control={form.control}
-                name="host_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>المضيف</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(Number.parseInt(value))
-                      }
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المضيف" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {hosts.map((host: any) => (
-                          <SelectItem key={host.id} value={host.id.toString()}>
-                            {host.first_name} {host.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
+            <FormField
+              control={form.control}
+              name="property_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>نوع العقار</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع العقار" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="House">منزل</SelectItem>
+                      <SelectItem value="Apartment">شقة</SelectItem>
+                      <SelectItem value="Guesthouse">غرفة مشتركة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* host_id */}
+            <FormField
+              control={form.control}
+              name="host_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>المضيف</FormLabel>
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange(Number.parseInt(value))
+                    }
+                    defaultValue={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر المضيف" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {hosts.map((host: any) => (
+                        <SelectItem key={host.id} value={host.id.toString()}>
+                          {host.first_name} {host.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="house_type_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>التصنيف</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(Number.parseInt(value))
-                      }
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر التصنيف" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {houseTypes.map((category: any) => (
-                          <SelectItem
-                            key={category.id}
-                            value={category.id.toString()}
-                          >
-                            {category.name?.ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="house_type_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>نوع المنزل</FormLabel>
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange(Number.parseInt(value))
+                    }
+                    defaultValue={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع الاعلان" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {houseTypes.map((category: any) => (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id.toString()}
+                        >
+                          {category.name?.ar}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* </div> */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -731,7 +739,7 @@ export function ListingDialog({
                   </FormItem>
                 )}
               />
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="currency"
                 render={({ field }) => (
@@ -754,7 +762,7 @@ export function ListingDialog({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -1032,6 +1040,17 @@ export function ListingDialog({
               )}
             />
             {/* locations */}
+            <div className="space-y-4">
+              <FormLabel>الموقع على الخريطة</FormLabel>
+              <LocationPicker
+                latitude={form.watch("location.latitude")}
+                longitude={form.watch("location.longitude")}
+                onChange={(lat, lng) => {
+                  form.setValue("location.latitude", lat);
+                  form.setValue("location.longitude", lng);
+                }}
+              />
+            </div>
             <FormField
               control={form.control}
               name="location.latitude"
@@ -1056,6 +1075,21 @@ export function ListingDialog({
                     <Input type="number" {...field} />
                   </FormControl>
                   <FormDescription>خط الطول للعقار</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* location.street_address */}
+            <FormField
+              control={form.control}
+              name="location.street_address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>عنوان الشارع</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormDescription>عنوان الشارع للعقار</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
