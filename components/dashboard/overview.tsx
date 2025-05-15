@@ -102,10 +102,10 @@ export function Overview() {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value} SYP`}
+            tickFormatter={(value) => `${value} USD`}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toLocaleString()} SYP`, "الإيرادات"]}
+            formatter={(value: number) => [`${value.toLocaleString()} USD`, "الإيرادات"]}
             labelFormatter={(label) => `اليوم ${label}`}
             contentStyle={{
               backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",

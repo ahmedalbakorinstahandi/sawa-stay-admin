@@ -61,7 +61,7 @@ const listingFormSchema = z.object({
   price: z.coerce.number().positive({
     message: "السعر يجب أن يكون رقم موجب",
   }),
-  currency: z.string().default("SYP"),
+  currency: z.string().default("USD"),
   commission: z.coerce.number().nonnegative().default(0),
   status: z
     .enum(["draft", "in_review", "approved", "paused", "rejected"])
@@ -108,7 +108,7 @@ const listingFormSchemaEdit = z.object({
   price: z.coerce.number().positive({
     message: "السعر يجب أن يكون رقم موجب",
   }),
-  currency: z.string().default("SYP"),
+  currency: z.string().default("USD"),
   commission: z.coerce.number().nonnegative().default(0),
   status: z
     .enum(["draft", "in_review", "approved", "paused", "rejected"])
@@ -302,7 +302,7 @@ export function ListingDialog({
       },
       images: [],
       price: 0,
-      currency: "SYP",
+      currency: "USD",
       commission: 0,
       status: "draft",
       guests_count: 1,
@@ -632,7 +632,7 @@ export function ListingDialog({
                       <SelectContent>
                         <SelectItem value="House">منزل</SelectItem>
                         <SelectItem value="Apartment">شقة</SelectItem>
-                        <SelectItem value="Guesthouse">بيت ضيافة</SelectItem>
+                        <SelectItem value="Guesthouse">غرفة مشتركة</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -747,7 +747,7 @@ export function ListingDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="SYP">ليرة سورية</SelectItem>
+                        <SelectItem value="USD">دولار أمريكي</SelectItem>
                         <SelectItem value="USD">دولار أمريكي</SelectItem>
                       </SelectContent>
                     </Select>

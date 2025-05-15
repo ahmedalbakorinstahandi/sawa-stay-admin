@@ -16,7 +16,7 @@ const recentBookings = [
     end_date: "2023-06-20T00:00:00Z",
     status: "confirmed",
     price: 250000,
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const recentBookings = [
     end_date: "2023-07-17T00:00:00Z",
     status: "paid",
     price: 840000,
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 3,
@@ -38,7 +38,7 @@ const recentBookings = [
     end_date: "2023-08-10T00:00:00Z",
     status: "waiting_payment",
     price: 175000,
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 4,
@@ -49,7 +49,7 @@ const recentBookings = [
     end_date: "2023-09-05T00:00:00Z",
     status: "completed",
     price: 300000,
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 5,
@@ -60,7 +60,7 @@ const recentBookings = [
     end_date: "2023-10-15T00:00:00Z",
     status: "cancelled",
     price: 450000,
-    currency: "SYP",
+    currency: "USD",
   },
 ]
 

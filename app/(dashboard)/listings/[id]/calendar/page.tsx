@@ -1,0 +1,404 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  isBefore,
+  parseISO,
+} from "date-fns";
+import { ar } from "date-fns/locale";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  Loader2,
+  Save,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+
+interface Listing {
+  id: number;
+  title: {
+    ar: string;
+    en: string;
+  };
+  available_dates: string[];
+}
+
+export default function ListingCalendarPage() {
+  const router = useRouter();
+  const params = useParams();
+  const listingId = params.id as string;
+
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [date, setDate] = useState<Date>(new Date());
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [removedDates, setRemovedDates] = useState<Date[]>([]);
+
+  // جلب بيانات العقار والتواريخ المتاحة
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get(`/admin/listings/${listingId}`);
+        console.log(response);
+
+        if (response.data.success) {
+          setListing(response.data);
+
+          // تحويل التواريخ المتاحة إلى كائنات Date
+          if (
+            response.data.available_dates &&
+            response.data.available_dates.length > 0
+          ) {
+            const dates = response.data.available_dates.map((dateStr: any) =>
+              parseISO(dateStr.available_date)
+            );
+            setAvailableDates(dates);
+            setSelectedDates(dates);
+          }
+        } else {
+          toast.error("فشل في جلب بيانات العقار");
+          router.push("/admin/listings");
+        }
+      } catch (error) {
+        console.error("Error fetching listing:", error);
+        toast.error("حدث خطأ أثناء جلب بيانات العقار");
+        router.push("/admin/listings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, []);
+
+  // التعامل مع النقر على تاريخ
+  const handleDateClick = (date: Date) => {
+    // التأكد من أن التاريخ في المستقبل
+    if (isBefore(date, new Date())) {
+      return;
+    }
+
+    // التحقق مما إذا كان التاريخ محدداً بالفعل
+    const isSelected = selectedDates.some((selectedDate) =>
+      isSameDay(selectedDate, date)
+    );
+
+    if (isSelected) {
+      // إزالة التاريخ من القائمة المحددة
+      setSelectedDates(selectedDates.filter((d) => !isSameDay(d, date)));
+
+      // إذا كان التاريخ متاحاً بالفعل، أضفه إلى قائمة التواريخ المحذوفة
+      if (availableDates.some((d) => isSameDay(d, date))) {
+        setRemovedDates([...removedDates, date]);
+      }
+    } else {
+      // إضافة التاريخ إلى القائمة المحددة
+      setSelectedDates([...selectedDates, date]);
+
+      // إذا كان التاريخ في قائمة التواريخ المحذوفة، قم بإزالته منها
+      setRemovedDates(removedDates.filter((d) => !isSameDay(d, date)));
+    }
+  };
+
+  // حفظ التغييرات
+  const saveChanges = async () => {
+    setIsSaving(true);
+
+    try {
+      // تحديد التواريخ الجديدة (التي لم تكن متاحة من قبل)
+      const newDates = selectedDates.filter(
+        (date) => !availableDates.some((d) => isSameDay(d, date))
+      );
+
+      // تنسيق التواريخ بالصيغة المطلوبة (YYYY-MM-DD)
+      const formattedNewDates = newDates.map((date) =>
+        format(date, "yyyy-MM-dd")
+      );
+      const formattedRemovedDates = removedDates.map((date) =>
+        format(date, "yyyy-MM-dd")
+      );
+
+      // إرسال البيانات
+      const response = await api.put(
+        `/admin/listings/${listingId}/available-dates`,
+        {
+          available_dates: formattedNewDates,
+          removed_available_dates: formattedRemovedDates,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+
+        // تحديث قائمة التواريخ المتاحة
+        const updatedAvailableDates = [
+          ...availableDates.filter(
+            (date) => !removedDates.some((d) => isSameDay(d, date))
+          ),
+          ...newDates,
+        ];
+
+        setAvailableDates(updatedAvailableDates);
+        setSelectedDates(updatedAvailableDates);
+        setRemovedDates([]);
+      } else {
+        toast.error("فشل في تحديث التواريخ المتاحة");
+      }
+    } catch (error) {
+      console.error("Error updating available dates:", error);
+      toast.error("حدث خطأ أثناء تحديث التواريخ المتاحة");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // الانتقال إلى الشهر السابق
+  const previousMonth = () => {
+    const previousMonthDate = new Date(
+      date.getFullYear(),
+      date.getMonth() - 1,
+      1
+    );
+    setDate(previousMonthDate);
+  };
+
+  // الانتقال إلى الشهر التالي
+  const nextMonth = () => {
+    const nextMonthDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    setDate(nextMonthDate);
+  };
+
+  // الحصول على أيام الشهر الحالي
+  const getDaysInMonth = () => {
+    const start = startOfMonth(date);
+    const end = endOfMonth(date);
+    return eachDayOfInterval({ start, end });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/listings")}
+          className="ml-2"
+        >
+          <ArrowLeft className="h-4 w-4 ml-2" />
+          العودة
+        </Button>
+        <h1 className="text-2xl font-bold">إدارة التقويم</h1>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle>التقويم</CardTitle>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={previousMonth}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                      <span className="sr-only">الشهر السابق</span>
+                    </Button>
+                    <div className="text-sm font-medium">
+                      {format(date, "MMMM yyyy", { locale: ar })}
+                    </div>
+                    <Button variant="outline" size="icon" onClick={nextMonth}>
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="sr-only">الشهر التالي</span>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-gray-500 mb-2">
+                  <div>الأحد</div>
+                  <div>الإثنين</div>
+                  <div>الثلاثاء</div>
+                  <div>الأربعاء</div>
+                  <div>الخميس</div>
+                  <div>الجمعة</div>
+                  <div>السبت</div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {/* أيام فارغة قبل بداية الشهر */}
+                  {Array.from({
+                    length: new Date(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      1
+                    ).getDay(),
+                  }).map((_, i) => (
+                    <div
+                      key={`empty-start-${i}`}
+                      className="h-12 rounded-md"
+                    ></div>
+                  ))}
+
+                  {/* أيام الشهر */}
+                  {getDaysInMonth().map((day) => {
+                    const isAvailable = selectedDates.some((d) =>
+                      isSameDay(d, day)
+                    );
+                    const isPast =
+                      isBefore(day, new Date()) && !isSameDay(day, new Date());
+
+                    return (
+                      <button
+                        key={day.toString()}
+                        type="button"
+                        onClick={() => handleDateClick(day)}
+                        disabled={isPast}
+                        className={`h-12 rounded-md flex items-center justify-center text-sm transition-colors ${
+                          isPast
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : isAvailable
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-white border border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        {format(day, "d")}
+                      </button>
+                    );
+                  })}
+
+                  {/* أيام فارغة بعد نهاية الشهر */}
+                  {Array.from({
+                    length:
+                      6 -
+                      new Date(
+                        date.getFullYear(),
+                        date.getMonth() + 1,
+                        0
+                      ).getDay(),
+                  }).map((_, i) => (
+                    <div
+                      key={`empty-end-${i}`}
+                      className="h-12 rounded-md"
+                    ></div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end mt-6">
+                  <Button
+                    onClick={saveChanges}
+                    disabled={isSaving}
+                    className="bg-rose-500 hover:bg-rose-600"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                        جاري الحفظ...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 ml-2" />
+                        حفظ التغييرات
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>معلومات الاعلان</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      العنوان
+                    </h3>
+                    <p className="font-medium">{listing?.title?.ar}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      التواريخ المتاحة
+                    </h3>
+                    <p className="font-medium">{selectedDates.length} يوم</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      التغييرات
+                    </h3>
+                    <div className="space-y-1 mt-1">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-green-500 ml-2"></div>
+                        <span className="text-sm">
+                          {
+                            selectedDates.filter(
+                              (date) =>
+                                !availableDates.some((d) => isSameDay(d, date))
+                            ).length
+                          }{" "}
+                          تواريخ مضافة
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-red-500 ml-2"></div>
+                        <span className="text-sm">
+                          {removedDates.length} تواريخ محذوفة
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">
+                      إرشادات
+                    </h3>
+                    <ul className="text-sm space-y-1 list-disc list-inside">
+                      <li>انقر على التاريخ لتحديده كمتاح أو غير متاح</li>
+                      <li>التواريخ الخضراء متاحة للحجز</li>
+                      <li>التواريخ البيضاء غير متاحة للحجز</li>
+                      <li>لا يمكن تحديد التواريخ السابقة</li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button variant="outline" asChild className="w-full">
+                      <Link href={`/listings/${listingId}/edit`}>
+                        تعديل معلومات الاعلان
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

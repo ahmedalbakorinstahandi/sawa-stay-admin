@@ -31,7 +31,7 @@ const transactionData = {
   id: 1,
   reference: "TRX-001",
   amount: 250000,
-  currency: "SYP",
+  currency: "USD",
   type: "booking_payment",
   status: "completed",
   payment_method: "wallet",

@@ -353,7 +353,7 @@ export default function ReportsPage() {
                         <LineChart data={bookingsByMonth}>
                           <XAxis dataKey="name" />
                           <YAxis />
-                          <Tooltip formatter={(value) => [`${value} SYP`, "الإيرادات"]} />
+                          <Tooltip formatter={(value) => [`${value} USD`, "الإيرادات"]} />
                           <Line type="monotone" dataKey="revenue" stroke="#FF4D6D" strokeWidth={2} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -438,7 +438,7 @@ export default function ReportsPage() {
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value) => [`${value} SYP`, "الإيرادات"]} />
+                          <Tooltip formatter={(value) => [`${value} USD`, "الإيرادات"]} />
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
@@ -515,10 +515,10 @@ export default function ReportsPage() {
                           </TableCell>
                           <TableCell>{booking.nights}</TableCell>
                           <TableCell>{booking.guests}</TableCell>
-                          <TableCell className="text-left">{booking.price} SYP</TableCell>
-                          <TableCell className="text-left">{booking.fees} SYP</TableCell>
-                          <TableCell className="text-left">{booking.commission} SYP</TableCell>
-                          <TableCell className="text-left font-medium">{booking.total} SYP</TableCell>
+                          <TableCell className="text-left">{booking.price} USD</TableCell>
+                          <TableCell className="text-left">{booking.fees} USD</TableCell>
+                          <TableCell className="text-left">{booking.commission} USD</TableCell>
+                          <TableCell className="text-left font-medium">{booking.total} USD</TableCell>
                           <TableCell>{getStatusBadge(booking.status)}</TableCell>
                         </TableRow>
                       ))}
@@ -527,16 +527,16 @@ export default function ReportsPage() {
                       <TableRow>
                         <TableCell colSpan={7}>الإجمالي</TableCell>
                         <TableCell className="text-left">
-                          {filteredBookings.reduce((sum, booking) => sum + booking.price, 0)} SYP
+                          {filteredBookings.reduce((sum, booking) => sum + booking.price, 0)} USD
                         </TableCell>
                         <TableCell className="text-left">
-                          {filteredBookings.reduce((sum, booking) => sum + booking.fees, 0)} SYP
+                          {filteredBookings.reduce((sum, booking) => sum + booking.fees, 0)} USD
                         </TableCell>
                         <TableCell className="text-left">
-                          {filteredBookings.reduce((sum, booking) => sum + booking.commission, 0)} SYP
+                          {filteredBookings.reduce((sum, booking) => sum + booking.commission, 0)} USD
                         </TableCell>
                         <TableCell className="text-left">
-                          {filteredBookings.reduce((sum, booking) => sum + booking.total, 0)} SYP
+                          {filteredBookings.reduce((sum, booking) => sum + booking.total, 0)} USD
                         </TableCell>
                         <TableCell></TableCell>
                       </TableRow>
@@ -628,7 +628,7 @@ export default function ReportsPage() {
                       {revenueByPaymentMethod.map((item, index) => (
                         <TableRow key={index}>
                           <TableCell>{item.name}</TableCell>
-                          <TableCell className="text-left">{item.value} SYP</TableCell>
+                          <TableCell className="text-left">{item.value} USD</TableCell>
                           <TableCell className="text-left">
                             {(
                               (item.value / revenueByPaymentMethod.reduce((sum, method) => sum + method.value, 0)) *
@@ -643,7 +643,7 @@ export default function ReportsPage() {
                       <TableRow>
                         <TableCell>الإجمالي</TableCell>
                         <TableCell className="text-left">
-                          {revenueByPaymentMethod.reduce((sum, item) => sum + item.value, 0)} SYP
+                          {revenueByPaymentMethod.reduce((sum, item) => sum + item.value, 0)} USD
                         </TableCell>
                         <TableCell className="text-left">100%</TableCell>
                       </TableRow>

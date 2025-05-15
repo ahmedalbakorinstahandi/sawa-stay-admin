@@ -50,7 +50,7 @@ const initialBookings = [
     infants_count: 0,
     pets_count: 0,
     created_at: "2023-06-01T10:30:00Z",
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 2,
@@ -72,7 +72,7 @@ const initialBookings = [
     infants_count: 1,
     pets_count: 0,
     created_at: "2023-06-25T14:45:00Z",
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 3,
@@ -94,7 +94,7 @@ const initialBookings = [
     infants_count: 0,
     pets_count: 0,
     created_at: "2023-07-20T09:15:00Z",
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 4,
@@ -116,7 +116,7 @@ const initialBookings = [
     infants_count: 0,
     pets_count: 0,
     created_at: "2023-08-15T16:20:00Z",
-    currency: "SYP",
+    currency: "USD",
   },
   {
     id: 5,
@@ -138,7 +138,7 @@ const initialBookings = [
     infants_count: 0,
     pets_count: 0,
     created_at: "2023-09-25T11:10:00Z",
-    currency: "SYP",
+    currency: "USD",
   },
 ]
 

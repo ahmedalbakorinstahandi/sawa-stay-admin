@@ -111,7 +111,7 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
         guest_name: booking?.guest_name || "سارة أحمد",
         listing_title: booking?.listing_title || "شقة فاخرة في وسط دمشق",
         created_at: booking?.created_at || new Date().toISOString(),
-        currency: booking?.currency || "SYP",
+        currency: booking?.currency || "USD",
       }
 
       onSave(savedBooking)

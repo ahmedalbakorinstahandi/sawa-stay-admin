@@ -54,7 +54,7 @@ const listingData = {
   category_id: 1,
   category_name: "شقق",
   price: 50000,
-  currency: "SYP",
+  currency: "USD",
   commission: 5000,
   status: "approved",
   guests_count: 4,
@@ -257,7 +257,7 @@ export default function ListingDetailsPage() {
       case "Apartment":
         return "شقة"
       case "Guesthouse":
-        return "بيت ضيافة"
+        return "غرفة مشتركة"
       default:
         return type
     }

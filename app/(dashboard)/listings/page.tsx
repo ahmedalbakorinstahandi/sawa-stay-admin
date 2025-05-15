@@ -50,6 +50,8 @@ import {
   Tag,
   Heart,
   Loader2,
+  RefreshCcw,
+  Calendar,
 } from "lucide-react";
 import {
   Card,
@@ -72,7 +74,9 @@ import { api } from "@/lib/api";
 export default function ListingsPage() {
   const [activeTab, setActiveTab] = useState("listings");
   const [listings, setListings] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<
+    { id: number; name: { ar: string } }[]
+  >([]);
   const [features, setFeatures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -99,6 +103,7 @@ export default function ListingsPage() {
   // Fetch listings
   useEffect(() => {
     fetchListings();
+    fetchHouseTypes();
   }, [
     currentPage,
     statusFilter,
@@ -106,6 +111,7 @@ export default function ListingsPage() {
     categoryFilter,
     searchTerm,
   ]);
+  // Fetch categories and features when the tab changes
 
   // Fetch categories
   useEffect(() => {
@@ -141,7 +147,7 @@ export default function ListingsPage() {
       }
 
       if (categoryFilter !== "all") {
-        params.append("category_id", categoryFilter);
+        params.append("house_type_id", categoryFilter);
       }
 
       const response = await api.get(`/admin/listings?${params.toString()}`);
@@ -167,14 +173,45 @@ export default function ListingsPage() {
       setIsLoading(false);
     }
   };
+  // fetch house-types
+  const [houseTypes, setHouseTypes] = useState<
+    { id: number; name: { ar: string } }[]
+  >([]);
+  const fetchHouseTypes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get("/admin/house-types");
+      console.log("response", response);
+      if (response.data?.success) {
+        setHouseTypes(response.data.data || []);
+      } else {
+        toast({
+          title: "خطأ في جلب أنواع المنازل",
+          description:
+            "حدث خطأ أثناء جلب أنواع المنازل. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching house types:", error);
+      toast({
+        title: "خطأ في جلب أنواع المنازل",
+        description: "حدث خطأ أثناء جلب أنواع المنازل. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
       const response = await api.get("/admin/categories");
+      console.log("response", response);
 
       if (response.data?.success) {
-        setCategories(response.data?.data || []);
+        setCategories(response.data.data || []);
       } else {
         toast({
           title: "خطأ في جلب التصنيفات",
@@ -224,41 +261,56 @@ export default function ListingsPage() {
     switch (status) {
       case "approved":
         return (
-          <Badge variant="default" className="flex items-center gap-1">
+          <Badge
+            variant="default"
+            className="flex items-center gap-1 bg-green-100 text-green-800"
+          >
             <CheckCircle className="h-3 w-3" />
             معتمد
           </Badge>
         );
       case "in_review":
         return (
-          <Badge variant="destructive" className="flex items-center gap-1">
+          <Badge
+            variant="destructive"
+            className="flex items-center gap-1 bg-yellow-100 text-yellow-800"
+          >
             <Eye className="h-3 w-3" />
             قيد المراجعة
           </Badge>
         );
       case "draft":
         return (
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge
+            variant="outline"
+            className="flex items-center gap-1 bg-gray-100 text-gray-800"
+          >
             <PauseCircle className="h-3 w-3" />
             مسودة
           </Badge>
         );
       case "rejected":
         return (
-          <Badge variant="destructive" className="flex items-center gap-1">
+          <Badge
+            variant="destructive"
+            className="flex items-center gap-1 bg-red-100 text-red-800"
+          >
             <XCircle className="h-3 w-3" />
             مرفوض
           </Badge>
         );
       case "paused":
         return (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-1 bg-blue-100 text-blue-800"
+          >
             <PauseCircle className="h-3 w-3" />
             متوقف
           </Badge>
         );
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
     }
   };
 
@@ -282,7 +334,7 @@ export default function ListingsPage() {
       case "Apartment":
         return "شقة";
       case "Guesthouse":
-        return "بيت ضيافة";
+        return "غرفة مشتركة";
       default:
         return type;
     }
@@ -290,7 +342,7 @@ export default function ListingsPage() {
 
   const getCategoryById = (id: number) => {
     const category = categories.find((category: any) => category.id === id);
-    return category ? category.name?.ar : "غير محدد";
+    return category && category.name ? category.name.ar : "غير محدد";
   };
 
   // Listing handlers
@@ -407,7 +459,7 @@ export default function ListingsPage() {
 
   const handleUpdateListingStatus = async (listing: any, newStatus: string) => {
     try {
-      const response = await api.put(`/admin/listings/${listing.id}/status`, {
+      const response = await api.put(`/admin/listings/${listing.id}`, {
         status: newStatus,
       });
 
@@ -718,10 +770,26 @@ export default function ListingsPage() {
         <TabsContent value="listings">
           <Card>
             <CardHeader>
-              <CardTitle>إدارة الإعلانات</CardTitle>
+              <CardTitle>
+                <div className="flex items-center justify-between">
+                  إدارة الإعلانات
+                  <Button
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => {
+                      setCurrentPage(1);
+                      fetchListings();
+                    }}
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    تحديث البيانات
+                  </Button>
+                </div>
+              </CardTitle>
               <CardDescription>
                 عرض وإدارة جميع الإعلانات في النظام
               </CardDescription>
+              {/* add btn for refrech data  */}
             </CardHeader>
             <CardContent>
               <div className="flex flex-col space-y-4">
@@ -759,7 +827,7 @@ export default function ListingsPage() {
                       <SelectItem value="all">جميع الأنواع</SelectItem>
                       <SelectItem value="House">منزل</SelectItem>
                       <SelectItem value="Apartment">شقة</SelectItem>
-                      <SelectItem value="Guesthouse">بيت ضيافة</SelectItem>
+                      <SelectItem value="Guesthouse">غرفة مشتركة</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select
@@ -771,7 +839,7 @@ export default function ListingsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">جميع التصنيفات</SelectItem>
-                      {categories.map((category: any) => (
+                      {houseTypes.map((category: any) => (
                         <SelectItem
                           key={category.id}
                           value={category.id.toString()}
@@ -790,10 +858,8 @@ export default function ListingsPage() {
                         <TableHead>الإعلان</TableHead>
                         <TableHead>المضيف</TableHead>
                         <TableHead>نوع العقار</TableHead>
-                        <TableHead>التصنيف</TableHead>
                         <TableHead>السعر</TableHead>
                         <TableHead>العمولة</TableHead>
-                        <TableHead>المفضلة</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>تاريخ الإنشاء</TableHead>
                         <TableHead className="text-left">الإجراءات</TableHead>
@@ -846,22 +912,15 @@ export default function ListingsPage() {
                                 {getPropertyTypeLabel(listing.property_type)}
                               </div>
                             </TableCell>
-                            <TableCell>
-                              {getCategoryById(listing.house_type_id)}
-                            </TableCell>
+
                             <TableCell>
                               {listing.price} {listing.currency}
                             </TableCell>
                             <TableCell>
                               {listing.commission} {listing.currency}
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-4 w-4 text-red-500" />
-                                {listing.favorites_count || 0}
-                              </div>
-                            </TableCell>
-                            <TableCell>
+
+                            <TableCell className="text-nowrap">
                               {getStatusBadge(listing.status)}
                             </TableCell>
                             <TableCell>
@@ -890,8 +949,23 @@ export default function ListingsPage() {
                                     <Eye className="ml-2 h-4 w-4" />
                                     عرض
                                   </DropdownMenuItem>
+                                  {/* go to listings/id/celander */}
                                   <DropdownMenuItem
-                                    onClick={() => handleEditListing(listing)}
+                                    onClick={() =>
+                                      router.push(
+                                        `/listings/${listing.id}/calendar`
+                                      )
+                                    }
+                                  >
+                                    <Calendar className="ml-2 h-4 w-4" />
+                                    ادارة التواقيت
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      router.push(
+                                        `/listings/${listing.id}/edit`
+                                      )
+                                    }
                                   >
                                     <Edit className="ml-2 h-4 w-4" />
                                     تعديل
