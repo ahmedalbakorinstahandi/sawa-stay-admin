@@ -35,17 +35,13 @@ const categoryFormSchema = z.object({
     ar: z.string().min(2, {
       message: "اسم التصنيف يجب أن يكون أكثر من حرفين",
     }),
-    en: z.string().min(2, {
-      message: "اسم التصنيف يجب أن يكون أكثر من حرفين",
-    }),
+    en: z.string().optional(),
   }),
   description: z.object({
     ar: z.string().min(5, {
       message: "وصف التصنيف يجب أن يكون أكثر من 5 أحرف",
     }),
-    en: z.string().min(5, {
-      message: "وصف التصنيف يجب أن يكون أكثر من 5 أحرف",
-    }),
+    en: z.string().optional(),
   }),
   icon: z.any().optional(),
   is_visible: z.boolean(),
@@ -136,9 +132,9 @@ export function CategoryDialog({
 
     // Add multilingual fields
     formData.append("name[ar]", values.name.ar);
-    formData.append("name[en]", values.name.en);
+    formData.append("name[en]", values.name.en ?? "");
     formData.append("description[ar]", values.description.ar);
-    formData.append("description[en]", values.description.en);
+    formData.append("description[en]", values.description.en ?? "");
 
     // Add other fields
     formData.append("is_visible", values.is_visible ? "1" : "0");
