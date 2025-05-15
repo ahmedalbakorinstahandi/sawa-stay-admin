@@ -119,7 +119,7 @@ export default function UsersPage() {
   // جلب المستخدمين عند تحميل الصفحة أو تغيير المرشحات
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, perPage, roleFilter, statusFilter]);
+  }, [currentPage, perPage, roleFilter, statusFilter, searchTerm]);
 
   // البحث عند الضغط على زر البحث أو Enter
   const handleSearch = () => {

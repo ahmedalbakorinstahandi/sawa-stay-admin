@@ -58,9 +58,7 @@ const createUserSchema = z.object({
   last_name: z.string().min(2, {
     message: "الاسم الأخير يجب أن يكون أكثر من حرفين",
   }),
-  email: z.string().email({
-    message: "يرجى إدخال بريد إلكتروني صحيح",
-  }),
+  email: z.string().optional(),
   id_verified: z.enum(["none", "approved"]),
   bank_details: z.string().optional(),
   phone: z.string().min(9, {
