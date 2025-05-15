@@ -450,185 +450,184 @@ export default function EditListingPage() {
     if (error && error.en) toast.toast(error.en.message);
   });
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/listings")}
-            className="ml-2"
-          >
-            <ArrowLeft className="h-4 w-4 ml-2" />
-            العودة
-          </Button>
-          <h1 className="text-2xl font-bold">تعديل الإعلان</h1>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/listings")}
+          className="ml-2"
+        >
+          <ArrowLeft className="h-4 w-4 ml-2" />
+          العودة
+        </Button>
+        <h1 className="text-2xl font-bold">تعديل الإعلان</h1>
+      </div>
 
-        {isLoading ? (
-          <HostListingsSkeleton />
-        ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* معلومات أساسية */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">معلومات أساسية</h2>
+      {isLoading ? (
+        <HostListingsSkeleton />
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* معلومات أساسية */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">معلومات أساسية</h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="title.ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عنوان الإعلان (بالعربية)</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="مثال: شقة فاخرة مع إطلالة على البحر"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="title.en"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عنوان الإعلان (بالإنجليزية)</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Example: Luxury apartment with sea view"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <FormField
-                      control={form.control}
-                      name="description.ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>وصف الإعلان (بالعربية)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="اكتب وصفاً تفصيلياً لمكانك"
-                              className="resize-none"
-                              rows={4}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="description.en"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>وصف الإعلان (بالإنجليزية)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Write a detailed description of your place"
-                              className="resize-none"
-                              rows={4}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* نوع الإعلان */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">نوع الإعلان</h2>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="property_type"
+                    name="title.ar"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>عنوان الإعلان (بالعربية)</FormLabel>
                         <FormControl>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card
-                              className={`cursor-pointer transition-all hover:shadow-md ${
-                                field.value === "House"
-                                  ? "ring-2 ring-rose-500"
-                                  : "border"
-                              }`}
-                              onClick={() =>
-                                form.setValue("property_type", "House")
-                              }
-                            >
-                              <CardContent className="p-6 flex flex-col items-center text-center">
-                                <Home className="h-12 w-12 mb-4 text-rose-500" />
-                                <h3 className="font-medium">منزل</h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  منزل مستقل أو فيلا
-                                </p>
-                              </CardContent>
-                            </Card>
-
-                            <Card
-                              className={`cursor-pointer transition-all hover:shadow-md ${
-                                field.value === "Apartment"
-                                  ? "ring-2 ring-rose-500"
-                                  : "border"
-                              }`}
-                              onClick={() =>
-                                form.setValue("property_type", "Apartment")
-                              }
-                            >
-                              <CardContent className="p-6 flex flex-col items-center text-center">
-                                <Building className="h-12 w-12 mb-4 text-rose-500" />
-                                <h3 className="font-medium">شقة</h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  شقة في مبنى سكني
-                                </p>
-                              </CardContent>
-                            </Card>
-
-                            <Card
-                              className={`cursor-pointer transition-all hover:shadow-md ${
-                                field.value === "Guesthouse"
-                                  ? "ring-2 ring-rose-500"
-                                  : "border"
-                              }`}
-                              onClick={() =>
-                                form.setValue("property_type", "Guesthouse")
-                              }
-                            >
-                              <CardContent className="p-6 flex flex-col items-center text-center">
-                                <Warehouse className="h-12 w-12 mb-4 text-rose-500" />
-                                <h3 className="font-medium">بيت ضيافة</h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  مكان مخصص للضيوف
-                                </p>
-                              </CardContent>
-                            </Card>
-                          </div>
+                          <Input
+                            {...field}
+                            placeholder="مثال: شقة فاخرة مع إطلالة على البحر"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="mt-6">
-                    {/* <FormField
+                  <FormField
+                    control={form.control}
+                    name="title.en"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عنوان الإعلان (بالإنجليزية)</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Example: Luxury apartment with sea view"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="description.ar"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وصف الإعلان (بالعربية)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="اكتب وصفاً تفصيلياً لمكانك"
+                            className="resize-none"
+                            rows={4}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description.en"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وصف الإعلان (بالإنجليزية)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Write a detailed description of your place"
+                            className="resize-none"
+                            rows={4}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* نوع الإعلان */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">نوع الإعلان</h2>
+
+                <FormField
+                  control={form.control}
+                  name="property_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <Card
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              field.value === "House"
+                                ? "ring-2 ring-rose-500"
+                                : "border"
+                            }`}
+                            onClick={() =>
+                              form.setValue("property_type", "House")
+                            }
+                          >
+                            <CardContent className="p-6 flex flex-col items-center text-center">
+                              <Home className="h-12 w-12 mb-4 text-rose-500" />
+                              <h3 className="font-medium">منزل</h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                منزل مستقل أو فيلا
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          <Card
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              field.value === "Apartment"
+                                ? "ring-2 ring-rose-500"
+                                : "border"
+                            }`}
+                            onClick={() =>
+                              form.setValue("property_type", "Apartment")
+                            }
+                          >
+                            <CardContent className="p-6 flex flex-col items-center text-center">
+                              <Building className="h-12 w-12 mb-4 text-rose-500" />
+                              <h3 className="font-medium">شقة</h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                شقة في مبنى سكني
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          <Card
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              field.value === "Guesthouse"
+                                ? "ring-2 ring-rose-500"
+                                : "border"
+                            }`}
+                            onClick={() =>
+                              form.setValue("property_type", "Guesthouse")
+                            }
+                          >
+                            <CardContent className="p-6 flex flex-col items-center text-center">
+                              <Warehouse className="h-12 w-12 mb-4 text-rose-500" />
+                              <h3 className="font-medium">بيت ضيافة</h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                مكان مخصص للضيوف
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="mt-6">
+                  {/* <FormField
                       control={form.control}
                       name="house_type_id"
                       render={({ field }) => (
@@ -660,775 +659,596 @@ export default function EditListingPage() {
                         </FormItem>
                       )}
                     /> */}
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* السعة والغرف */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">السعة والغرف</h2>
+            {/* السعة والغرف */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">السعة والغرف</h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="guests_count"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عدد الضيوف</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() =>
-                                  decrementValue("guests_count", 1)
-                                }
-                                disabled={field.value <= 1}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(1, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={1}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() =>
-                                  incrementValue("guests_count", 16)
-                                }
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="bedrooms_count"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عدد غرف النوم</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() =>
-                                  decrementValue("bedrooms_count", 1)
-                                }
-                                disabled={field.value <= 1}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(1, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={1}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() =>
-                                  incrementValue("bedrooms_count", 10)
-                                }
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="beds_count"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عدد الأسرّة</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() => decrementValue("beds_count", 1)}
-                                disabled={field.value <= 1}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(1, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={1}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() => incrementValue("beds_count", 20)}
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="bathrooms_count"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>عدد الحمامات</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() => {
-                                  const newValue = Math.max(
-                                    field.value - 0.5,
-                                    0.5
-                                  );
-                                  form.setValue("bathrooms_count", newValue);
-                                }}
-                                disabled={field.value <= 0.5}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(0.5, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={0.5}
-                                step={0.5}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() => {
-                                  const newValue = Math.min(
-                                    field.value + 0.5,
-                                    10
-                                  );
-                                  form.setValue("bathrooms_count", newValue);
-                                }}
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="floor_number"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>رقم الطابق</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() =>
-                                  decrementValue("floor_number", 0)
-                                }
-                                disabled={field.value <= 0}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(0, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={0}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() =>
-                                  incrementValue("floor_number", 50)
-                                }
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* السعر والحجز */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">السعر والحجز</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>السعر لليلة الواحدة</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() => decrementValue("price", 0)}
-                                disabled={field.value <= 0}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(0, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={0}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() => incrementValue("price")}
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="currency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>العملة</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="اختر العملة" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="SYP">
-                                ليرة سورية (ل.س)
-                              </SelectItem>
-                              <SelectItem value="USD">
-                                دولار أمريكي ($)
-                              </SelectItem>
-                              <SelectItem value="EUR">يورو (€)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="min_booking_days"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>الحد الأدنى للإقامة (ليالي)</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() =>
-                                  decrementValue("min_booking_days", 1)
-                                }
-                                disabled={field.value <= 1}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(1, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={1}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() =>
-                                  incrementValue("min_booking_days", 30)
-                                }
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="max_booking_days"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>الحد الأقصى للإقامة (ليالي)</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-r-none"
-                                onClick={() =>
-                                  decrementValue("max_booking_days", 1)
-                                }
-                                disabled={field.value <= 1}
-                              >
-                                <span>-</span>
-                              </Button>
-                              <Input
-                                type="number"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(1, Number(e.target.value))
-                                  )
-                                }
-                                className="rounded-none text-center"
-                                min={1}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 rounded-l-none"
-                                onClick={() =>
-                                  incrementValue("max_booking_days", 365)
-                                }
-                              >
-                                <span>+</span>
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="check_in"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>وقت تسجيل الدخول</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="check_out"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>وقت تسجيل الخروج</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* الميزات والفئات */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">
-                    الميزات والفئات
-                  </h2>
-
-                  <div className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="features"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>الميزات المتوفرة</FormLabel>
-                          <FormDescription>
-                            حدد الميزات المتوفرة في الإعلان
-                          </FormDescription>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                            {features.map((feature) => {
-                              const isSelected =
-                                field.value?.includes(feature.id) || false;
-                              return (
-                                <div
-                                  key={feature.id}
-                                  className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                    isSelected
-                                      ? "bg-rose-100 text-rose-700"
-                                      : "bg-gray-100 hover:bg-gray-200"
-                                  }`}
-                                  onClick={() => {
-                                    const currentValues = field.value || [];
-                                    if (isSelected) {
-                                      field.onChange(
-                                        currentValues.filter(
-                                          (id) => id !== feature.id
-                                        )
-                                      );
-                                    } else {
-                                      field.onChange([
-                                        ...currentValues,
-                                        feature.id,
-                                      ]);
-                                    }
-                                  }}
-                                >
-                                  {isSelected && (
-                                    <Check className="h-4 w-4 ml-2 flex-shrink-0" />
-                                  )}
-                                  <span className="text-sm">
-                                    {feature.name.ar}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="categories"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>فئات الإعلان</FormLabel>
-                          <FormDescription>
-                            حدد الفئات التي ينتمي إليها الإعلان
-                          </FormDescription>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                            {categories.map((category) => {
-                              const isSelected =
-                                field.value?.includes(category.id) || false;
-                              return (
-                                <div
-                                  key={category.id}
-                                  className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                    isSelected
-                                      ? "bg-rose-100 text-rose-700"
-                                      : "bg-gray-100 hover:bg-gray-200"
-                                  }`}
-                                  onClick={() => {
-                                    const currentValues = field.value || [];
-                                    if (isSelected) {
-                                      field.onChange(
-                                        currentValues.filter(
-                                          (id) => id !== category.id
-                                        )
-                                      );
-                                    } else {
-                                      field.onChange([
-                                        ...currentValues,
-                                        category.id,
-                                      ]);
-                                    }
-                                  }}
-                                >
-                                  {isSelected && (
-                                    <Check className="h-4 w-4 ml-2 flex-shrink-0" />
-                                  )}
-                                  <span className="text-sm">
-                                    {category.name.ar}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* معلومات السلامة */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">
-                    معلومات السلامة
-                  </h2>
-
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="is_contains_cameras"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between space-y-0">
-                          <div>
-                            <FormLabel className="flex items-center gap-2 cursor-pointer">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="text-rose-500"
-                              >
-                                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                                <circle cx="12" cy="13" r="3" />
-                              </svg>
-                              كاميرات مراقبة
-                            </FormLabel>
-                            <p className="text-xs text-gray-500 mx-7">
-                              هل يوجد كاميرات مراقبة في الإعلان؟
-                            </p>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="guests_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عدد الضيوف</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => decrementValue("guests_count", 1)}
+                              disabled={field.value <= 1}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(1, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={1}
                             />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    {form.watch("is_contains_cameras") && (
-                      <FormField
-                        control={form.control}
-                        name="camera_locations.ar"
-                        render={({ field }) => (
-                          <FormItem className="pr-7 border-r-2 border-rose-200">
-                            <FormLabel className="text-sm">
-                              أماكن الكاميرات (بالعربية)
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                placeholder="اذكر أماكن وجود الكاميرات بالتفصيل"
-                                className="mt-1 resize-none"
-                                rows={2}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() => incrementValue("guests_count", 16)}
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
+                  />
 
-                    {form.watch("is_contains_cameras") && (
-                      <FormField
-                        control={form.control}
-                        name="camera_locations.en"
-                        render={({ field }) => (
-                          <FormItem className="pr-7 border-r-2 border-rose-200">
-                            <FormLabel className="text-sm">
-                              أماكن الكاميرات (بالإنجليزية)
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                placeholder="Describe camera locations in detail"
-                                className="mt-1 resize-none"
-                                rows={2}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <FormField
+                    control={form.control}
+                    name="bedrooms_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عدد غرف النوم</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() =>
+                                decrementValue("bedrooms_count", 1)
+                              }
+                              disabled={field.value <= 1}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(1, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={1}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() =>
+                                incrementValue("bedrooms_count", 10)
+                              }
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name="noise_monitoring_device"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between space-y-0">
-                          <div>
-                            <FormLabel className="flex items-center gap-2 cursor-pointer">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="text-rose-500"
-                              >
-                                <path d="M2 10c.6.5 1.2 1 2.5 1C7 11 7 9 9.5 9c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                                <path d="M2 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                                <path d="M2 5c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                                <path d="M2 14c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                              </svg>
-                              أجهزة مراقبة الضوضاء
-                            </FormLabel>
-                            <p className="text-xs text-gray-500 mx-7">
-                              أجهزة تراقب مستوى الصوت دون تسجيل المحادثات
-                            </p>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                  <FormField
+                    control={form.control}
+                    name="beds_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عدد الأسرّة</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => decrementValue("beds_count", 1)}
+                              disabled={field.value <= 1}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(1, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={1}
                             />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="weapons_on_property"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between space-y-0">
-                          <div>
-                            <FormLabel className="flex items-center gap-2 cursor-pointer">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="text-rose-500"
-                              >
-                                <path d="M14 5l7 7" />
-                                <path d="M9 9l-2 2" />
-                                <path d="M17 17l-2 2" />
-                                <path d="M11 13l-4 4" />
-                                <path d="M3 21l10-10" />
-                                <path d="M21 3l-3 3" />
-                                <path d="M21 3l-7 7" />
-                                <path d="M3 21l7-7" />
-                              </svg>
-                              أسلحة في الإعلان
-                            </FormLabel>
-                            <p className="text-xs text-gray-500 mx-7">
-                              هل يوجد أسلحة في الإعلان؟
-                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() => incrementValue("beds_count", 20)}
+                            >
+                              <span>+</span>
+                            </Button>
                           </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name="allow_pets"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between space-y-0">
+                  <FormField
+                    control={form.control}
+                    name="bathrooms_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عدد الحمامات</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => {
+                                const newValue = Math.max(
+                                  field.value - 0.5,
+                                  0.5
+                                );
+                                form.setValue("bathrooms_count", newValue);
+                              }}
+                              disabled={field.value <= 0.5}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(0.5, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={0.5}
+                              step={0.5}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() => {
+                                const newValue = Math.min(
+                                  field.value + 0.5,
+                                  10
+                                );
+                                form.setValue("bathrooms_count", newValue);
+                              }}
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="floor_number"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>رقم الطابق</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => decrementValue("floor_number", 0)}
+                              disabled={field.value <= 0}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(0, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={0}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() => incrementValue("floor_number", 50)}
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* السعر والحجز */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">السعر والحجز</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>السعر لليلة الواحدة</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() => decrementValue("price", 0)}
+                              disabled={field.value <= 0}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(0, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={0}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() => incrementValue("price")}
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="currency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>العملة</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر العملة" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="SYP">
+                              ليرة سورية (ل.س)
+                            </SelectItem>
+                            <SelectItem value="USD">
+                              دولار أمريكي ($)
+                            </SelectItem>
+                            <SelectItem value="EUR">يورو (€)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="min_booking_days"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الحد الأدنى للإقامة (ليالي)</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() =>
+                                decrementValue("min_booking_days", 1)
+                              }
+                              disabled={field.value <= 1}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(1, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={1}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() =>
+                                incrementValue("min_booking_days", 30)
+                              }
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="max_booking_days"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الحد الأقصى للإقامة (ليالي)</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() =>
+                                decrementValue("max_booking_days", 1)
+                              }
+                              disabled={field.value <= 1}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(1, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={1}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() =>
+                                incrementValue("max_booking_days", 365)
+                              }
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="check_in"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وقت تسجيل الدخول</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="check_out"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وقت تسجيل الخروج</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* الميزات والفئات */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">الميزات والفئات</h2>
+
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="features"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الميزات المتوفرة</FormLabel>
+                        <FormDescription>
+                          حدد الميزات المتوفرة في الإعلان
+                        </FormDescription>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                          {features.map((feature) => {
+                            const isSelected =
+                              field.value?.includes(feature.id) || false;
+                            return (
+                              <div
+                                key={feature.id}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                                  isSelected
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+                                onClick={() => {
+                                  const currentValues = field.value || [];
+                                  if (isSelected) {
+                                    field.onChange(
+                                      currentValues.filter(
+                                        (id) => id !== feature.id
+                                      )
+                                    );
+                                  } else {
+                                    field.onChange([
+                                      ...currentValues,
+                                      feature.id,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                {isSelected && (
+                                  <Check className="h-4 w-4 ml-2 flex-shrink-0" />
+                                )}
+                                <span className="text-sm">
+                                  {feature.name.ar}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="categories"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>فئات الإعلان</FormLabel>
+                        <FormDescription>
+                          حدد الفئات التي ينتمي إليها الإعلان
+                        </FormDescription>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                          {categories.map((category) => {
+                            const isSelected =
+                              field.value?.includes(category.id) || false;
+                            return (
+                              <div
+                                key={category.id}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                                  isSelected
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+                                onClick={() => {
+                                  const currentValues = field.value || [];
+                                  if (isSelected) {
+                                    field.onChange(
+                                      currentValues.filter(
+                                        (id) => id !== category.id
+                                      )
+                                    );
+                                  } else {
+                                    field.onChange([
+                                      ...currentValues,
+                                      category.id,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                {isSelected && (
+                                  <Check className="h-4 w-4 ml-2 flex-shrink-0" />
+                                )}
+                                <span className="text-sm">
+                                  {category.name.ar}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* معلومات السلامة */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">معلومات السلامة</h2>
+
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="is_contains_cameras"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0">
+                        <div>
                           <FormLabel className="flex items-center gap-2 cursor-pointer">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1442,200 +1262,364 @@ export default function EditListingPage() {
                               strokeLinejoin="round"
                               className="text-rose-500"
                             >
-                              <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5" />
-                              <path d="M14.5 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5" />
-                              <path d="M8 14v.5" />
-                              <path d="M16 14v.5" />
-                              <path d="M11.25 16.25h1.5L12 17l-.75-.75Z" />
-                              <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0 1 12 5c.78 0 1.5.108 2.161.306" />
+                              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                              <circle cx="12" cy="13" r="3" />
                             </svg>
-                            مسموح بالحيوانات الأليفة
+                            كاميرات مراقبة
+                          </FormLabel>
+                          <p className="text-xs text-gray-500 mx-7">
+                            هل يوجد كاميرات مراقبة في الإعلان؟
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("is_contains_cameras") && (
+                    <FormField
+                      control={form.control}
+                      name="camera_locations.ar"
+                      render={({ field }) => (
+                        <FormItem className="pr-7 border-r-2 border-rose-200">
+                          <FormLabel className="text-sm">
+                            أماكن الكاميرات (بالعربية)
                           </FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <Textarea
+                              {...field}
+                              placeholder="اذكر أماكن وجود الكاميرات بالتفصيل"
+                              className="mt-1 resize-none"
+                              rows={2}
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                </CardContent>
-              </Card>
+                  )}
 
-              {/* صور الإعلان */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-4">صور الإعلان</h2>
+                  {form.watch("is_contains_cameras") && (
+                    <FormField
+                      control={form.control}
+                      name="camera_locations.en"
+                      render={({ field }) => (
+                        <FormItem className="pr-7 border-r-2 border-rose-200">
+                          <FormLabel className="text-sm">
+                            أماكن الكاميرات (بالإنجليزية)
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="Describe camera locations in detail"
+                              className="mt-1 resize-none"
+                              rows={2}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
-                  <div className="space-y-4">
-                    {/* الصور الحالية */}
-                    {listing?.images && listing.images.length > 0 && (
-                      <div>
-                        <h3 className="text-md font-medium mb-2">
-                          الصور الحالية
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {listing.images.map((image) => (
-                            <div
-                              key={image.id}
-                              className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${
-                                imagesToDelete.includes(image.id)
-                                  ? "opacity-50"
-                                  : ""
-                              }`}
+                  <FormField
+                    control={form.control}
+                    name="noise_monitoring_device"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0">
+                        <div>
+                          <FormLabel className="flex items-center gap-2 cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-rose-500"
                             >
-                              <Image
-                                src={image.url || "/placeholder.svg"}
-                                alt="صورة الإعلان"
-                                fill
-                                className="object-cover"
-                              />
-                              <Button
-                                type="button"
-                                variant={
-                                  imagesToDelete.includes(image.id)
-                                    ? "default"
-                                    : "destructive"
-                                }
-                                size="icon"
-                                className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                                onClick={() => {
-                                  if (imagesToDelete.includes(image.id)) {
-                                    setImagesToDelete(
-                                      imagesToDelete.filter(
-                                        (id) => id !== image.id
-                                      )
-                                    );
-                                  } else {
-                                    addImageToDelete(image.id);
-                                  }
-                                }}
-                              >
-                                {imagesToDelete.includes(image.id) ? (
-                                  <Plus className="h-4 w-4" />
-                                ) : (
-                                  <X className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          ))}
+                              <path d="M2 10c.6.5 1.2 1 2.5 1C7 11 7 9 9.5 9c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                              <path d="M2 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                              <path d="M2 5c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                              <path d="M2 14c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                            </svg>
+                            أجهزة مراقبة الضوضاء
+                          </FormLabel>
+                          <p className="text-xs text-gray-500 mx-7">
+                            أجهزة تراقب مستوى الصوت دون تسجيل المحادثات
+                          </p>
                         </div>
-                      </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
                     )}
+                  />
 
-                    {/* إضافة صور جديدة */}
+                  <FormField
+                    control={form.control}
+                    name="weapons_on_property"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0">
+                        <div>
+                          <FormLabel className="flex items-center gap-2 cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-rose-500"
+                            >
+                              <path d="M14 5l7 7" />
+                              <path d="M9 9l-2 2" />
+                              <path d="M17 17l-2 2" />
+                              <path d="M11 13l-4 4" />
+                              <path d="M3 21l10-10" />
+                              <path d="M21 3l-3 3" />
+                              <path d="M21 3l-7 7" />
+                              <path d="M3 21l7-7" />
+                            </svg>
+                            أسلحة في الإعلان
+                          </FormLabel>
+                          <p className="text-xs text-gray-500 mx-7">
+                            هل يوجد أسلحة في الإعلان؟
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="allow_pets"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0">
+                        <FormLabel className="flex items-center gap-2 cursor-pointer">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-rose-500"
+                          >
+                            <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5" />
+                            <path d="M14.5 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5" />
+                            <path d="M8 14v.5" />
+                            <path d="M16 14v.5" />
+                            <path d="M11.25 16.25h1.5L12 17l-.75-.75Z" />
+                            <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0 1 12 5c.78 0 1.5.108 2.161.306" />
+                          </svg>
+                          مسموح بالحيوانات الأليفة
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* صور الإعلان */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">صور الإعلان</h2>
+
+                <div className="space-y-4">
+                  {/* الصور الحالية */}
+                  {listing?.images && listing.images.length > 0 && (
                     <div>
                       <h3 className="text-md font-medium mb-2">
-                        إضافة صور جديدة
+                        الصور الحالية
                       </h3>
-                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
-                        <div className="flex flex-col items-center">
-                          <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                          <h3 className="font-medium mb-2">اسحب الصور هنا</h3>
-                          <p className="text-sm text-gray-500 mb-4">
-                            أو انقر لاختيار الصور من جهازك
-                          </p>
-                          <input
-                            type="file"
-                            id="property-images"
-                            multiple
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handlePropertyImageChange}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() =>
-                              document
-                                .getElementById("property-images")
-                                ?.click()
-                            }
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {listing.images.map((image) => (
+                          <div
+                            key={image.id}
+                            className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${
+                              imagesToDelete.includes(image.id)
+                                ? "opacity-50"
+                                : ""
+                            }`}
                           >
-                            اختيار الصور
-                          </Button>
-                        </div>
+                            <Image
+                              src={image.url || "/placeholder.svg"}
+                              alt="صورة الإعلان"
+                              fill
+                              className="object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant={
+                                imagesToDelete.includes(image.id)
+                                  ? "default"
+                                  : "destructive"
+                              }
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                              onClick={() => {
+                                if (imagesToDelete.includes(image.id)) {
+                                  setImagesToDelete(
+                                    imagesToDelete.filter(
+                                      (id) => id !== image.id
+                                    )
+                                  );
+                                } else {
+                                  addImageToDelete(image.id);
+                                }
+                              }}
+                            >
+                              {imagesToDelete.includes(image.id) ? (
+                                <Plus className="h-4 w-4" />
+                              ) : (
+                                <X className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  )}
 
-                    {/* معاينة الصور الجديدة */}
-                    {propertyImagePreviews.length > 0 && (
-                      <div>
-                        <h3 className="text-md font-medium mb-2">
-                          الصور الجديدة
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {propertyImagePreviews.map((preview, index) => (
-                            <div
-                              key={index}
-                              className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
-                            >
-                              <Image
-                                src={preview || "/placeholder.svg"}
-                                alt={`صورة الإعلان ${index + 1}`}
-                                fill
-                                className="object-cover"
-                              />
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                                onClick={() => removePropertyImage(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
+                  {/* إضافة صور جديدة */}
+                  <div>
+                    <h3 className="text-md font-medium mb-2">
+                      إضافة صور جديدة
+                    </h3>
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                      <div className="flex flex-col items-center">
+                        <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="font-medium mb-2">اسحب الصور هنا</h3>
+                        <p className="text-sm text-gray-500 mb-4">
+                          أو انقر لاختيار الصور من جهازك
+                        </p>
+                        <input
+                          type="file"
+                          id="property-images"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePropertyImageChange}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            document.getElementById("property-images")?.click()
+                          }
+                        >
+                          اختيار الصور
+                        </Button>
                       </div>
-                    )}
-
-                    <div className="text-sm text-gray-500">
-                      <p>نصائح للصور:</p>
-                      <ul className="list-disc list-inside mx-4 mt-1 space-y-1">
-                        <li>أضف على الأقل 5 صور عالية الجودة</li>
-                        <li>أضف صوراً لجميع الغرف والمساحات المتاحة للضيوف</li>
-                        <li>أضف صوراً للمناظر والإطلالات إن وجدت</li>
-                        <li>تجنب استخدام الصور التي تحتوي على علامات مائية</li>
-                      </ul>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* أزرار الحفظ والإلغاء */}
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push("/listings")}
-                >
-                  إلغاء
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSaving || uploadingImages}
-                  className="bg-rose-500 hover:bg-rose-600"
-                >
-                  {isSaving || uploadingImages ? (
-                    <>
-                      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
-                      جاري الحفظ...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 ml-2" />
-                      حفظ التغييرات
-                    </>
+                  {/* معاينة الصور الجديدة */}
+                  {propertyImagePreviews.length > 0 && (
+                    <div>
+                      <h3 className="text-md font-medium mb-2">
+                        الصور الجديدة
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {propertyImagePreviews.map((preview, index) => (
+                          <div
+                            key={index}
+                            className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
+                          >
+                            <Image
+                              src={preview || "/placeholder.svg"}
+                              alt={`صورة الإعلان ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                              onClick={() => removePropertyImage(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        )}
-      </main>
+
+                  <div className="text-sm text-gray-500">
+                    <p>نصائح للصور:</p>
+                    <ul className="list-disc list-inside mx-4 mt-1 space-y-1">
+                      <li>أضف على الأقل 5 صور عالية الجودة</li>
+                      <li>أضف صوراً لجميع الغرف والمساحات المتاحة للضيوف</li>
+                      <li>أضف صوراً للمناظر والإطلالات إن وجدت</li>
+                      <li>تجنب استخدام الصور التي تحتوي على علامات مائية</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* أزرار الحفظ والإلغاء */}
+            <div className="flex justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/listings")}
+              >
+                إلغاء
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving || uploadingImages}
+                className="bg-rose-500 hover:bg-rose-600"
+              >
+                {isSaving || uploadingImages ? (
+                  <>
+                    <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 ml-2" />
+                    حفظ التغييرات
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      )}
     </div>
   );
 }
