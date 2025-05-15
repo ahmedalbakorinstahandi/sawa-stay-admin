@@ -162,11 +162,11 @@ interface Category {
 const listingSchema = z.object({
   title: z.object({
     ar: z.string().min(5, { message: "العنوان يجب أن يكون 5 أحرف على الأقل" }),
-    en: z.string().min(5, { message: "العنوان يجب أن يكون 5 أحرف على الأقل" }),
+    en: z.string().optional(),
   }),
   description: z.object({
     ar: z.string().min(20, { message: "الوصف يجب أن يكون 20 حرفاً على الأقل" }),
-    en: z.string().min(20, { message: "الوصف يجب أن يكون 20 حرفاً على الأقل" }),
+    en: z.string().optional(),
   }),
   house_type_id: z.number().min(1, { message: "يرجى اختيار نوع الإعلان" }),
   property_type: z.enum(["House", "Apartment", "Guesthouse"], {
