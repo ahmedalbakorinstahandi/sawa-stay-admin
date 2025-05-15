@@ -48,6 +48,7 @@ import { api } from "@/lib/api";
 import { uploadImage } from "@/lib/upload-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { LocationPicker } from "@/components/map/location-picker";
 // نوع بيانات الإعلان
 interface Listing {
   id: number;
@@ -205,6 +206,14 @@ const listingSchema = z.object({
   }),
   features: z.array(z.number()).optional(),
   categories: z.array(z.number()).optional(),
+  location: z
+    .object({
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+      street_address: z.string().optional(),
+      extra_address: z.string().optional(),
+    })
+    .optional(),
 });
 
 export default function EditListingPage() {
@@ -221,7 +230,7 @@ export default function EditListingPage() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   // صور الإعلان
-  const [propertyImages, setPropertyImages] = useState<File[]>([]);
+  const [propertyImages, setPropertyImages] = useState<any[]>([]);
   const [propertyImagePreviews, setPropertyImagePreviews] = useState<string[]>(
     []
   );
@@ -255,6 +264,12 @@ export default function EditListingPage() {
       allow_pets: false,
       features: [],
       categories: [],
+      location: {
+        latitude: 0,
+        longitude: 0,
+        street_address: "",
+        extra_address: "",
+      },
     },
   });
 
@@ -304,6 +319,12 @@ export default function EditListingPage() {
               response.data.data.categories?.map(
                 (category: any) => category.id
               ) || [],
+            location: {
+              latitude: response.data.data.address?.latitude || 0,
+              longitude: response.data.data.address?.longitude || 0,
+              street_address: response.data.data.address?.street_address || "",
+              extra_address: response.data.data.address?.extra_address || "",
+            },
           });
         } else {
           router.push("/listings");
@@ -337,8 +358,9 @@ export default function EditListingPage() {
     fetchListing();
   }, []);
 
-  // معالجة تحميل صور الإعلان
-  const handlePropertyImageChange = (
+  // معالجة تحميل صور الإعلان ورفعها مباشرة
+  // معالجة تحميل صور الإعلان ورفعها مباشرة
+  const handlePropertyImageChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = e.target.files;
@@ -347,14 +369,26 @@ export default function EditListingPage() {
     const newFiles = Array.from(files);
     const newPreviews: string[] = [];
 
-    // إنشاء معاينات للصور الجديدة
-    newFiles.forEach((file) => {
-      const previewUrl = URL.createObjectURL(file);
-      newPreviews.push(previewUrl);
-    });
+    setUploadingImages(true);
 
-    setPropertyImages((prev) => [...prev, ...newFiles]);
-    setPropertyImagePreviews((prev) => [...prev, ...newPreviews]);
+    try {
+      for (const file of newFiles) {
+        const previewUrl = URL.createObjectURL(file);
+        newPreviews.push(previewUrl);
+
+        // رفع الصورة مباشرة عند اختيارها
+        const result = await uploadImage(file, "listings");
+        if (result.success && result.url) {
+          // هنا يتم فقط إضافة ملف الصورة والمعاينة، وليس رابط الصورة المرفوعة
+          setPropertyImages((prev) => [...prev, result.url]);
+          setPropertyImagePreviews((prev) => [...prev, previewUrl]);
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading images:", error);
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   // حذف صورة عقار
@@ -408,13 +442,13 @@ export default function EditListingPage() {
 
     try {
       // رفع الصور الجديدة
-      const uploadedImagePaths = await uploadPropertyImages();
+      // const uploadedImagePaths =propertyImages;
 
       // تجهيز البيانات للإرسال
       const formData = {
         ...data,
         images: [
-          ...uploadedImagePaths,
+          ...propertyImages,
           // ...(listing?.images.filter((img) => !imagesToDelete.includes(img.id)).map((img) => img.path) || []),
         ].map((item: any) => (item?.image_name ? item?.image_name : item)),
         delete_images: imagesToDelete,
@@ -1161,6 +1195,119 @@ export default function EditListingPage() {
                       </FormItem>
                     )}
                   /> */}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* الموقع */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">الموقع</h2>
+
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <FormLabel>الموقع على الخريطة</FormLabel>
+                    <LocationPicker
+                      latitude={form.watch("location.latitude") ?? 0}
+                      longitude={form.watch("location.longitude") ?? 0}
+                      onChange={(lat: number, lng: number) => {
+                        form.setValue("location.latitude", lat);
+                        form.setValue("location.longitude", lng);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              const { latitude, longitude } = position.coords;
+                              form.setValue("location.latitude", latitude);
+                              form.setValue("location.longitude", longitude);
+                            },
+                            (error) => {
+                              toast.toast({
+                                title: "خطأ",
+                                description: "تعذر الحصول على الموقع الحالي",
+                                variant: "destructive",
+                              });
+                            }
+                          );
+                        } else {
+                          toast.toast({
+                            title: "خطأ",
+                            description:
+                              "المتصفح لا يدعم تحديد الموقع الجغرافي",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      الحصول على الموقع الحالي
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="location.latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>خط العرض</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormDescription>خط العرض للعقار</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="location.longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>خط الطول</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormDescription>خط الطول للعقار</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="location.street_address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عنوان الشارع</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormDescription>عنوان الشارع للعقار</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location.extra_address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>عنوان إضافي</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormDescription>عنوان إضافي للعقار</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </CardContent>
             </Card>
