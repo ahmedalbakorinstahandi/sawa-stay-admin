@@ -33,7 +33,7 @@ export default function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className={`flex-1 p-4 transition-all duration-300 ${
+            className={`flex-1 w-full p-4 transition-all duration-300 ${
               sidebarOpen ? "lg:mr-64" : "lg:mr-0"
             }`}
           >
