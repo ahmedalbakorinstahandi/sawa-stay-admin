@@ -70,6 +70,7 @@ import { FeatureDeleteDialog } from "@/components/listings/feature-delete-dialog
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { ro } from "date-fns/locale";
 
 export default function ListingsPage() {
   const [activeTab, setActiveTab] = useState("listings");
@@ -734,7 +735,7 @@ export default function ListingsPage() {
         <h2 className="text-3xl font-bold tracking-tight">الإعلانات</h2>
         <div className="flex gap-2">
           {activeTab === "listings" && (
-            <Button onClick={handleAddListing}>
+            <Button onClick={() => router.push("/listings/add")}>
               <Plus className="ml-2 h-4 w-4" /> إضافة إعلان
             </Button>
           )}
