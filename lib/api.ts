@@ -1,7 +1,7 @@
 import axios from "axios"
 import { getToken } from "@/lib/cookies"
 
-const BASE_URL = "https://airbnb-backend.ahmed-albakor.com/api"
+const BASE_URL = "https://backend.sawastay.com/api"
 
 export const api = axios.create({
   baseURL: BASE_URL,
