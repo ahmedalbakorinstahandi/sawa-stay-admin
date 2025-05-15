@@ -288,8 +288,14 @@ export default function EditListingPage() {
 
           // تعبئة النموذج بالبيانات
           form.reset({
-            title: response.data.data.title,
-            description: response.data.data.description,
+            title:{
+              ar: response.data.data.title?.ar || "",
+              en: response.data.data.title?.en || "",
+            },
+            description:{
+              ar: response.data.data.description?.ar || "",
+              en: response.data.data.description?.en || "",
+            },
             house_type_id: response.data.data.house_type_id,
             property_type: response.data.data.property_type,
             price: response.data.data.price,
@@ -484,15 +490,7 @@ export default function EditListingPage() {
     form.setValue(key as any, Math.max(currentValue - 1, min));
   };
 
-  console.log(form.formState);
-
-  Object.keys(form.formState.errors).forEach((key: any) => {
-    const errors: any = form.formState.errors;
-    const error = errors[key];
-    if (error && error.ar)
-      toast.toast({ title: error.ar.message, description: error.en.message });
-    if (error && error.en) toast.toast(error.en.message);
-  });
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center mb-6">
