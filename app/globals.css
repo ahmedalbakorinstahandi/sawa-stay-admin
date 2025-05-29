@@ -94,6 +94,84 @@
   }
 }
 
+/* تنسيق خاص بمكون إدخال الهاتف */
+.phone-input-container {
+  display: flex;
+  flex-direction: column;
+  /* position: relative; */
+}
+
+.phone-input-container .react-international-phone-input {
+  width: 100%;
+  height: 2.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  direction: ltr !important; /* يجب أن تكون من اليسار إلى اليمين لعرض رقم الهاتف بشكل صحيح */
+}
+
+.phone-input-container .react-international-phone-input:focus-within {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+  outline: none;
+}
+
+.phone-input-container .react-international-phone-country-selector-button {
+  border-right: 1px solid hsl(var(--border));
+  padding-right: 0.5rem;
+  margin-right: 0.5rem;
+  color: hsl(var(--foreground));
+  background-color: transparent;
+}
+
+.phone-input-container .react-international-phone-input-container {
+  height: 100%;
+  display: flex;
+  flex-direction: row-reverse !important;
+}
+
+/* تعديل لنمط القائمة المنسدلة */
+.react-international-phone-country-selector-dropdown {
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.react-international-phone-country-selector-dropdown-item {
+  padding: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.react-international-phone-country-selector-dropdown-item:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Additional styles for flags */
+.react-international-phone-country-selector-button img,
+.react-international-phone-country-selector-dropdown-item img {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+/* RTL Support - for Arabic interface */
+[dir="rtl"]
+  .phone-input-container
+  .react-international-phone-country-selector-button {
+  border-right: none;
+  border-left: 1px solid hsl(var(--border));
+  padding-right: 0;
+  padding-left: 0.5rem;
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
 /* Leaflet Map Styles */
 .leaflet-container {
   height: 100%;
@@ -112,46 +190,78 @@
 }
 
 .text-left {
-    text-align: right !important;
+  text-align: right !important;
 }
 @media (min-width: 640px) {
-    .sm\:text-left {
-        text-align: right !important;
-    }
+  .sm\:text-left {
+    text-align: right !important;
+  }
 }
 /* Vibrant Gradients */
 .gradient-primary {
-  background: linear-gradient(135deg, hsl(346, 100%, 58%) 0%, hsl(326, 100%, 50%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(346, 100%, 58%) 0%,
+    hsl(326, 100%, 50%) 100%
+  );
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(246, 91%, 60%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(217, 91%, 60%) 0%,
+    hsl(246, 91%, 60%) 100%
+  );
 }
 
 .gradient-success {
-  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(162, 76%, 36%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(142, 76%, 36%) 0%,
+    hsl(162, 76%, 36%) 100%
+  );
 }
 
 .gradient-warning {
-  background: linear-gradient(135deg, hsl(38, 92%, 50%) 0%, hsl(18, 92%, 50%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(38, 92%, 50%) 0%,
+    hsl(18, 92%, 50%) 100%
+  );
 }
 
 .gradient-info {
-  background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(197, 91%, 60%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(217, 91%, 60%) 0%,
+    hsl(197, 91%, 60%) 100%
+  );
 }
 
 .gradient-destructive {
-  background: linear-gradient(135deg, hsl(0, 84%, 60%) 0%, hsl(350, 84%, 60%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(0, 84%, 60%) 0%,
+    hsl(350, 84%, 60%) 100%
+  );
 }
 
 .gradient-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .dark .gradient-card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -192,10 +302,12 @@
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 5px rgba(255, 77, 109, 0.2), 0 0 10px rgba(255, 77, 109, 0.2);
+    box-shadow: 0 0 5px rgba(255, 77, 109, 0.2),
+      0 0 10px rgba(255, 77, 109, 0.2);
   }
   to {
-    box-shadow: 0 0 10px rgba(255, 77, 109, 0.5), 0 0 20px rgba(255, 77, 109, 0.3);
+    box-shadow: 0 0 10px rgba(255, 77, 109, 0.5),
+      0 0 20px rgba(255, 77, 109, 0.3);
   }
 }
 
@@ -237,12 +349,18 @@
 /* Dashboard Background Pattern */
 .bg-pattern {
   background-color: var(--background);
-  background-image: radial-gradient(rgba(255, 77, 109, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(
+    rgba(255, 77, 109, 0.1) 1px,
+    transparent 1px
+  );
   background-size: 20px 20px;
 }
 
 .dark .bg-pattern {
-  background-image: radial-gradient(rgba(255, 77, 109, 0.15) 1px, transparent 1px);
+  background-image: radial-gradient(
+    rgba(255, 77, 109, 0.15) 1px,
+    transparent 1px
+  );
 }
 
 /* Card Hover Effects */
@@ -252,16 +370,22 @@
 
 .card-hover:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .dark .card-hover:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, hsl(346, 100%, 58%) 0%, hsl(326, 100%, 50%) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(346, 100%, 58%) 0%,
+    hsl(326, 100%, 50%) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -289,8 +413,9 @@
 
 /* Theme Transition */
 .theme-transition {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
 }
-*{
-direction:rtl !important
+* {
+  direction: rtl !important;
 }

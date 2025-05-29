@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,12 +16,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/auth-context";
 import { getToken } from "@/lib/cookies";
+import { de } from "date-fns/locale";
+import { set } from "date-fns";
 
 const loginSchema = z.object({
   phone: z.string().min(10, {
@@ -36,12 +41,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ phone?: string; password?: string }>(
     {}
   );
   const router = useRouter();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
+
+  const isValidPhone = (phone: string) => {
+    return phone.length >= 8 && /^\+?\d+$/.test(phone);
+  };
+  // بيانات الدخول المؤقتة
+  const demoCredentials = {
+    phone: " +12025550191", // رقم الهاتف التجريبي
+    password: "password",
+  };
 
   // التحقق من وجود توكن عند تحميل الصفحة
   useEffect(() => {
@@ -120,7 +135,10 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
+  const fillDemoCredentials = () => {
+    setPhoneNumber(demoCredentials.phone);
+    setPassword(demoCredentials.password);
+  };
   return (
     <div className="flex min-h-screen items-center justify-center gradient-bg p-4">
       <div className="animate-float mb-8">
@@ -144,18 +162,46 @@ export default function LoginPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">رقم الهاتف</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="9639xxxxxxxx"
-                  value={phone}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  required
-                  className={errors.phone ? "border-destructive" : ""}
-                />
-                {errors.phone && (
-                  <p className="text-sm text-destructive">{errors.phone}</p>
-                )}
+                <div className="phone-input-container">
+                  <PhoneInput
+                    defaultCountry="ae"
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "row",
+                      height: "40px",
+                      fontSize: "0.875rem",
+                      borderRadius: "0.375rem",
+                    }}
+                    value={phone}
+                    onChange={(phone) => {
+                      setPhoneNumber(phone);
+
+                      // Validate phone number
+                      const isValid = isValidPhone(phone);
+                      if (!isValid && phone.length > 4) {
+                        setPhoneError("رقم الهاتف غير صحيح");
+                      } else {
+                        setPhoneError(null);
+                      }
+                    }}
+                    inputProps={{
+                      placeholder: "أدخل رقم الهاتف",
+                      required: true,
+                      name: "phone_display",
+                    }}
+                  />
+                  {phoneError && (
+                    <p className="text-sm text-destructive mt-1">
+                      {phoneError}
+                    </p>
+                  )}
+                  {errors.phone && !phoneError && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.phone}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">كلمة المرور</Label>
@@ -183,10 +229,39 @@ export default function LoginPage() {
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
-              <div className="text-sm text-muted-foreground">
-                <p>للتجربة استخدم:</p>
-                <p>رقم الهاتف: +1 2025550191</p>
-                <p>كلمة المرور: password</p>
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  بيانات الدخول المؤقتة:
+                </p>
+                <div className="text-xs bg-muted p-2 rounded-md text-left mb-2 font-mono">
+                  <div>
+                    رقم الهاتف :{" "}
+                    <span
+                      // dir="ltr"
+                      style={{ unicodeBidi: "plaintext" }}
+                    >
+                      {demoCredentials.phone}
+                    </span>
+                  </div>
+                  <div>كلمة المرور: {demoCredentials.password}</div>
+                </div>
+                <Button
+                  variant="outline"
+                  type="button"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={fillDemoCredentials}
+                >
+                  استخدام بيانات الدخول المؤقتة
+                </Button>
+              </div>
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  نسيت كلمة المرور؟
+                </Link>
               </div>
             </CardContent>
             <CardFooter>

@@ -11,7 +11,9 @@ body {
     text-wrap: balance;
   }
 }
-
+.phone-input-container{
+  
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -32,9 +32,22 @@ api.interceptors.response.use(
   },
   async (error) => {
     if (error.response?.status === 401) {
-      // إذا كان الخطأ 401 (غير مصرح)، قم بإزالة التوكن وإعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+      // التحقق ما إذا كانت الصفحة الحالية هي إحدى صفحات استعادة كلمة المرور
       if (typeof window !== "undefined") {
-        window.location.href = "/login"
+        const currentPath = window.location.pathname;
+        const isPasswordResetPage = [
+          '/forgot-password',
+          '/verify-otp',
+          '/reset-password'
+        ].includes(currentPath);
+        
+        // إذا لم تكن صفحة استعادة كلمة المرور، قم بإعادة التوجيه إلى صفحة تسجيل الدخول
+        if (!isPasswordResetPage) {
+          console.log("401 error detected, redirecting to login");
+          window.location.href = "/login";
+        } else {
+          console.log("401 error on password reset page, not redirecting");
+        }
       }
     }
     return Promise.reject(error)

@@ -22,6 +22,12 @@ export function middleware(request: NextRequest) {
 
   // التحقق مما إذا كان المستخدم يحاول الوصول إلى صفحة تسجيل الدخول
   const isLoginPage = request.nextUrl.pathname === "/login"
+  
+  // التحقق مما إذا كان المستخدم يحاول الوصول إلى صفحات استعادة كلمة المرور
+  const isPasswordResetPage = 
+    request.nextUrl.pathname === "/forgot-password" ||
+    request.nextUrl.pathname === "/verify-otp" ||
+    request.nextUrl.pathname === "/reset-password"
 
   // إذا كان المستخدم يحاول الوصول إلى صفحات لوحة التحكم ولكن ليس لديه توكن
   if (isDashboardPage && !token) {
