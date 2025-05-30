@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,24 +9,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Badge } from "@/components/ui/badge"
-import { useMobile } from "@/hooks/use-mobile"
-import { useAuth } from "@/contexts/auth-context"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Badge } from "@/components/ui/badge";
+import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
 
 interface HeaderProps {
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
 }
 
 export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
-  const { theme, setTheme } = useTheme()
-  const isMobile = useMobile()
-  const [mounted, setMounted] = useState(false)
-  const auth = useAuth()
+  const { theme, setTheme } = useTheme();
+  const isMobile = useMobile();
+  const [mounted, setMounted] = useState(false);
+  const auth = useAuth();
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -56,34 +57,39 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
       time: "منذ 3 ساعات",
       read: true,
     },
-  ])
+  ]);
 
   // هذا مهم لتجنب مشكلة عدم تطابق الترميز بين الخادم والعميل
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: number) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+    setNotifications(
+      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })))
-  }
+    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  };
 
   const handleLogout = async () => {
     if (auth) {
-      await auth.logout()
-      window.location.href = "/login"
+      await auth.logout();
+      window.location.href = "/login";
     }
-  }
+  };
 
   // لا تعرض أي شيء حتى يتم تحميل الصفحة بالكامل
   if (!mounted) {
-    return null
+    return null;
   }
+  console.log("Header mounted with theme:", theme);
+  console.log("Sidebar open state:", sidebarOpen);
+  console.log("Auth user:", auth);
 
   return (
     <header
@@ -110,7 +116,9 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
           size="icon"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="relative hover:bg-primary/10"
-          aria-label={theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+          aria-label={
+            theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"
+          }
         >
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -120,7 +128,11 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         {/* قائمة الإشعارات */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative hover:bg-primary/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative hover:bg-primary/10"
+            >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground animate-pulse">
@@ -167,8 +179,12 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                         </Badge>
                       )}
                     </div>
-                    <div className="mt-1 text-sm text-muted-foreground">{notification.message}</div>
-                    <div className="mt-1 text-xs text-muted-foreground/70">{notification.time}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {notification.message}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground/70">
+                      {notification.time}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -185,11 +201,24 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         {/* قائمة المستخدم */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full hover:bg-primary/10"
+            >
               <Avatar className="h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
-                <AvatarImage src="/placeholder.svg?height=32&width=32" alt="صورة المستخدم" />
+                <AvatarImage
+                  src={
+                    auth?.user?.avatar_url ||
+                    auth?.user?.avatar ||
+                    "/placeholder.svg"
+                  }
+                  alt="صورة المستخدم"
+                />
                 <AvatarFallback className="bg-primary/10 text-primary">
-                  {auth?.user?.name?.charAt(0) || "م"}
+                  {auth?.user?.first_name?.charAt(0) ||
+                    auth?.user?.name?.charAt(0) ||
+                    "م"}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -200,19 +229,36 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex flex-col space-y-0.5">
-                <p className="text-sm font-medium">{auth?.user?.name || "المستخدم"}</p>
-                <p className="text-xs text-muted-foreground">{auth?.user?.phone || "رقم الهاتف"}</p>
+                <p className="text-sm font-medium">
+                  {`${auth?.user?.first_name || ""} ${
+                    auth?.user?.last_name || ""
+                  }` ||
+                    auth?.user?.name ||
+                    "المستخدم"}
+                </p>
+                <p
+                  className="text-xs text-muted-foreground"
+                  style={{ direction: "ltr", unicodeBidi: "plaintext" }}
+                >
+                  {auth?.user?.country_code && auth?.user?.phone_number
+                    ? `${auth?.user?.country_code} ${auth?.user?.phone_number}`
+                    : auth?.user?.phone || "رقم الهاتف"}
+                </p>
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-              <User className="ml-2 h-4 w-4 text-primary" />
-              الملف الشخصي
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-              <Settings className="ml-2 h-4 w-4 text-primary" />
-              الإعدادات
-            </DropdownMenuItem>
+            <Link href="/profile">
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
+                <User className="ml-2 h-4 w-4 text-primary" />
+                الملف الشخصي
+              </DropdownMenuItem>
+            </Link>
+            <Link href="/settings">
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
+                <Settings className="ml-2 h-4 w-4 text-primary" />
+                الإعدادات
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
@@ -225,5 +271,5 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Settings,
   Users,
+  User,
   X,
   CreditCard,
   ChevronRight,
@@ -57,6 +58,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       href: "/dashboard",
       active: pathname === "/dashboard",
     },
+
     {
       label: "المستخدمين",
       icon: <Users className="ml-2 h-5 w-5" />,
@@ -98,6 +100,12 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       icon: <MessageSquare className="ml-2 h-5 w-5" />,
       href: "/notifications",
       active: pathname === "/notifications",
+    },
+    {
+      label: "الملف الشخصي",
+      icon: <User className="ml-2 h-5 w-5" />,
+      href: "/profile",
+      active: pathname === "/profile",
     },
     {
       label: "الإعدادات",

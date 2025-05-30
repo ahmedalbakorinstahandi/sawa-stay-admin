@@ -59,12 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           storedToken ? "Token exists" : "No token"
         );
 
-        // if (storedToken) {
-        //   setTokenState(storedToken);
-        //   await fetchUserProfile(storedToken);
-        // } else {
-        //   setIsLoading(false);
-        // }
+        if (storedToken) {
+          setTokenState(storedToken);
+          await fetchUserProfile(storedToken);
+        } else {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Auth initialization error:", error);
         setIsLoading(false);
@@ -74,34 +74,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  // const fetchUserProfile = async (authToken: string) => {
-  //   try {
-  //     console.log("Fetching user profile with token:", authToken)
+  const fetchUserProfile = async (authToken: string) => {
+    try {
+      console.log("Fetching user profile with token:", authToken)
 
-  //     // محاولة جلب بيانات المستخدم من الباك اند
-  //     const response = await api.get("/auth/me", {
-  //       headers: {
-  //         Authorization: `Bearer ${authToken}`,
-  //       },
-  //     })
+      // محاولة جلب بيانات المستخدم من الباك اند
+      const response = await api.get("/admin/profile", {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
 
-  //     if (response.data.success) {
-  //       setUser(response.data.data)
-  //       setIsLoading(false)
-  //       return true
-  //     } else {
-  //       // إذا فشل جلب بيانات المستخدم، قم بتسجيل الخروج
-  //       console.error("Failed to fetch user profile:", response.data.message)
-  //    //   await logout()
-  //       return false
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching user profile:", error)
-  // //    await logout()
-  //     setIsLoading(false)
-  //     return false
-  //   }
-  // }
+      if (response.data.success) {
+        setUser(response.data.data)
+        setIsLoading(false)
+        return true
+      } else {
+        // إذا فشل جلب بيانات المستخدم، قم بتسجيل الخروج
+        console.error("Failed to fetch user profile:", response.data.message)
+        await logout()
+        return false
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error)
+      await logout()
+      setIsLoading(false)
+      return false
+    }
+  }
 
   const login = async (phone: string, password: string) => {
     setIsLoading(true);
@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(response.data.data);
         } else {
           // إذا لم تكن بيانات المستخدم متوفرة، حاول جلبها
-          // await fetchUserProfile(authToken);
+          await fetchUserProfile(authToken);
         }
 
         setIsLoading(false);
