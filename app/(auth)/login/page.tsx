@@ -255,14 +255,14 @@ export default function LoginPage() {
                   استخدام بيانات الدخول المؤقتة
                 </Button>
               </div>
-              <div className="flex justify-end">
+              {/* <div className="flex justify-end">
                 <Link
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
                   نسيت كلمة المرور؟
                 </Link>
-              </div>
+              </div> */}
             </CardContent>
             <CardFooter>
               <Button className="w-full" type="submit" disabled={isLoading}>
