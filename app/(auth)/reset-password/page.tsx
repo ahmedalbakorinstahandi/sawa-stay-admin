@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import Link from "next/link";
-import { PhoneInput } from 'react-international-phone';
-import 'react-international-phone/style.css';
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 import { isValidPhone } from "@/lib/phone-validation";
 
 const resetPasswordSchema = z
@@ -40,13 +40,14 @@ const resetPasswordSchema = z
     path: ["password_confirmation"],
   });
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [phone, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [password_confirmation, setPasswordConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] =
+    useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{
@@ -54,7 +55,7 @@ export default function ResetPasswordPage() {
     password?: string;
     password_confirmation?: string;
   }>({});
-  
+
   const isValidPhone = (phone: string) => {
     return phone.length >= 8 && /^\+?\d+$/.test(phone);
   };
@@ -129,14 +130,17 @@ export default function ResetPasswordPage() {
         toast({
           variant: "destructive",
           title: "خطأ",
-          description: response.data.message || "حدث خطأ أثناء إعادة تعيين كلمة المرور",
+          description:
+            response.data.message || "حدث خطأ أثناء إعادة تعيين كلمة المرور",
         });
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "خطأ",
-        description: error.response?.data?.message || "حدث خطأ أثناء إعادة تعيين كلمة المرور",
+        description:
+          error.response?.data?.message ||
+          "حدث خطأ أثناء إعادة تعيين كلمة المرور",
       });
     } finally {
       setIsLoading(false);
@@ -157,29 +161,29 @@ export default function ResetPasswordPage() {
             />
           </div>
           <CardTitle className="text-2xl">إعادة تعيين كلمة المرور</CardTitle>
-          <CardDescription>
-            أدخل كلمة المرور الجديدة
-          </CardDescription>
+          <CardDescription>أدخل كلمة المرور الجديدة</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">            <div className="space-y-2">
+          <CardContent className="space-y-4">
+            {" "}
+            <div className="space-y-2">
               <Label htmlFor="phone">رقم الهاتف</Label>
               <div className="phone-input-container">
                 <PhoneInput
                   defaultCountry="ae"
                   style={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    height: '40px',
-                    fontSize: '0.875rem',
-                    borderRadius: '0.375rem',
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "row",
+                    height: "40px",
+                    fontSize: "0.875rem",
+                    borderRadius: "0.375rem",
                   }}
                   value={phone}
                   onChange={(phone) => {
                     if (!searchParams.get("phone")) {
                       setPhoneNumber(phone);
-                      
+
                       // Validate phone number
                       const isValid = isValidPhone(phone);
                       if (!isValid && phone.length > 4) {
@@ -233,7 +237,9 @@ export default function ResetPasswordPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">تأكيد كلمة المرور الجديدة</Label>
+              <Label htmlFor="password_confirmation">
+                تأكيد كلمة المرور الجديدة
+              </Label>
               <div className="relative">
                 <Input
                   id="password_confirmation"
@@ -241,13 +247,19 @@ export default function ResetPasswordPage() {
                   placeholder="******"
                   value={password_confirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
-                  className={errors.password_confirmation ? "border-red-500 pr-10" : "pr-10"}
+                  className={
+                    errors.password_confirmation
+                      ? "border-red-500 pr-10"
+                      : "pr-10"
+                  }
                   dir="ltr"
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 px-3 flex items-center"
-                  onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                  onClick={() =>
+                    setShowPasswordConfirmation(!showPasswordConfirmation)
+                  }
                 >
                   {showPasswordConfirmation ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -257,20 +269,21 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
               {errors.password_confirmation && (
-                <p className="text-red-500 text-sm">{errors.password_confirmation}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.password_confirmation}
+                </p>
               )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "جاري الإرسال..." : "إعادة تعيين كلمة المرور"}
             </Button>
             <div className="text-center">
-              <Link href="/login" className="text-sm text-primary hover:underline">
+              <Link
+                href="/login"
+                className="text-sm text-primary hover:underline"
+              >
                 العودة إلى تسجيل الدخول
               </Link>
             </div>
@@ -278,5 +291,26 @@ export default function ResetPasswordPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-muted/40">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">جاري التحميل...</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center p-6">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
