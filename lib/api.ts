@@ -120,7 +120,7 @@ export const usersAPI = {
   },
   updateStatus: async (id: number, status: string) => {
     try {
-      const response = await api.put(`/admin/users/${id}/status`, { status })
+      const response = await api.put(`/admin/users/${id}`, { status })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to update user status" }

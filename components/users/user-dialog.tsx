@@ -264,8 +264,8 @@ export function UserDialog({
                 <Avatar className="h-20 w-20">
                   <AvatarImage
                     src={
-                      user.avatar
-                        ? user.avatar
+                      user.avatar_url
+                        ? user.avatar_url
                         : `/placeholder.svg?height=80&width=80`
                     }
                     alt={`${user.first_name || ""} ${user.last_name || ""}`}
@@ -340,7 +340,7 @@ export function UserDialog({
                         الصورة الحالية:
                       </p>
                       <img
-                        src={user.avatar || "/placeholder.svg"}
+                        src={user.avatar_url || "/placeholder.svg"}
                         alt={user.first_name || ""}
                         className="h-16 w-16 object-cover rounded-md"
                       />
@@ -478,7 +478,7 @@ export function UserDialog({
 
               {/* bank_details */}
             </div>
-            <FormField
+            {/* <FormField
               control={form.control}
               name="bank_details"
               render={({ field }) => (
@@ -490,7 +490,7 @@ export function UserDialog({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <DialogFooter>
               <Button

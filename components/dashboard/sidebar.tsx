@@ -10,6 +10,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   BarChart3,
   BookOpen,
+  Briefcase,
   Home,
   LayoutDashboard,
   LogOut,
@@ -64,6 +65,12 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       icon: <Users className="ml-2 h-5 w-5" />,
       href: "/users",
       active: pathname === "/users",
+    },
+    {
+      label: "طاقم العمل",
+      icon: <Briefcase className="ml-2 h-5 w-5" />,
+      href: "/staff",
+      active: pathname === "/staff",
     },
     {
       label: "الإعلانات",

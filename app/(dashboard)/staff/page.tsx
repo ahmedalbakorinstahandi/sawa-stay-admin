@@ -40,6 +40,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Briefcase,
   Edit,
   Eye,
   MoreHorizontal,
@@ -56,59 +57,55 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { UserDialog } from "@/components/users/user-dialog";
-import { UserDeleteDialog } from "@/components/users/user-delete-dialog";
+import { StaffDialog } from "@/components/staff/staff-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { usersAPI } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StaffDeleteDialog } from "@/components/staff/staff-delete-dialog";
 
-export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+export default function StaffPage() {
+  const [staffMembers, setStaffMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
-  const [isUserDeleteDialogOpen, setIsUserDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [isStaffDeleteDialogOpen, setIsStaffDeleteDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const { toast } = useToast();
   const router = useRouter();
 
-  // جلب المستخدمين من الباك اند
-  const fetchUsers = async () => {
+  // جلب طاقم العمل من الباك اند مع فلتر role=employee
+  const fetchStaff = async () => {
     setLoading(true);
     try {
-      const filters: any = {};
-      if (roleFilter !== "all") filters.role = roleFilter;
+      const filters: any = {
+        role: "employee", // فلترة لجلب طاقم العمل فقط
+      };
+
+      if (departmentFilter !== "all") filters.department = departmentFilter;
       if (statusFilter !== "all") filters.status = statusFilter;
-      if (roleFilter === "host") {
-        filters.role = "user";
-        filters.id_verified = "approved";
-      } else if (roleFilter === "user") {
-        filters.role = "user";
-        filters.id_verified = "none";
-      }
       if (searchTerm) filters.search = searchTerm;
 
       const response = await usersAPI.getAll(currentPage, perPage, filters);
 
       if (response.success) {
-        setUsers(response.data || []);
+        setStaffMembers(response.data || []);
         setTotalPages(response.meta?.last_page || 1);
       } else {
         toast({
           title: "حدث خطأ",
-          description: response.message || "فشل في جلب بيانات المستخدمين",
+          description: response.message || "فشل في جلب بيانات طاقم العمل",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "حدث خطأ",
-        description: "فشل في جلب بيانات المستخدمين",
+        description: "فشل في جلب بيانات طاقم العمل",
         variant: "destructive",
       });
     } finally {
@@ -116,15 +113,15 @@ export default function UsersPage() {
     }
   };
 
-  // جلب المستخدمين عند تحميل الصفحة أو تغيير المرشحات
+  // جلب طاقم العمل عند تحميل الصفحة أو تغيير المرشحات
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage, perPage, roleFilter, statusFilter, searchTerm]);
+    fetchStaff();
+  }, [currentPage, perPage, departmentFilter, statusFilter, searchTerm]);
 
   // البحث عند الضغط على زر البحث أو Enter
   const handleSearch = () => {
     setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند البحث
-    fetchUsers();
+    fetchStaff();
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -137,14 +134,16 @@ export default function UsersPage() {
     switch (status) {
       case "active":
         return (
-          <Badge variant="outline" className="border-green-500 text-green-500">
+          <Badge
+            variant="outline"
+            className="border-emerald-500 text-emerald-500"
+          >
             نشط
           </Badge>
         );
-
       case "banneded":
         return (
-          <Badge variant="outline" className="border-red-500 text-red-500">
+          <Badge variant="outline" className="border-rose-500 text-rose-500">
             محظور
           </Badge>
         );
@@ -153,57 +152,55 @@ export default function UsersPage() {
     }
   };
 
-  const getRoleBadge = (role: string, id_verified: string) => {
-    const badgeStyles = {
-      user: "border-blue-500 text-blue-500",
-      admin: "border-purple-500 text-purple-500",
+  const getDepartmentBadge = (department: string) => {
+    const departments: Record<string, { color: string; label: string }> = {
+      management: {
+        color: "border-purple-500 text-purple-500",
+        label: "الإدارة",
+      },
+      support: { color: "border-blue-500 text-blue-500", label: "الدعم" },
+      operations: {
+        color: "border-amber-500 text-amber-500",
+        label: "العمليات",
+      },
+      finance: { color: "border-green-500 text-green-500", label: "المالية" },
+      marketing: { color: "border-pink-500 text-pink-500", label: "التسويق" },
     };
 
-    if (role === "user") {
+    if (department && departments[department]) {
       return (
-        <Badge
-          variant="outline"
-          className={id_verified === "approved" ? badgeStyles.user : undefined}
-        >
-          {id_verified === "approved" ? "مضيف" : "مستخدم"}
+        <Badge variant="outline" className={departments[department].color}>
+          {departments[department].label}
         </Badge>
       );
     }
 
-    if (role === "admin") {
-      return (
-        <Badge variant="outline" className={badgeStyles.admin}>
-          مدير
-        </Badge>
-      );
-    }
-
-    return <Badge variant="outline">{role}</Badge>;
+    return <Badge variant="outline">قسم آخر</Badge>;
   };
 
-  // User handlers
-  const handleAddUser = () => {
-    setSelectedUser(null);
-    setIsUserDialogOpen(true);
+  // Staff handlers
+  const handleAddStaff = () => {
+    setSelectedStaff(null);
+    setIsStaffDialogOpen(true);
   };
 
-  const handleEditUser = (user: any) => {
-    setSelectedUser(user);
-    setIsUserDialogOpen(true);
+  const handleEditStaff = (staff: any) => {
+    setSelectedStaff(staff);
+    setIsStaffDialogOpen(true);
   };
 
-  const handleDeleteUser = (user: any) => {
-    setSelectedUser(user);
-    setIsUserDeleteDialogOpen(true);
+  const handleDeleteStaff = (staff: any) => {
+    setSelectedStaff(staff);
+    setIsStaffDeleteDialogOpen(true);
   };
 
-  const handleViewUserDetails = (userId: number) => {
-    router.push(`/users/${userId}`);
+  const handleViewStaffDetails = (staffId: number) => {
+    router.push(`/staff/${staffId}`);
   };
 
-  const handleUpdateUserStatus = async (user: any, newStatus: string) => {
+  const handleUpdateStaffStatus = async (staff: any, newStatus: string) => {
     try {
-      const response = await usersAPI.updateStatus(user.id, newStatus);
+      const response = await usersAPI.updateStatus(staff.id, newStatus);
 
       if (response.success) {
         let statusText = "";
@@ -211,7 +208,7 @@ export default function UsersPage() {
           case "active":
             statusText = "تفعيل";
             break;
-          case "banned":
+          case "banneded":
             statusText = "حظر";
             break;
           default:
@@ -220,31 +217,31 @@ export default function UsersPage() {
         }
 
         toast({
-          title: `تم ${statusText} المستخدم`,
-          description: `تم ${statusText} المستخدم "${user.first_name} ${user.last_name}" بنجاح`,
+          title: `تم ${statusText} الموظف`,
+          description: `تم ${statusText} الموظف "${staff.first_name} ${staff.last_name}" بنجاح`,
         });
 
-        fetchUsers(); // إعادة تحميل البيانات
+        fetchStaff(); // إعادة تحميل البيانات
       } else {
         toast({
           title: "حدث خطأ",
-          description: response.message || "فشل في تحديث حالة المستخدم",
+          description: response.message || "فشل في تحديث حالة الموظف",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "حدث خطأ",
-        description: "فشل في تحديث حالة المستخدم",
+        description: "فشل في تحديث حالة الموظف",
         variant: "destructive",
       });
     }
   };
 
   // إنشاء الأحرف الأولى للاسم بشكل آمن
-  const getInitials = (user: any) => {
-    const firstName = user?.first_name || "";
-    const lastName = user?.last_name || "";
+  const getInitials = (staff: any) => {
+    const firstName = staff?.first_name || "";
+    const lastName = staff?.last_name || "";
     return `${firstName.charAt(0) || ""}${lastName.charAt(0) || ""}`;
   };
 
@@ -256,17 +253,23 @@ export default function UsersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">المستخدمين</h2>
-        <Button onClick={handleAddUser}>
-          <Plus className="ml-2 h-4 w-4" /> إضافة مستخدم
+        <h2 className="text-3xl font-bold tracking-tight">طاقم العمل</h2>
+        <Button
+          onClick={handleAddStaff}
+          className="gradient-primary hover:opacity-90"
+        >
+          <Plus className="ml-2 h-4 w-4" /> إضافة موظف
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-l-4 border-l-primary shadow-md">
         <CardHeader>
-          <CardTitle>إدارة المستخدمين</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-primary" />
+            إدارة طاقم العمل
+          </CardTitle>
           <CardDescription>
-            عرض وإدارة جميع المستخدمين في النظام
+            عرض وإدارة جميع أعضاء طاقم العمل في النظام
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -275,33 +278,39 @@ export default function UsersPage() {
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="بحث عن مستخدم..."
+                  placeholder="بحث عن موظف..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   className="pr-9"
                 />
               </div>
-              <Button onClick={handleSearch} variant="secondary">
+              <Button
+                onClick={handleSearch}
+                variant="secondary"
+                className="shadow-sm"
+              >
                 بحث
               </Button>
-              <Select
-                value={roleFilter}
+              {/* <Select
+                value={departmentFilter}
                 onValueChange={(value) => {
-                  setRoleFilter(value);
+                  setDepartmentFilter(value);
                   setCurrentPage(1);
                 }}
               >
                 <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="الدور" />
+                  <SelectValue placeholder="القسم" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الأدوار</SelectItem>
-                  <SelectItem value="admin">مدير</SelectItem>
-                  <SelectItem value="host">مضيف</SelectItem>
-                  <SelectItem value="user">مستخدم</SelectItem>
+                  <SelectItem value="all">جميع الأقسام</SelectItem>
+                  <SelectItem value="management">الإدارة</SelectItem>
+                  <SelectItem value="support">الدعم</SelectItem>
+                  <SelectItem value="operations">العمليات</SelectItem>
+                  <SelectItem value="finance">المالية</SelectItem>
+                  <SelectItem value="marketing">التسويق</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
               <Select
                 value={statusFilter}
                 onValueChange={(value) => {
@@ -320,16 +329,16 @@ export default function UsersPage() {
               </Select>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-hidden">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-primary/5">
                   <TableRow>
-                    <TableHead>المستخدم</TableHead>
+                    <TableHead>الموظف</TableHead>
                     <TableHead>البريد الإلكتروني</TableHead>
                     <TableHead>رقم الهاتف</TableHead>
-                    <TableHead>الدور</TableHead>
+                    {/* <TableHead>القسم</TableHead> */}
                     <TableHead>الحالة</TableHead>
-                    <TableHead>تاريخ التسجيل</TableHead>
+                    <TableHead>تاريخ التعيين</TableHead>
                     <TableHead className="text-left">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -369,103 +378,120 @@ export default function UsersPage() {
                           </TableCell>
                         </TableRow>
                       ))
-                  ) : users.length === 0 ? (
+                  ) : staffMembers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="h-24 text-center">
                         لا توجد نتائج.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
+                    staffMembers.map((staff) => (
+                      <TableRow
+                        key={staff.id}
+                        className="hover:bg-primary/5 transition-colors"
+                      >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
-                            <Avatar>
+                            <Avatar className="border-2 border-primary/20">
                               <AvatarImage
                                 src={
-                                  user.avatar_url ||
+                                  staff.avatar_url ||
                                   `/placeholder.svg?height=40&width=40`
                                 }
-                                alt={`${user.first_name || ""} ${
-                                  user.last_name || ""
+                                alt={`${staff.first_name || ""} ${
+                                  staff.last_name || ""
                                 }`}
                               />
-                              <AvatarFallback>
-                                {getInitials(user)}
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {getInitials(staff)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span>{`${user.first_name || ""} ${
-                                user.last_name || ""
+                              <span>{`${staff.first_name || ""} ${
+                                staff.last_name || ""
                               }`}</span>
-                              {user.email_verified && (
-                                <span className="text-xs text-muted-foreground">
-                                  موثق
-                                </span>
-                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {staff.position || "موظف"}
+                              </span>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell style={{ unicodeBidi: "plaintext" }}>
-                          {user.country_code} {user.phone_number}
+                        <TableCell>{staff.email}</TableCell>
+                        <TableCell
+                          style={{
+                            unicodeBidi: "plaintext",
+                            textAlign: "right",
+                          }}
+                        >
+                          {staff.country_code} {staff.phone_number}
                         </TableCell>
+                        {/* <TableCell>
+                          {getDepartmentBadge(staff.department)}
+                        </TableCell> */}
+                        <TableCell>{getStatusBadge(staff.status)}</TableCell>
                         <TableCell>
-                          {getRoleBadge(user.role, user.id_verified)}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(user.status)}</TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString(
+                          {new Date(staff.created_at).toLocaleDateString(
                             "ar-SY"
                           )}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hover:bg-primary/10"
+                              >
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">فتح القائمة</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-40 border-primary/20"
+                            >
                               <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => handleViewUserDetails(user.id)}
+                                onClick={() => handleViewStaffDetails(staff.id)}
+                                className="hover:bg-primary/10"
                               >
                                 <Eye className="ml-2 h-4 w-4" />
                                 عرض التفاصيل
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleEditUser(user)}
+                                onClick={() => handleEditStaff(staff)}
+                                className="hover:bg-primary/10"
                               >
                                 <Edit className="ml-2 h-4 w-4" />
                                 تعديل
                               </DropdownMenuItem>
-                              {/* {user.status !== "active" && (
+                              {staff.status !== "active" && (
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    handleUpdateUserStatus(user, "active")
+                                    handleUpdateStaffStatus(staff, "active")
                                   }
+                                  className="hover:bg-green-100 dark:hover:bg-green-900/20"
                                 >
-                                  <UserCheck className="ml-2 h-4 w-4" />
+                                  <UserCheck className="ml-2 h-4 w-4 text-green-500" />
                                   تفعيل
                                 </DropdownMenuItem>
                               )}
-                              {user.status !== "banned" && (
+                              {staff.status !== "banneded" && (
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    handleUpdateUserStatus(user, "banned")
+                                    handleUpdateStaffStatus(staff, "banneded")
                                   }
+                                  className="hover:bg-red-100 dark:hover:bg-red-900/20"
                                 >
-                                  <UserX className="ml-2 h-4 w-4" />
+                                  <UserX className="ml-2 h-4 w-4 text-red-500" />
                                   حظر
                                 </DropdownMenuItem>
-                              )} */}
+                              )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => handleDeleteUser(user)}
+                                className="text-destructive focus:text-destructive hover:bg-red-100 dark:hover:bg-red-900/20"
+                                onClick={() => handleDeleteStaff(staff)}
                               >
                                 <Trash2 className="ml-2 h-4 w-4" />
                                 حذف
@@ -535,18 +561,18 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      <UserDialog
-        open={isUserDialogOpen}
-        onOpenChange={setIsUserDialogOpen}
-        user={selectedUser}
-        onSuccess={fetchUsers}
+      <StaffDialog
+        open={isStaffDialogOpen}
+        onOpenChange={setIsStaffDialogOpen}
+        staff={selectedStaff}
+        onSuccess={fetchStaff}
       />
 
-      <UserDeleteDialog
-        open={isUserDeleteDialogOpen}
-        onOpenChange={setIsUserDeleteDialogOpen}
-        user={selectedUser}
-        onSuccess={fetchUsers}
+      <StaffDeleteDialog
+        open={isStaffDeleteDialogOpen}
+        onOpenChange={setIsStaffDeleteDialogOpen}
+        staff={selectedStaff}
+        onSuccess={fetchStaff}
       />
     </div>
   );
