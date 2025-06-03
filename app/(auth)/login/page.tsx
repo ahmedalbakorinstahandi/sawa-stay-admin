@@ -111,11 +111,12 @@ export default function LoginPage() {
           description: "مرحباً بك في لوحة إدارة Syria Go",
         });
 
+        router.push("/dashboard");
+
         // إضافة تأخير قصير قبل إعادة التوجيه للتأكد من تخزين التوكن
-        setTimeout(() => {
-          console.log("Login successful, redirecting to dashboard");
-          router.push("/dashboard");
-        }, 500);
+        // setTimeout(() => {
+        //   console.log("Login successful, redirecting to dashboard");
+        // }, 500);
       } else {
         toast({
           title: "فشل تسجيل الدخول",

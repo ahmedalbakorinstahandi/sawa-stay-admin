@@ -121,7 +121,7 @@
 
 .phone-input-container .react-international-phone-country-selector-button {
   border-right: 1px solid hsl(var(--border));
-  padding-right: 0.5rem;
+  padding: 0rem 1rem !important;
   margin-right: 0.5rem;
   color: hsl(var(--foreground));
   background-color: transparent;
@@ -171,7 +171,37 @@
   margin-right: 0;
   margin-left: 0.5rem;
 }
+/* Dark mode support for react-international-phone-input */
+.dark .phone-input-container .react-international-phone-input {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
 
+.dark .phone-input-container .react-international-phone-input:focus-within {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+.dark .phone-input-container .react-international-phone-country-selector-button {
+  color: hsl(var(--foreground));
+  background-color: transparent;
+  border-color: hsl(var(--border));
+}
+
+.dark .react-international-phone-country-selector-dropdown {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+.dark .react-international-phone-country-selector-dropdown-item {
+  color: hsl(var(--foreground));
+}
+
+.dark .react-international-phone-country-selector-dropdown-item:hover {
+  background-color: hsl(var(--accent));
+}
 /* Leaflet Map Styles */
 .leaflet-container {
   height: 100%;

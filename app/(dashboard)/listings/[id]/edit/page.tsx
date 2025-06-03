@@ -288,11 +288,11 @@ export default function EditListingPage() {
 
           // تعبئة النموذج بالبيانات
           form.reset({
-            title:{
+            title: {
               ar: response.data.data.title?.ar || "",
               en: response.data.data.title?.en || "",
             },
-            description:{
+            description: {
               ar: response.data.data.description?.ar || "",
               en: response.data.data.description?.en || "",
             },
@@ -490,7 +490,6 @@ export default function EditListingPage() {
     form.setValue(key as any, Math.max(currentValue - 1, min));
   };
 
-  
   return (
     <div className="space-y-4">
       <div className="flex items-center mb-6">
@@ -1334,8 +1333,8 @@ export default function EditListingPage() {
                                 key={feature.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-gray-100 hover:bg-gray-200"
+                                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                                 }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
@@ -1394,8 +1393,8 @@ export default function EditListingPage() {
                                 key={category.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-gray-100 hover:bg-gray-200"
+                                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                                 }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
@@ -1529,7 +1528,7 @@ export default function EditListingPage() {
                     />
                   )}
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="noise_monitoring_device"
                     render={({ field }) => (
@@ -1567,7 +1566,7 @@ export default function EditListingPage() {
                         </FormControl>
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   {/* <FormField
                     control={form.control}
@@ -1679,6 +1678,8 @@ export default function EditListingPage() {
                               src={image.url || "/placeholder.svg"}
                               alt="صورة الإعلان"
                               fill
+                              priority
+                              // loading="eager"
                               className="object-cover"
                             />
                             <Button
@@ -1760,6 +1761,7 @@ export default function EditListingPage() {
                             className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
                           >
                             <Image
+                              priority
                               src={preview || "/placeholder.svg"}
                               alt={`صورة الإعلان ${index + 1}`}
                               fill

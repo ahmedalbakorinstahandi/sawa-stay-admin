@@ -92,6 +92,7 @@ export default function UsersPage() {
         filters.id_verified = "none";
       }
       if (searchTerm) filters.search = searchTerm;
+      filters.not_in_role = ["employee"]; // استبعاد المديرين من النتائج
 
       const response = await usersAPI.getAll(currentPage, perPage, filters);
 

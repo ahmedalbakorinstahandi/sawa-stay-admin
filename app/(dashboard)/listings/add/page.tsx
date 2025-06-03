@@ -1330,8 +1330,8 @@ export default function AddListingPage() {
                                 key={feature.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-gray-100 hover:bg-gray-200"
+                                    ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
+                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                                 }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
@@ -1390,8 +1390,8 @@ export default function AddListingPage() {
                                 key={category.id}
                                 className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
                                   isSelected
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-gray-100 hover:bg-gray-200"
+                                    ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
+                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                                 }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
@@ -1525,7 +1525,7 @@ export default function AddListingPage() {
                     />
                   )}
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="noise_monitoring_device"
                     render={({ field }) => (
@@ -1563,7 +1563,7 @@ export default function AddListingPage() {
                         </FormControl>
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   {/* <FormField
                     control={form.control}
