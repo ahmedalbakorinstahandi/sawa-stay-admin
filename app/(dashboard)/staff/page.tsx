@@ -74,7 +74,7 @@ export default function StaffPage() {
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState(25);
   const { toast } = useToast();
   const router = useRouter();
 

@@ -97,6 +97,8 @@ export default function ListingsPage() {
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+
   const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast();
   const router = useRouter();
@@ -134,6 +136,7 @@ export default function ListingsPage() {
       // Build query parameters
       const params = new URLSearchParams();
       params.append("page", currentPage.toString());
+      params.append("limit", perPage.toString());
 
       if (searchTerm) {
         params.append("search", searchTerm);

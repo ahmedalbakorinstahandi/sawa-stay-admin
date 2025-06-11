@@ -77,7 +77,7 @@ export const usersAPI = {
       const response = await api.get(`/admin/users`, {
         params: {
           page,
-          per_page: perPage,
+          limit: perPage,
           ...filters,
         },
       })
@@ -132,7 +132,7 @@ export const usersAPI = {
 export const houseTypesAPI = {
   getAll: async (page = 1, perPage = 10) => {
     try {
-      const response = await api.get(`/admin/house-types?page=${page}&per_page=${perPage}`)
+      const response = await api.get(`/admin/house-types?page=${page}&limit=${perPage}`)
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to fetch house types" }
@@ -176,7 +176,7 @@ export const houseTypesAPI = {
 export const categoriesAPI = {
   getAll: async (page = 1, perPage = 10) => {
     try {
-      const response = await api.get(`/admin/categories?page=${page}&per_page=${perPage}`)
+      const response = await api.get(`/admin/categories?page=${page}&limit=${perPage}`)
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to fetch categories" }
@@ -220,7 +220,7 @@ export const categoriesAPI = {
 export const featuresAPI = {
   getAll: async (page = 1, perPage = 10) => {
     try {
-      const response = await api.get(`/admin/features?page=${page}&per_page=${perPage}`)
+      const response = await api.get(`/admin/features?page=${page}&limit=${perPage}`)
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to fetch features" }
@@ -267,7 +267,7 @@ export const listingsAPI = {
       const response = await api.get(`/admin/listings`, {
         params: {
           page,
-          per_page: perPage,
+          limit: perPage,
           ...filters,
         },
       })
