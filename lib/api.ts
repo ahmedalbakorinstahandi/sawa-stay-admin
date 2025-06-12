@@ -40,7 +40,7 @@ api.interceptors.response.use(
           '/verify-otp',
           '/reset-password'
         ].includes(currentPath);
-        
+
         // إذا لم تكن صفحة استعادة كلمة المرور، قم بإعادة التوجيه إلى صفحة تسجيل الدخول
         if (!isPasswordResetPage) {
           console.log("401 error detected, redirecting to login");
@@ -314,6 +314,64 @@ export const listingsAPI = {
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to update listing status" }
+    }
+  },
+}
+
+// Bookings API
+export const bookingsAPI = {
+  getAll: async (page = 1, perPage = 10, filters = {}) => {
+    try {
+      const response = await api.get(`/admin/bookings`, {
+        params: {
+          page,
+          limit: perPage,
+          ...filters,
+        },
+      })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch bookings" }
+    }
+  },
+  get: async (id: number) => {
+    try {
+      const response = await api.get(`/admin/bookings/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch booking" }
+    }
+  },
+  create: async (data: any) => {
+    try {
+      const response = await api.post("/admin/bookings", data)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to create booking" }
+    }
+  },
+  update: async (id: number, data: any) => {
+    try {
+      const response = await api.put(`/admin/bookings/${id}`, data)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to update booking" }
+    }
+  },
+  delete: async (id: number) => {
+    try {
+      const response = await api.delete(`/admin/bookings/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to delete booking" }
+    }
+  },
+  updateStatus: async (id: number, status: string) => {
+    try {
+      const response = await api.put(`/admin/bookings/${id}`, { status: status })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to update booking status" }
     }
   },
 }

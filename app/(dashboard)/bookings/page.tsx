@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,140 +26,131 @@ import { Calendar, CheckCircle, Edit, Eye, MoreHorizontal, Plus, Search, Trash2,
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingDialog } from "@/components/bookings/booking-dialog"
 import { BookingDeleteDialog } from "@/components/bookings/booking-delete-dialog"
+import { BookingDetails } from "@/components/bookings/booking-details"
 import { useToast } from "@/hooks/use-toast"
+import { bookingsAPI } from "@/lib/api"
 
-// Mock data
-const initialBookings = [
-  {
-    id: 1,
-    listing_id: 1,
-    listing_title: "شقة فاخرة في وسط دمشق",
-    host_id: 1,
-    host_name: "أحمد محمد",
-    guest_id: 2,
-    guest_name: "سارة أحمد",
-    start_date: "2023-06-15T00:00:00Z",
-    end_date: "2023-06-20T00:00:00Z",
-    status: "confirmed",
-    payment_method: "wallet",
-    price: 250000,
-    service_fees: 25000,
-    commission: 25000,
-    adults_count: 2,
-    children_count: 1,
-    infants_count: 0,
-    pets_count: 0,
-    created_at: "2023-06-01T10:30:00Z",
-    currency: "USD",
-  },
-  {
-    id: 2,
-    listing_id: 2,
-    listing_title: "فيلا مع مسبح في اللاذقية",
-    host_id: 3,
-    host_name: "محمد علي",
-    guest_id: 4,
-    guest_name: "فاطمة حسن",
-    start_date: "2023-07-10T00:00:00Z",
-    end_date: "2023-07-17T00:00:00Z",
-    status: "paid",
-    payment_method: "shamcash",
-    price: 840000,
-    service_fees: 84000,
-    commission: 84000,
-    adults_count: 4,
-    children_count: 2,
-    infants_count: 1,
-    pets_count: 0,
-    created_at: "2023-06-25T14:45:00Z",
-    currency: "USD",
-  },
-  {
-    id: 3,
-    listing_id: 3,
-    listing_title: "استوديو مفروش في حلب",
-    host_id: 5,
-    host_name: "خالد عمر",
-    guest_id: 1,
-    guest_name: "أحمد محمد",
-    start_date: "2023-08-05T00:00:00Z",
-    end_date: "2023-08-10T00:00:00Z",
-    status: "waiting_payment",
-    payment_method: "wallet",
-    price: 175000,
-    service_fees: 17500,
-    commission: 17500,
-    adults_count: 1,
-    children_count: 0,
-    infants_count: 0,
-    pets_count: 0,
-    created_at: "2023-07-20T09:15:00Z",
-    currency: "USD",
-  },
-  {
-    id: 4,
-    listing_id: 4,
-    listing_title: "بيت ريفي في طرطوس",
-    host_id: 2,
-    host_name: "سارة أحمد",
-    guest_id: 3,
-    guest_name: "محمد علي",
-    start_date: "2023-09-01T00:00:00Z",
-    end_date: "2023-09-05T00:00:00Z",
-    status: "completed",
-    payment_method: "alharam",
-    price: 300000,
-    service_fees: 30000,
-    commission: 30000,
-    adults_count: 3,
-    children_count: 1,
-    infants_count: 0,
-    pets_count: 0,
-    created_at: "2023-08-15T16:20:00Z",
-    currency: "USD",
-  },
-  {
-    id: 5,
-    listing_id: 5,
-    listing_title: "شاليه على البحر في اللاذقية",
-    host_id: 4,
-    host_name: "فاطمة حسن",
-    guest_id: 5,
-    guest_name: "خالد عمر",
-    start_date: "2023-10-10T00:00:00Z",
-    end_date: "2023-10-15T00:00:00Z",
-    status: "cancelled",
-    payment_method: "wallet",
-    price: 450000,
-    service_fees: 45000,
-    commission: 45000,
-    adults_count: 2,
-    children_count: 0,
-    infants_count: 0,
-    pets_count: 0,
-    created_at: "2023-09-25T11:10:00Z",
-    currency: "USD",
-  },
-]
+// Types for bookings data
+type Booking = {
+  id: number
+  listing_id: number
+  host_id: number
+  guest_id: number
+  start_date: string
+  end_date: string
+  check_in: string | null
+  check_out: string | null
+  status: string
+  currency: string
+  price: number
+  commission: number
+  service_fees: number
+  message: string | null
+  adults_count: number
+  children_count: number
+  infants_count: number
+  pets_count: number
+  host_notes: string | null
+  admin_notes: string | null
+  created_at: string
+  listing?: {
+    id: number
+    title: {
+      ar: string
+      en: string | null
+    }
+  }
+  host?: {
+    id: number
+    first_name: string
+    last_name: string
+    avatar?: string | null
+    avatar_url?: string | null
+  }
+  guest?: {
+    id: number
+    first_name: string
+    last_name: string
+    avatar?: string | null
+    avatar_url?: string | null
+  }
+}
+
+type BookingStats = {
+  all_count: number
+  pending_count: number
+  accepted_count: number
+  confirmed_count: number
+  completed_count: number
+  cancelled_count: number
+  rejected_count: number
+}
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState(initialBookings)
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedBooking, setSelectedBooking] = useState<any>(null)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [stats, setStats] = useState<BookingStats | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const perPage = 10
   const { toast } = useToast()
+
+  // Fetch bookings from API
+  const fetchBookings = async () => {
+    setIsLoading(true)
+    try {
+      const filters: any = {}
+      if (statusFilter !== "all") {
+        filters.status = statusFilter
+      }
+
+      const response = await bookingsAPI.getAll(page, perPage, filters)
+      if (response.success) {
+        setBookings(response.data || [])
+        setStats(response.info || null)
+        // Calculate total pages from all_count
+        if (response.info && response.info.all_count) {
+          setTotalPages(Math.ceil(response.info.all_count / perPage))
+        }
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب بيانات الحجوزات",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب بيانات الحجوزات",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Load bookings when component mounts or filters change
+  useEffect(() => {
+    fetchBookings()
+  }, [page, statusFilter])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "confirmed":
-        return (
-          <Badge variant="success" className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            مؤكد
-          </Badge>
+      case "accepted":
+        return (<Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
+          <CheckCircle className="h-3 w-3" />
+          مؤكد
+        </Badge>
         )
       case "paid":
         return (
@@ -168,12 +159,12 @@ export default function BookingsPage() {
             مدفوع
           </Badge>
         )
+      case "pending":
       case "waiting_payment":
-        return (
-          <Badge variant="warning" className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            بانتظار الدفع
-          </Badge>
+        return (<Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
+          <Calendar className="h-3 w-3" />
+          بانتظار الدفع
+        </Badge>
         )
       case "completed":
         return (
@@ -219,15 +210,20 @@ export default function BookingsPage() {
   }
 
   const filteredBookings = bookings.filter((booking) => {
+    // Filter by search term
+    const bookingTitle = booking.listing?.title?.ar || ""
+    const guestName = `${booking.guest?.first_name || ""} ${booking.guest?.last_name || ""}`
+    const hostName = `${booking.host?.first_name || ""} ${booking.host?.last_name || ""}`
+
     const matchesSearch =
-      booking.listing_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.host_name.toLowerCase().includes(searchTerm.toLowerCase())
+      bookingTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hostName.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesStatus = statusFilter === "all" || booking.status === statusFilter
-    const matchesPaymentMethod = paymentMethodFilter === "all" || booking.payment_method === paymentMethodFilter
+    // We already filter by status in the API call
+    const matchesStatus = true
 
-    return matchesSearch && matchesStatus && matchesPaymentMethod
+    return matchesSearch && matchesStatus
   })
 
   const handleAddBooking = () => {
@@ -235,67 +231,143 @@ export default function BookingsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleEditBooking = (booking: any) => {
+  const handleEditBooking = (booking: Booking) => {
     setSelectedBooking(booking)
     setIsDialogOpen(true)
   }
 
-  const handleDeleteBooking = (booking: any) => {
+  const handleDeleteBooking = (booking: Booking) => {
     setSelectedBooking(booking)
     setIsDeleteDialogOpen(true)
   }
 
-  const handleSaveBooking = (bookingData: any) => {
-    if (selectedBooking) {
-      // Update existing booking
-      const updatedBookings = bookings.map((booking) =>
-        booking.id === selectedBooking.id ? { ...booking, ...bookingData } : booking,
-      )
-      setBookings(updatedBookings)
-    } else {
-      // Add new booking
-      const newBooking = {
-        id: Math.max(...bookings.map((b) => b.id)) + 1,
-        ...bookingData,
+  const handleViewDetails = (booking: Booking) => {
+    setSelectedBooking(booking)
+    setIsDetailsDialogOpen(true)
+  }
+
+  const handleSaveBooking = async (bookingData: any) => {
+    try {
+      if (selectedBooking) {
+        // Update existing booking
+        const response = await bookingsAPI.update(selectedBooking.id, bookingData)
+        if (response.success) {
+          toast({
+            title: "تم التحديث",
+            description: "تم تحديث بيانات الحجز بنجاح",
+          })
+          fetchBookings() // Refresh bookings after update
+        } else {
+          toast({
+            title: "خطأ",
+            description: response.message || "حدث خطأ أثناء تحديث بيانات الحجز",
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Add new booking
+        const response = await bookingsAPI.create(bookingData)
+        if (response.success) {
+          toast({
+            title: "تمت الإضافة",
+            description: "تم إضافة الحجز الجديد بنجاح",
+          })
+          fetchBookings() // Refresh bookings after adding
+        } else {
+          toast({
+            title: "خطأ",
+            description: response.message || "حدث خطأ أثناء إضافة الحجز الجديد",
+            variant: "destructive",
+          })
+        }
       }
-      setBookings([...bookings, newBooking])
+    } catch (error) {
+      console.error("Error saving booking:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حفظ بيانات الحجز",
+        variant: "destructive",
+      })
     }
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedBooking) return
 
-    const updatedBookings = bookings.filter((booking) => booking.id !== selectedBooking.id)
-    setBookings(updatedBookings)
+    try {
+      const response = await bookingsAPI.delete(selectedBooking.id)
+      if (response.success) {
+        toast({
+          title: "تم الحذف",
+          description: "تم حذف الحجز بنجاح",
+        })
+        fetchBookings() // Refresh bookings after deletion
+      } else {
+        toast({
+          title: "خطأ",
+          description: response.message || "حدث خطأ أثناء حذف الحجز",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting booking:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف الحجز",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleUpdateStatus = (booking: any, newStatus: string) => {
-    const updatedBookings = bookings.map((b) => (b.id === booking.id ? { ...b, status: newStatus } : b))
-    setBookings(updatedBookings)
+  const handleUpdateStatus = async (booking: Booking, newStatus: string) => {
+    try {
+      const response = await bookingsAPI.updateStatus(booking.id, newStatus)
+      if (response.success) {
+        let statusText = ""
+        switch (newStatus) {
+          case "confirmed":
+          case "accepted":
+            statusText = "تأكيد"
+            break
+          case "paid":
+            statusText = "تأكيد دفع"
+            break
+          case "cancelled":
+            statusText = "إلغاء"
+            break
+          case "rejected":
+            statusText = "رفض"
+            break
+          default:
+            statusText = "تحديث حالة"
+            break
+        }
 
-    let statusText = ""
-    switch (newStatus) {
-      case "confirmed":
-        statusText = "تأكيد"
-        break
-      case "paid":
-        statusText = "تأكيد دفع"
-        break
-      case "cancelled":
-        statusText = "إلغاء"
-        break
-      case "rejected":
-        statusText = "رفض"
-        break
-      default:
-        statusText = "تحديث حالة"
-        break
+        toast({
+          title: `تم ${statusText} الحجز`,
+          description: `تم ${statusText} الحجز رقم #${booking.id} بنجاح`,
+        })
+        fetchBookings() // Refresh bookings after status update
+      } else {
+        toast({
+          title: "خطأ",
+          description: response.message || "حدث خطأ أثناء تحديث حالة الحجز",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error updating booking status:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة الحجز",
+        variant: "destructive",
+      })
     }
+  }
 
-    toast({
-      title: `تم ${statusText} الحجز`,
-      description: `تم ${statusText} الحجز رقم #${booking.id} بنجاح`,
-    })
+  // Handle pagination
+  const handlePageChange = (pageNumber: number) => {
+    setPage(pageNumber)
   }
 
   return (
@@ -306,6 +378,43 @@ export default function BookingsPage() {
           <Plus className="ml-2 h-4 w-4" /> إضافة حجز
         </Button>
       </div>
+
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي الحجوزات</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.all_count}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">بانتظار الدفع</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.pending_count}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">الحجوزات المؤكدة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.confirmed_count + stats.accepted_count}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">الحجوزات الملغاة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.cancelled_count}</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -329,26 +438,12 @@ export default function BookingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="draft">مسودة</SelectItem>
-                  <SelectItem value="waiting_payment">بانتظار الدفع</SelectItem>
-                  <SelectItem value="paid">مدفوع</SelectItem>
+                  <SelectItem value="pending">بانتظار الدفع</SelectItem>
+                  <SelectItem value="accepted">مقبول</SelectItem>
                   <SelectItem value="confirmed">مؤكد</SelectItem>
                   <SelectItem value="completed">مكتمل</SelectItem>
                   <SelectItem value="cancelled">ملغي</SelectItem>
                   <SelectItem value="rejected">مرفوض</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="طريقة الدفع" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الطرق</SelectItem>
-                  <SelectItem value="wallet">محفظة</SelectItem>
-                  <SelectItem value="shamcash">شام كاش</SelectItem>
-                  <SelectItem value="alharam">الهرم</SelectItem>
-                  <SelectItem value="cash">نقدي</SelectItem>
-                  <SelectItem value="crypto">عملات رقمية</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -363,15 +458,20 @@ export default function BookingsPage() {
                     <TableHead>المضيف</TableHead>
                     <TableHead>التاريخ</TableHead>
                     <TableHead>المبلغ</TableHead>
-                    <TableHead>طريقة الدفع</TableHead>
                     <TableHead>الحالة</TableHead>
                     <TableHead className="text-left">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBookings.length === 0 ? (
+                  {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="h-24 text-center">
+                      <TableCell colSpan={8} className="h-24 text-center">
+                        جاري التحميل...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredBookings.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-24 text-center">
                         لا توجد نتائج.
                       </TableCell>
                     </TableRow>
@@ -379,11 +479,21 @@ export default function BookingsPage() {
                     filteredBookings.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">#{booking.id}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{booking.listing_title}</TableCell>
-                        <TableCell>{booking.guest_name}</TableCell>
-                        <TableCell>{booking.host_name}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">
+                          {booking.listing?.title?.ar || `إعلان #${booking.listing_id}`}
+                        </TableCell>
                         <TableCell>
-                          <div className="flex flex-col">
+                          {booking.guest
+                            ? `${booking.guest.first_name} ${booking.guest.last_name}`
+                            : `ضيف #${booking.guest_id}`}
+                        </TableCell>
+                        <TableCell>
+                          {booking.host
+                            ? `${booking.host.first_name} ${booking.host.last_name}`
+                            : `مضيف #${booking.host_id}`}
+                        </TableCell>
+                        <TableCell className="text-nowrap">
+                          <div className="flex flex-col text-nowrap">
                             <span>{new Date(booking.start_date).toLocaleDateString("ar-SY")}</span>
                             <span className="text-xs text-muted-foreground">إلى</span>
                             <span>{new Date(booking.end_date).toLocaleDateString("ar-SY")}</span>
@@ -392,7 +502,6 @@ export default function BookingsPage() {
                         <TableCell>
                           {booking.price} {booking.currency}
                         </TableCell>
-                        <TableCell>{getPaymentMethodLabel(booking.payment_method)}</TableCell>
                         <TableCell>{getStatusBadge(booking.status)}</TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -404,8 +513,7 @@ export default function BookingsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
+                              <DropdownMenuSeparator />                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
                                 <Eye className="ml-2 h-4 w-4" />
                                 عرض التفاصيل
                               </DropdownMenuItem>
@@ -413,32 +521,35 @@ export default function BookingsPage() {
                                 <Edit className="ml-2 h-4 w-4" />
                                 تعديل
                               </DropdownMenuItem>
-                              {booking.status === "waiting_payment" && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "paid")}>
+                              {(booking.status === "pending" || booking.status === "waiting_payment") && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
                                   تأكيد الدفع
                                 </DropdownMenuItem>
                               )}
-                              {booking.status === "paid" && (
+                              {booking.status === "accepted" && (
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
                                   تأكيد الحجز
                                 </DropdownMenuItem>
                               )}
-                              {(booking.status === "paid" || booking.status === "waiting_payment") && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
-                                  <XCircle className="ml-2 h-4 w-4" />
-                                  رفض
-                                </DropdownMenuItem>
-                              )}
-                              {(booking.status === "paid" ||
+                              {(booking.status === "pending" ||
                                 booking.status === "waiting_payment" ||
+                                booking.status === "accepted") && (
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
+                                    <XCircle className="ml-2 h-4 w-4" />
+                                    رفض
+                                  </DropdownMenuItem>
+                                )}
+                              {(booking.status === "pending" ||
+                                booking.status === "waiting_payment" ||
+                                booking.status === "accepted" ||
                                 booking.status === "confirmed") && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
-                                  <XCircle className="ml-2 h-4 w-4" />
-                                  إلغاء
-                                </DropdownMenuItem>
-                              )}
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
+                                    <XCircle className="ml-2 h-4 w-4" />
+                                    إلغاء
+                                  </DropdownMenuItem>
+                                )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive"
@@ -460,21 +571,29 @@ export default function BookingsPage() {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious href="#" />
+                  <PaginationPrevious
+                    onClick={() => page > 1 && handlePageChange(page - 1)}
+                    className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
                 </PaginationItem>
+
+                {[...Array(totalPages)].map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(i + 1)}
+                      isActive={page === i + 1}
+                      className="cursor-pointer"
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+
                 <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
+                  <PaginationNext
+                    onClick={() => page < totalPages && handlePageChange(page + 1)}
+                    className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
@@ -494,6 +613,12 @@ export default function BookingsPage() {
         onOpenChange={setIsDeleteDialogOpen}
         booking={selectedBooking}
         onDelete={handleDeleteConfirm}
+      />
+      <BookingDetails
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        booking={selectedBooking}
+        onStatusChange={handleUpdateStatus}
       />
     </div>
   )
