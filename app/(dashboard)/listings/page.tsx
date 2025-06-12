@@ -29,6 +29,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -1035,12 +1036,10 @@ export default function ListingsPage() {
                       )}
                     </TableBody>
                   </Table>
-                </div>
-
-                {totalPages > 1 && (
+                </div>                {totalPages > 1 && (
                   <Pagination>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-muted-foreground me-4">
+                    <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between w-full mb-2">
+                      <span className="text-sm text-muted-foreground">
                         إجمالي {totalCount} الاعلانات
                       </span>
                       <Select
@@ -1050,7 +1049,7 @@ export default function ListingsPage() {
                           setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
                         }}
                       >
-                        <SelectTrigger className="w-[200px]">
+                        <SelectTrigger className="w-[150px]">
                           <SelectValue placeholder={`${perPage} لكل صفحة`} />
                         </SelectTrigger>
                         <SelectContent>
@@ -1061,7 +1060,7 @@ export default function ListingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <PaginationContent>
+                    <PaginationContent className="flex-wrap justify-center">
                       <PaginationItem>
                         <PaginationPrevious
                           href="#"
@@ -1070,15 +1069,61 @@ export default function ListingsPage() {
                             if (currentPage > 1)
                               setCurrentPage(currentPage - 1);
                           }}
-                          className={
+                          className={`${
                             currentPage === 1
                               ? "pointer-events-none opacity-50"
                               : ""
-                          }
+                          } sm:hidden`}
+                          aria-label="الصفحة السابقة"
+                        />
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage > 1)
+                              setCurrentPage(currentPage - 1);
+                          }}
+                          className={`${
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          } hidden sm:flex`}
                         />
                       </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
+
+                      {/* First page */}
+                      {totalPages > 0 && (
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(1);
+                            }}
+                            isActive={currentPage === 1}
+                          >
+                            1
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+
+                      {/* Left ellipsis */}
+                      {currentPage > 3 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+
+                      {/* Pages around current page */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(
+                          (page) =>
+                            page !== 1 &&
+                            page !== totalPages &&
+                            page >= currentPage - 1 &&
+                            page <= currentPage + 1
+                        )
+                        .map((page) => (
                           <PaginationItem key={page}>
                             <PaginationLink
                               href="#"
@@ -1091,9 +1136,30 @@ export default function ListingsPage() {
                               {page}
                             </PaginationLink>
                           </PaginationItem>
-                        )
+                        ))}
+
+                      {/* Right ellipsis */}
+                      {currentPage < totalPages - 2 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
                       )}
-                      <PaginationItem>
+
+                      {/* Last page */}
+                      {totalPages > 1 && (
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(totalPages);
+                            }}
+                            isActive={currentPage === totalPages}
+                          >
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}                      <PaginationItem>
                         <PaginationNext
                           href="#"
                           onClick={(e) => {
@@ -1101,11 +1167,25 @@ export default function ListingsPage() {
                             if (currentPage < totalPages)
                               setCurrentPage(currentPage + 1);
                           }}
-                          className={
+                          className={`${
                             currentPage === totalPages
                               ? "pointer-events-none opacity-50"
                               : ""
-                          }
+                          } sm:hidden`}
+                          aria-label="الصفحة التالية"
+                        />
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage < totalPages)
+                              setCurrentPage(currentPage + 1);
+                          }}
+                          className={`${
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          } hidden sm:flex`}
                         />
                       </PaginationItem>
                     </PaginationContent>

@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -568,11 +569,9 @@ export default function BookingsPage() {
                   )}
                 </TableBody>
               </Table>
-            </div>
-
-            <Pagination>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground me-4">
+            </div>            <Pagination>
+              <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between w-full mb-2">
+                <span className="text-sm text-muted-foreground">
                   إجمالي {totalCount} الحجوزات
                 </span>
                 <Select
@@ -582,7 +581,7 @@ export default function BookingsPage() {
                     setPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
                   }}
                 >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-[150px]">
                     <SelectValue placeholder={`${perPage} لكل صفحة`} />
                   </SelectTrigger>
                   <SelectContent>
@@ -593,30 +592,93 @@ export default function BookingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <PaginationContent>
+              <PaginationContent className="flex-wrap justify-center">
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => page > 1 && handlePageChange(page - 1)}
-                    className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={`${
+                      page <= 1 ? "pointer-events-none opacity-50" : ""
+                    } sm:hidden`}
+                    aria-label="الصفحة السابقة"
                   />
-                </PaginationItem>
-
-                {[...Array(totalPages)].map((_, i) => (
-                  <PaginationItem key={i}>
+                  <PaginationPrevious
+                    onClick={() => page > 1 && handlePageChange(page - 1)}
+                    className={`${
+                      page <= 1 ? "pointer-events-none opacity-50" : ""
+                    } hidden sm:flex cursor-pointer`}
+                  />
+                </PaginationItem>                {/* First page */}
+                {totalPages > 0 && (
+                  <PaginationItem>
                     <PaginationLink
-                      onClick={() => handlePageChange(i + 1)}
-                      isActive={page === i + 1}
+                      onClick={() => handlePageChange(1)}
+                      isActive={page === 1}
                       className="cursor-pointer"
                     >
-                      {i + 1}
+                      1
                     </PaginationLink>
                   </PaginationItem>
-                ))}
+                )}
+
+                {/* Left ellipsis */}
+                {page > 3 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Pages around current page */}
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  return pageNum !== 1 && 
+                         pageNum !== totalPages && 
+                         pageNum >= page - 1 && 
+                         pageNum <= page + 1 ? (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(pageNum)}
+                        isActive={page === pageNum}
+                        className="cursor-pointer"
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null;
+                })}
+
+                {/* Right ellipsis */}
+                {page < totalPages - 2 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Last page */}
+                {totalPages > 1 && (
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => handlePageChange(totalPages)}
+                      isActive={page === totalPages}
+                      className="cursor-pointer"
+                    >
+                      {totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
 
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => page < totalPages && handlePageChange(page + 1)}
-                    className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={`${
+                      page >= totalPages ? "pointer-events-none opacity-50" : ""
+                    } sm:hidden cursor-pointer`}
+                    aria-label="الصفحة التالية"
+                  />
+                  <PaginationNext
+                    onClick={() => page < totalPages && handlePageChange(page + 1)}
+                    className={`${
+                      page >= totalPages ? "pointer-events-none opacity-50" : ""
+                    } hidden sm:flex cursor-pointer`}
                   />
                 </PaginationItem>
               </PaginationContent>
