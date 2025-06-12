@@ -99,8 +99,9 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const perPage = 10
+  const [perPage, setPerPage] = useState(25)
   const { toast } = useToast()
+  const [totalCount, setTotalCount] = useState(0);
 
   // Fetch bookings from API
   const fetchBookings = async () => {
@@ -115,6 +116,7 @@ export default function BookingsPage() {
       if (response.success) {
         setBookings(response.data || [])
         setStats(response.info || null)
+        setTotalCount(response.meta?.total || 0)
         // Calculate total pages from all_count
         if (response.info && response.info.all_count) {
           setTotalPages(Math.ceil(response.info.all_count / perPage))
@@ -141,7 +143,7 @@ export default function BookingsPage() {
   // Load bookings when component mounts or filters change
   useEffect(() => {
     fetchBookings()
-  }, [page, statusFilter])
+  }, [page, statusFilter, perPage, searchTerm])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -569,6 +571,28 @@ export default function BookingsPage() {
             </div>
 
             <Pagination>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground me-4">
+                  إجمالي {totalCount} الحجوزات
+                </span>
+                <Select
+                  value={perPage.toString()}
+                  onValueChange={(value) => {
+                    setPerPage(parseInt(value, 10));
+                    setPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                  }}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder={`${perPage} لكل صفحة`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 لكل صفحة</SelectItem>
+                    <SelectItem value="25">25 لكل صفحة</SelectItem>
+                    <SelectItem value="50">50 لكل صفحة</SelectItem>
+                    <SelectItem value="100">100 لكل صفحة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious

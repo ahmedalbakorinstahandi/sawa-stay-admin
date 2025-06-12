@@ -77,6 +77,7 @@ export default function StaffPage() {
   const [perPage, setPerPage] = useState(25);
   const { toast } = useToast();
   const router = useRouter();
+  const [totalCount, setTotalCount] = useState(0);
 
   // جلب طاقم العمل من الباك اند مع فلتر role=employee
   const fetchStaff = async () => {
@@ -95,6 +96,7 @@ export default function StaffPage() {
       if (response.success) {
         setStaffMembers(response.data || []);
         setTotalPages(response.meta?.last_page || 1);
+        setTotalCount(response.meta?.total || 0);
       } else {
         toast({
           title: "حدث خطأ",
@@ -398,18 +400,16 @@ export default function StaffPage() {
                                   staff.avatar_url ||
                                   `/placeholder.svg?height=40&width=40`
                                 }
-                                alt={`${staff.first_name || ""} ${
-                                  staff.last_name || ""
-                                }`}
+                                alt={`${staff.first_name || ""} ${staff.last_name || ""
+                                  }`}
                               />
                               <AvatarFallback className="bg-primary/10 text-primary">
                                 {getInitials(staff)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span>{`${staff.first_name || ""} ${
-                                staff.last_name || ""
-                              }`}</span>
+                              <span>{`${staff.first_name || ""} ${staff.last_name || ""
+                                }`}</span>
                               <span className="text-xs text-muted-foreground">
                                 {staff.position || "موظف"}
                               </span>
@@ -508,6 +508,28 @@ export default function StaffPage() {
 
             {totalPages > 1 && (
               <Pagination>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">
+                    {totalCount} نتيجة{totalCount > 1 ? "s" : ""}
+                  </span>
+                  <Select
+                    value={perPage.toString()}
+                    onValueChange={(value) => {
+                      setPerPage(parseInt(value, 10));
+                      setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                    }}
+                  >
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue placeholder="عدد النتائج" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 نتائج</SelectItem>
+                      <SelectItem value="25">25 نتيجة</SelectItem>
+                      <SelectItem value="50">50 نتيجة</SelectItem>
+                      <SelectItem value="100">100 نتيجة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious

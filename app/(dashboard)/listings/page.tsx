@@ -98,6 +98,7 @@ export default function ListingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast();
@@ -155,10 +156,13 @@ export default function ListingsPage() {
       }
 
       const response = await api.get(`/admin/listings?${params.toString()}`);
+      // console.log("response", response);
 
       if (response.data?.success) {
         setListings(response.data?.data || []);
         setTotalPages(response.data?.meta?.last_page || 1);
+        setTotalCount(response.data?.meta?.total || 0);
+
       } else {
         toast({
           title: "خطأ في جلب الإعلانات",
@@ -1035,6 +1039,28 @@ export default function ListingsPage() {
 
                 {totalPages > 1 && (
                   <Pagination>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-muted-foreground me-4">
+                        إجمالي {totalCount} الاعلانات
+                      </span>
+                      <Select
+                        value={perPage.toString()}
+                        onValueChange={(value) => {
+                          setPerPage(parseInt(value, 10));
+                          setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                        }}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder={`${perPage} لكل صفحة`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10 لكل صفحة</SelectItem>
+                          <SelectItem value="25">25 لكل صفحة</SelectItem>
+                          <SelectItem value="50">50 لكل صفحة</SelectItem>
+                          <SelectItem value="100">100 لكل صفحة</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious

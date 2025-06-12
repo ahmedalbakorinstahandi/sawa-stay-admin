@@ -76,6 +76,8 @@ export default function UsersPage() {
   const [perPage, setPerPage] = useState(25);
   const { toast } = useToast();
   const router = useRouter();
+  // totalCount
+  const [totalCount, setTotalCount] = useState(0);
 
   // جلب المستخدمين من الباك اند
   const fetchUsers = async () => {
@@ -99,6 +101,7 @@ export default function UsersPage() {
       if (response.success) {
         setUsers(response.data || []);
         setTotalPages(response.meta?.last_page || 1);
+        setTotalCount(response.meta?.total || 0);
       } else {
         toast({
           title: "حدث خطأ",
@@ -387,18 +390,16 @@ export default function UsersPage() {
                                   user.avatar_url ||
                                   `/placeholder.svg?height=40&width=40`
                                 }
-                                alt={`${user.first_name || ""} ${
-                                  user.last_name || ""
-                                }`}
+                                alt={`${user.first_name || ""} ${user.last_name || ""
+                                  }`}
                               />
                               <AvatarFallback>
                                 {getInitials(user)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span>{`${user.first_name || ""} ${
-                                user.last_name || ""
-                              }`}</span>
+                              <span>{`${user.first_name || ""} ${user.last_name || ""
+                                }`}</span>
                               {user.email_verified && (
                                 <span className="text-xs text-muted-foreground">
                                   موثق
@@ -484,6 +485,29 @@ export default function UsersPage() {
             {totalPages > 1 && (
               <Pagination>
                 <PaginationContent>
+                  {/* totalcount */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-muted-foreground me-4">
+                      إجمالي {totalCount} مستخدمين
+                    </span>
+                    <Select
+                      value={perPage.toString()}
+                      onValueChange={(value) => {
+                        setPerPage(parseInt(value, 10));
+                        setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                      }}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder={`${perPage} لكل صفحة`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10 لكل صفحة</SelectItem>
+                        <SelectItem value="25">25 لكل صفحة</SelectItem>
+                        <SelectItem value="50">50 لكل صفحة</SelectItem>
+                        <SelectItem value="100">100 لكل صفحة</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
