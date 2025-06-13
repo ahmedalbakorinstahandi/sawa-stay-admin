@@ -32,6 +32,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -483,74 +484,151 @@ export default function UsersPage() {
             </div>
 
             {totalPages > 1 && (
-              <Pagination>
-                <PaginationContent>
-                  {/* totalcount */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground me-4">
-                      إجمالي {totalCount} مستخدمين
-                    </span>
-                    <Select
-                      value={perPage.toString()}
-                      onValueChange={(value) => {
-                        setPerPage(parseInt(value, 10));
-                        setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
-                      }}
-                    >
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder={`${perPage} لكل صفحة`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10 لكل صفحة</SelectItem>
-                        <SelectItem value="25">25 لكل صفحة</SelectItem>
-                        <SelectItem value="50">50 لكل صفحة</SelectItem>
-                        <SelectItem value="100">100 لكل صفحة</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <Pagination className="w-full">
+                <div className="flex flex-col xs:flex-row sm:flex-row gap-4 items-start sm:items-center justify-between  mb-4">
+                  <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                    إجمالي {totalCount} الاعلانات
+                  </span>
+                  <Select
+                    value={perPage.toString()}
+                    onValueChange={(value) => {
+                      setPerPage(parseInt(value, 10));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[120px] sm:w-[150px] text-xs sm:text-sm">
+                      <SelectValue placeholder={`${perPage} لكل صفحة`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 لكل صفحة</SelectItem>
+                      <SelectItem value="25">25 لكل صفحة</SelectItem>
+                      <SelectItem value="50">50 لكل صفحة</SelectItem>
+                      <SelectItem value="100">100 لكل صفحة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <PaginationContent className="flex-wrap justify-center">
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage > 1) handlePageChange(currentPage - 1);
+                        if (currentPage > 1)
+                          setCurrentPage(currentPage - 1);
                       }}
-                      className={
-                        currentPage <= 1 ? "pointer-events-none opacity-50" : ""
-                      }
+                      className={`${currentPage === 1
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                        } sm:hidden`}
+                      aria-label="الصفحة السابقة"
+                    />
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1)
+                          setCurrentPage(currentPage - 1);
+                      }}
+                      className={`${currentPage === 1
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                        } hidden sm:flex`}
                     />
                   </PaginationItem>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
+                  {/* First page */}
+                  {totalPages > 0 && (
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(1);
+                        }}
+                        isActive={currentPage === 1}
+                      >
+                        1
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+
+                  {/* Left ellipsis */}
+                  {currentPage > 3 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Pages around current page */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (page) =>
+                        page !== 1 &&
+                        page !== totalPages &&
+                        page >= currentPage - 1 &&
+                        page <= currentPage + 1
+                    )
+                    .map((page) => (
                       <PaginationItem key={page}>
                         <PaginationLink
                           href="#"
-                          isActive={currentPage === page}
                           onClick={(e) => {
                             e.preventDefault();
-                            handlePageChange(page);
+                            setCurrentPage(page);
                           }}
+                          isActive={currentPage === page}
                         >
                           {page}
                         </PaginationLink>
                       </PaginationItem>
-                    )
+                    ))}
+
+                  {/* Right ellipsis */}
+                  {currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
                   )}
 
-                  <PaginationItem>
+                  {/* Last page */}
+                  {totalPages > 1 && (
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(totalPages);
+                        }}
+                        isActive={currentPage === totalPages}
+                      >
+                        {totalPages}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}                      <PaginationItem>
                     <PaginationNext
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
                         if (currentPage < totalPages)
-                          handlePageChange(currentPage + 1);
+                          setCurrentPage(currentPage + 1);
                       }}
-                      className={
-                        currentPage >= totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
+                      className={`${currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                        } sm:hidden`}
+                      aria-label="الصفحة التالية"
+                    />
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages)
+                          setCurrentPage(currentPage + 1);
+                      }}
+                      className={`${currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                        } hidden sm:flex`}
                     />
                   </PaginationItem>
                 </PaginationContent>

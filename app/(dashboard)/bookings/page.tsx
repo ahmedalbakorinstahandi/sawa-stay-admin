@@ -570,7 +570,7 @@ export default function BookingsPage() {
                 </TableBody>
               </Table>
             </div>            <Pagination>
-              <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between w-full mb-2">
+              <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between  mb-2">
                 <span className="text-sm text-muted-foreground">
                   إجمالي {totalCount} الحجوزات
                 </span>

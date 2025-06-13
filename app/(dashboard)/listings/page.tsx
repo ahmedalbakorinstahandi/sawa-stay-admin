@@ -1036,20 +1036,21 @@ export default function ListingsPage() {
                       )}
                     </TableBody>
                   </Table>
-                </div>                {totalPages > 1 && (
-                  <Pagination>
-                    <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between w-full mb-2">
-                      <span className="text-sm text-muted-foreground">
+                </div>
+                {totalPages > 1 && (
+                  <Pagination className="w-full">
+                    <div className="flex flex-col xs:flex-row sm:flex-row gap-4 items-start sm:items-center justify-between  mb-4">
+                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                         إجمالي {totalCount} الاعلانات
                       </span>
                       <Select
                         value={perPage.toString()}
                         onValueChange={(value) => {
                           setPerPage(parseInt(value, 10));
-                          setCurrentPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                          setCurrentPage(1);
                         }}
                       >
-                        <SelectTrigger className="w-[150px]">
+                        <SelectTrigger className="w-[120px] sm:w-[150px] text-xs sm:text-sm">
                           <SelectValue placeholder={`${perPage} لكل صفحة`} />
                         </SelectTrigger>
                         <SelectContent>
@@ -1069,11 +1070,10 @@ export default function ListingsPage() {
                             if (currentPage > 1)
                               setCurrentPage(currentPage - 1);
                           }}
-                          className={`${
-                            currentPage === 1
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } sm:hidden`}
+                          className={`${currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                            } sm:hidden`}
                           aria-label="الصفحة السابقة"
                         />
                         <PaginationPrevious
@@ -1083,11 +1083,10 @@ export default function ListingsPage() {
                             if (currentPage > 1)
                               setCurrentPage(currentPage - 1);
                           }}
-                          className={`${
-                            currentPage === 1
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } hidden sm:flex`}
+                          className={`${currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                            } hidden sm:flex`}
                         />
                       </PaginationItem>
 
@@ -1167,11 +1166,10 @@ export default function ListingsPage() {
                             if (currentPage < totalPages)
                               setCurrentPage(currentPage + 1);
                           }}
-                          className={`${
-                            currentPage === totalPages
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } sm:hidden`}
+                          className={`${currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                            } sm:hidden`}
                           aria-label="الصفحة التالية"
                         />
                         <PaginationNext
@@ -1181,11 +1179,10 @@ export default function ListingsPage() {
                             if (currentPage < totalPages)
                               setCurrentPage(currentPage + 1);
                           }}
-                          className={`${
-                            currentPage === totalPages
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } hidden sm:flex`}
+                          className={`${currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                            } hidden sm:flex`}
                         />
                       </PaginationItem>
                     </PaginationContent>
