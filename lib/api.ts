@@ -374,6 +374,14 @@ export const bookingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to update booking status" }
     }
   },
+  createTransaction: async (bookingId: number, data: any) => {
+    try {
+      const response = await api.post(`/admin/bookings/${bookingId}/transactions`, data)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to create transaction" }
+    }
+  },
 }
 
 // دوال مساعدة للتعامل مع API
