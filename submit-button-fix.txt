@@ -1,0 +1,86 @@
+Para solucionar el problema del botón de envío que no funciona, sigue estos pasos:
+
+1. Abre el archivo page.tsx en:
+   c:\Users\NITRO 5\Desktop\progects\syria-go-admin\app\(dashboard)\listings\[id]\edit\page.tsx
+
+2. Busca y reemplaza el bloque del botón submit (aproximadamente en la línea 1630):
+
+```tsx
+<Button
+  type="submit"
+  disabled={isSaving || uploadingImages}
+  className="bg-rose-500 hover:bg-rose-600"
+>
+  {isSaving || uploadingImages ? (
+    <>
+      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+      جاري الحفظ...
+    </>
+  ) : (
+    <>
+      <Save className="h-4 w-4 ml-2" />
+      حفظ التغييرات
+    </>
+  )}
+</Button>
+```
+
+Cámbialo por:
+
+```tsx
+<Button
+  type="button"
+  onClick={async () => {
+    console.log("Save button clicked manually");
+    try {
+      const isValid = await form.trigger();
+      if (!isValid) {
+        console.log("Form validation failed");
+        toast.toast({
+          title: "خطأ في البيانات",
+          description: "يرجى التحقق من البيانات المدخلة وإصلاح الأخطاء",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const formData = form.getValues();
+      console.log("Form data valid, submitting:", formData);
+      onSubmit(formData);
+    } catch (error) {
+      console.error("Error during form submission:", error);
+    }
+  }}
+  disabled={isSaving || uploadingImages}
+  className="bg-rose-500 hover:bg-rose-600"
+>
+  {isSaving || uploadingImages ? (
+    <>
+      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+      جاري الحفظ...
+    </>
+  ) : (
+    <>
+      <Save className="h-4 w-4 ml-2" />
+      حفظ التغييرات
+    </>
+  )}
+</Button>
+```
+
+3. También reemplaza la parte de la definición del formulario:
+Busca:
+```tsx
+<form onSubmit={(e) => {
+  e.preventDefault();
+  console.log("Form submitted naturally");
+  form.handleSubmit(onSubmit)(e);
+}} className="space-y-8">
+```
+
+Cámbialo por:
+```tsx
+<form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+```
+
+Este enfoque evitará problemas con el envío de formularios y ejecutará la validación manualmente antes de llamar a la función onSubmit.

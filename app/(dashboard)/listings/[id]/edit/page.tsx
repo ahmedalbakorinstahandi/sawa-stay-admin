@@ -441,10 +441,17 @@ export default function EditListingPage() {
       setUploadingImages(false);
     }
   };
-
   // حفظ التغييرات
   const onSubmit = async (data: z.infer<typeof listingSchema>) => {
+    console.log("بدء عملية إرسال النموذج");
+    console.log("Form data:", data);
+    console.log("propertyImages:", propertyImages);
+    console.log("imagesToDelete:", imagesToDelete);
+    
+    // مباشرة قبل تغيير حالة الزر، طباعة رسالة
+    console.log("جاري تغيير حالة الزر للحفظ...");
     setIsSaving(true);
+    console.log("تم تغيير حالة الزر");
 
     try {
       // رفع الصور الجديدة
@@ -455,13 +462,18 @@ export default function EditListingPage() {
         ...data,
         images: [
           ...propertyImages,
-          // ...(listing?.images.filter((img) => !imagesToDelete.includes(img.id)).map((img) => img.path) || []),
+          ...(listing?.images?.filter((img) => !imagesToDelete.includes(img.id))?.map((img) => img.path) || []),
         ].map((item: any) => (item?.image_name ? item?.image_name : item)),
         delete_images: imagesToDelete,
       };
-
+      
+      console.log("جاري إرسال البيانات:", formData);
+      console.log("بدء الاتصال بـ API...");
+      console.log("الرابط:", `/admin/listings/${listingId}`);
+      
       // إرسال البيانات
       const response = await api.put(`/admin/listings/${listingId}`, formData);
+      console.log("تم استلام الرد من API:", response.data);
 
       if (response.data.success) {
         toast.toast({
@@ -471,10 +483,30 @@ export default function EditListingPage() {
         });
         router.push("/listings");
       } else {
-      }
-    } catch (error) {
+        // عرض رسالة الخطأ
+        toast.toast({
+          title: "حدث خطأ",
+          description: response.data.message || "حدث خطأ أثناء تحديث الإعلان.",
+          variant: "destructive",
+        });
+      }    } catch (error: any) {
       console.error("Error updating listing:", error);
+      // طباعة تفاصيل الخطأ للتشخيص
+      console.log("نوع الخطأ:", typeof error);
+      console.log("رسالة الخطأ:", error.message);
+      if (error.response) {
+        console.log("استجابة الخطأ:", error.response.data);
+        console.log("حالة الخطأ:", error.response.status);
+      }
+      
+      // عرض رسالة الخطأ للمستخدم
+      toast.toast({
+        title: "حدث خطأ",
+        description: error.message || "حدث خطأ أثناء تحديث الإعلان.",
+        variant: "destructive",
+      });
     } finally {
+      console.log("تنتهي عملية الحفظ، إعادة حالة الزر");
       setIsSaving(false);
     }
   };
@@ -505,10 +537,10 @@ export default function EditListingPage() {
       </div>
 
       {isLoading ? (
-        <HostListingsSkeleton />
-      ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <HostListingsSkeleton />) : (
+        <Form {...form}>          <form onSubmit={(e) => {
+            e.preventDefault(); // منع السلوك الافتراضي للنموذج
+          }} className="space-y-8">
             {/* معلومات أساسية */}
             <Card>
               <CardContent className="pt-6">
@@ -605,11 +637,10 @@ export default function EditListingPage() {
                       <FormControl>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "House"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "House"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "House")
                             }
@@ -624,11 +655,10 @@ export default function EditListingPage() {
                           </Card>
 
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "Apartment"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "Apartment"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "Apartment")
                             }
@@ -643,11 +673,10 @@ export default function EditListingPage() {
                           </Card>
 
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "Guesthouse"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "Guesthouse"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "Guesthouse")
                             }
@@ -666,41 +695,6 @@ export default function EditListingPage() {
                     </FormItem>
                   )}
                 />
-
-                <div className="mt-6">
-                  {/* <FormField
-                      control={form.control}
-                      name="house_type_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>نوع المسكن</FormLabel>
-                          <Select
-                            defaultValue={field.value.toString() || ""}
-                            onValueChange={(value) =>
-                              field.onChange(Number.parseInt(value))
-                            }
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="اختر نوع المسكن" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {houseTypes.map((type) => (
-                                <SelectItem
-                                  key={type.id}
-                                  value={type.id.toString()}
-                                >
-                                  {type.name.ar}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    /> */}
-                </div>
               </CardContent>
             </Card>
 
@@ -1006,36 +1000,6 @@ export default function EditListingPage() {
                     )}
                   />
 
-                  {/* <FormField
-                    control={form.control}
-                    name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>العملة</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="اختر العملة" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="SYP">
-                              ليرة سورية (ل.س)
-                            </SelectItem>
-                            <SelectItem value="USD">
-                              دولار أمريكي ($)
-                            </SelectItem>
-                            <SelectItem value="EUR">يورو (€)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
-
                   <FormField
                     control={form.control}
                     name="min_booking_days"
@@ -1331,11 +1295,10 @@ export default function EditListingPage() {
                             return (
                               <div
                                 key={feature.id}
-                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                  isSelected
-                                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
-                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                                  : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                  }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
                                   if (isSelected) {
@@ -1391,11 +1354,10 @@ export default function EditListingPage() {
                             return (
                               <div
                                 key={category.id}
-                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                  isSelected
-                                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
-                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                                  : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                  }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
                                   if (isSelected) {
@@ -1527,127 +1489,6 @@ export default function EditListingPage() {
                       )}
                     />
                   )}
-
-                  {/* <FormField
-                    control={form.control}
-                    name="noise_monitoring_device"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between space-y-0">
-                        <div>
-                          <FormLabel className="flex items-center gap-2 cursor-pointer">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="text-rose-500"
-                            >
-                              <path d="M2 10c.6.5 1.2 1 2.5 1C7 11 7 9 9.5 9c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                              <path d="M2 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                              <path d="M2 5c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                              <path d="M2 14c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-                            </svg>
-                            أجهزة مراقبة الضوضاء
-                          </FormLabel>
-                          <p className="text-xs text-gray-500 mx-7">
-                            أجهزة تراقب مستوى الصوت دون تسجيل المحادثات
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  /> */}
-
-                  {/* <FormField
-                    control={form.control}
-                    name="weapons_on_property"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between space-y-0">
-                        <div>
-                          <FormLabel className="flex items-center gap-2 cursor-pointer">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="text-rose-500"
-                            >
-                              <path d="M14 5l7 7" />
-                              <path d="M9 9l-2 2" />
-                              <path d="M17 17l-2 2" />
-                              <path d="M11 13l-4 4" />
-                              <path d="M3 21l10-10" />
-                              <path d="M21 3l-3 3" />
-                              <path d="M21 3l-7 7" />
-                              <path d="M3 21l7-7" />
-                            </svg>
-                            أسلحة في الإعلان
-                          </FormLabel>
-                          <p className="text-xs text-gray-500 mx-7">
-                            هل يوجد أسلحة في الإعلان؟
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  /> */}
-                  {/* 
-                  <FormField
-                    control={form.control}
-                    name="allow_pets"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between space-y-0">
-                        <FormLabel className="flex items-center gap-2 cursor-pointer">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-rose-500"
-                          >
-                            <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5" />
-                            <path d="M14.5 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5" />
-                            <path d="M8 14v.5" />
-                            <path d="M16 14v.5" />
-                            <path d="M11.25 16.25h1.5L12 17l-.75-.75Z" />
-                            <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0 1 12 5c.78 0 1.5.108 2.161.306" />
-                          </svg>
-                          مسموح بالحيوانات الأليفة
-                        </FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  /> */}
                 </div>
               </CardContent>
             </Card>
@@ -1668,11 +1509,10 @@ export default function EditListingPage() {
                         {listing.images.map((image) => (
                           <div
                             key={image.id}
-                            className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${
-                              imagesToDelete.includes(image.id)
-                                ? "opacity-50"
-                                : ""
-                            }`}
+                            className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${imagesToDelete.includes(image.id)
+                              ? "opacity-50"
+                              : ""
+                              }`}
                           >
                             <Image
                               src={image.url || "/placeholder.svg"}
@@ -1801,9 +1641,67 @@ export default function EditListingPage() {
                 onClick={() => router.push("/listings")}
               >
                 إلغاء
-              </Button>
-              <Button
-                type="submit"
+              </Button>              <Button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log("ضغط زر الحفظ - طريقة جديدة");
+                    
+                    // البيانات الحالية من النموذج
+                    const formData = form.getValues();
+                    console.log("بيانات النموذج الأصلية:", formData);
+                    
+                    // إظهار تقدم الحفظ
+                    setIsSaving(true);
+                    
+                    // تجهيز البيانات
+                    const dataToSubmit = {
+                      ...formData,
+                      images: [
+                        ...propertyImages,
+                        ...(listing?.images?.filter(img => !imagesToDelete.includes(img.id))?.map(img => img.path) || []),
+                      ].map(item => (item?.image_name ? item?.image_name : item)),
+                      delete_images: imagesToDelete,
+                    };
+                    
+                    console.log("البيانات المرسلة:", dataToSubmit);
+                    
+                    // إرسال البيانات مباشرة
+                    const response = await api.put(`/admin/listings/${listingId}`, dataToSubmit);
+                    console.log("استجابة API:", response.data);
+                    
+                    if (response.data.success) {
+                      toast.toast({
+                        title: "تم حفظ التغييرات بنجاح",
+                        description: "تم تحديث الإعلان بنجاح.",
+                        variant: "default",
+                      });
+                      router.push("/listings");
+                    } else {
+                      toast.toast({
+                        title: "حدث خطأ",
+                        description: response.data.message || "حدث خطأ أثناء تحديث الإعلان.",
+                        variant: "destructive",
+                      });
+                    }
+                  } catch (error: any) {
+                    console.error("خطأ أثناء الحفظ:", error);
+                    console.log("تفاصيل الخطأ:", error.message);
+                    
+                    if (error.response) {
+                      console.log("بيانات الاستجابة:", error.response.data);
+                      console.log("رمز الحالة:", error.response.status);
+                    }
+                    
+                    toast.toast({
+                      title: "حدث خطأ",
+                      description: "حدث خطأ أثناء تحديث الإعلان. يرجى المحاولة مرة أخرى.",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsSaving(false);
+                  }
+                }}
                 disabled={isSaving || uploadingImages}
                 className="bg-rose-500 hover:bg-rose-600"
               >
