@@ -553,6 +553,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                                 <Input
                                                     id="amount"
                                                     type="number"
+                                                    min={0}
                                                     placeholder="أدخل المبلغ"
                                                     value={transactionAmount || ''}
                                                     onChange={(e) => setTransactionAmount(Number(e.target.value))}
