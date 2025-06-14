@@ -1621,10 +1621,10 @@ export default function EditListingPage() {
                     >
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <SortableContext
-                          items={[...listing.images].reverse().map(image => `existing-image-${image.id}`)}
+                          items={listing.images.map(image => `existing-image-${image.id}`)}
                           strategy={horizontalListSortingStrategy}
                         >
-                          {[...listing.images].reverse().map((image, idx) => (
+                          {listing.images.map((image, idx) => (
                             <SortableItem
                               key={`existing-image-${image.id}`}
                               id={`existing-image-${image.id}`}
