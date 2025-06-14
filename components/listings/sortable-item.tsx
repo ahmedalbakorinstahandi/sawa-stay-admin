@@ -24,11 +24,10 @@ export function SortableItem({ id, index, url, onRemove }: SortableItemProps) { 
     transition,
     zIndex: isDragging ? 50 : 'auto',
   };
-  return (
-    <div
+  return (    <div
       ref={setNodeRef}
       style={style}
-      className={`relative w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isDragging ? 'z-50' : ''}`}
+      className={`relative min-w-[200px] w-[200px] flex-shrink-0 aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isDragging ? 'z-50' : ''}`}
       {...attributes}
       {...listeners}
     >
