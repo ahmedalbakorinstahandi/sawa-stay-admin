@@ -25,83 +25,86 @@ import {
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
+import { cn } from "@/lib/utils"
 
-// Mock data for a single transaction
-const transactionData = {
-  id: 1,
-  reference: "TRX-001",
-  amount: 250000,
-  currency: "USD",
-  type: "booking_payment",
-  status: "completed",
-  payment_method: "wallet",
-  user: {
-    id: 2,
-    name: "سارة أحمد",
-    email: "sara@example.com",
-    phone: "+963 912 345 678",
-    avatar: "/placeholder.svg?height=128&width=128",
-  },
-  related_id: 1,
-  related_type: "booking",
-  related_info: {
-    booking_id: 1,
-    listing_title: "شقة فاخرة في وسط دمشق",
-    host_name: "أحمد محمد",
-    check_in: "2023-06-20",
-    check_out: "2023-06-25",
-    guests: 2,
-  },
-  description: "دفع حجز شقة فاخرة في وسط دمشق",
-  notes: "تم الدفع بنجاح من خلال المحفظة الإلكترونية",
-  created_at: "2023-06-15T10:30:00Z",
-  updated_at: "2023-06-15T10:35:00Z",
-  transaction_fee: 5000,
-  total_amount: 255000,
-  receipt_url: "#",
-  admin_notes: "تمت مراجعة المعاملة والتأكد من صحتها",
-  history: [
-    {
-      action: "created",
-      timestamp: "2023-06-15T10:30:00Z",
-      user: "النظام",
-      details: "تم إنشاء المعاملة",
-    },
-    {
-      action: "processing",
-      timestamp: "2023-06-15T10:32:00Z",
-      user: "النظام",
-      details: "جاري معالجة المعاملة",
-    },
-    {
-      action: "completed",
-      timestamp: "2023-06-15T10:35:00Z",
-      user: "النظام",
-      details: "تم اكتمال المعاملة بنجاح",
-    },
-  ],
+// تعريف نوع البيانات للمعاملة
+interface Transaction {
+  id: number
+  user_id: number
+  amount: number
+  description: {
+    ar: any
+    en: any
+  }
+  status: string
+  type: string
+  direction: string
+  method: string
+  transactionable_id: number | null
+  transactionable_type: string | null
+  attached: string | null
+  attached_url?: string
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+  // بيانات إضافية للعرض
+  user?: {
+    id: number
+    name: string
+    email?: string
+    phone?: string
+    avatar?: string
+  }
+  related_info?: any
 }
 
 export default function TransactionDetailsPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const [transaction, setTransaction] = useState<any>(null)
+  const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call to fetch transaction details
     const fetchTransaction = async () => {
       try {
-        // In a real app, you would fetch the transaction from an API
-        // const response = await fetch(`/api/transactions/${params.id}`)
-        // const data = await response.json()
+        setLoading(true)
+        const response = await api.get(`/admin/transactions/${params.id}`)
 
-        // Using mock data for demonstration
-        setTimeout(() => {
-          setTransaction(transactionData)
-          setLoading(false)
-        }, 1000)
+        if (response.data.success) {
+          // اضافة بيانات المستخدم المؤقتة للعرض حتى يتم تنفيذ واجهة برمجة التطبيقات الكاملة
+          const transactionData = response.data.data;
+
+          // اضافة معلومات المستخدم (يمكن استبدالها بطلب API إضافي للحصول على معلومات المستخدم)
+          const enhancedTransaction = {
+            ...transactionData,
+            user: {
+              id: transactionData.user_id,
+              name: `مستخدم ${transactionData.user_id}`,
+              email: `user${transactionData.user_id}@example.com`,
+              phone: `+963 9${Math.floor(10000000 + Math.random() * 90000000)}`,
+              avatar: "/placeholder.svg?height=128&width=128",
+            },
+            // اضافة معلومات متعلقة إذا كان الحجز
+            related_info: transactionData.transactionable_type === "App\\Models\\Booking" ? {
+              booking_id: transactionData.transactionable_id,
+              listing_title: "عنوان الإعلان (سيتم استبداله بالبيانات الفعلية)",
+              host_name: "اسم المضيف (سيتم استبداله بالبيانات الفعلية)",
+              check_in: "2025-06-20",
+              check_out: "2025-06-25",
+              guests: 2,
+            } : null
+          };
+
+          setTransaction(enhancedTransaction)
+        } else {
+          toast({
+            variant: "destructive",
+            title: "خطأ",
+            description: "لم نتمكن من العثور على بيانات المعاملة",
+          })
+        }
       } catch (error) {
         console.error("Error fetching transaction:", error)
         toast({
@@ -109,29 +112,67 @@ export default function TransactionDetailsPage() {
           title: "خطأ في جلب بيانات المعاملة",
           description: "حدث خطأ أثناء محاولة جلب بيانات المعاملة. يرجى المحاولة مرة أخرى.",
         })
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchTransaction()
+    if (params.id) {
+      fetchTransaction()
+    }
   }, [params.id, toast])
 
   const handleGoBack = () => {
     router.back()
   }
 
+  const handleUpdateStatus = async (status: string) => {
+    try {
+      if (!transaction) return
+
+      const response = await api.put(`/admin/transactions/${params.id}`, { status })
+
+      if (response.data.success) {
+        toast({
+          title: "تم التحديث",
+          description: "تم تحديث حالة المعاملة بنجاح",
+        })
+
+        // تحديث البيانات المحلية
+        setTransaction({
+          ...transaction,
+          status: status,
+          updated_at: new Date().toISOString(),
+        })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          description: "فشل تحديث حالة المعاملة",
+        })
+      }
+    } catch (error) {
+      console.error("Error updating transaction status:", error)
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "حدث خطأ أثناء محاولة تحديث حالة المعاملة.",
+      })
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
         return (
-          <Badge variant="success" className="flex items-center gap-1">
+          <Badge className={cn("flex items-center gap-1 bg-green-500 hover:bg-green-600")}>
             <CheckCircle className="h-3 w-3" />
             مكتمل
           </Badge>
         )
       case "pending":
         return (
-          <Badge variant="warning" className="flex items-center gap-1">
+          <Badge className={cn("flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600")}>
             <RefreshCcw className="h-3 w-3" />
             قيد الانتظار
           </Badge>
@@ -200,14 +241,33 @@ export default function TransactionDetailsPage() {
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    if (!dateString) return "غير متوفر";
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("ar-SY", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(date)
+    }).format(date);
+  }
+
+  const getDescription = (description: any) => {
+    if (!description) return "لا يوجد وصف";
+
+    if (typeof description === 'string') {
+      return description;
+    }
+
+    if (description.ar && typeof description.ar === 'string') {
+      return description.ar;
+    }
+
+    if (description.ar && description.ar.ar) {
+      return description.ar.ar;
+    }
+
+    return "لا يوجد وصف";
   }
 
   if (loading) {
@@ -257,6 +317,27 @@ export default function TransactionDetailsPage() {
     )
   }
 
+  // إنشاء سجل المعاملة استناداً إلى البيانات المتاحة
+  const transactionHistory = [
+    {
+      action: "created",
+      timestamp: transaction.created_at,
+      user: "النظام",
+      details: "تم إنشاء المعاملة",
+    }
+  ];
+
+  if (transaction.updated_at && transaction.updated_at !== transaction.created_at) {
+    transactionHistory.push({
+      action: transaction.status,
+      timestamp: transaction.updated_at,
+      user: "النظام",
+      details: `تم تحديث المعاملة إلى: ${getTypeLabel(transaction.status)}`,
+    });
+  }
+
+  // يمكن إضافة المزيد من الإجراءات إلى سجل المعاملة هنا إذا كانت هناك بيانات متاحة
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -264,18 +345,20 @@ export default function TransactionDetailsPage() {
           <Button variant="outline" size="icon" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-3xl font-bold tracking-tight">تفاصيل المعاملة #{transaction.reference}</h2>
+          <h2 className="text-3xl font-bold tracking-tight">تفاصيل المعاملة #{transaction.id}</h2>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
+        {/* <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.print()}>
             <Printer className="ml-2 h-4 w-4" />
             طباعة
           </Button>
-          <Button>
-            <Download className="ml-2 h-4 w-4" />
-            تصدير
-          </Button>
-        </div>
+          {transaction.attached && transaction.attached_url && (
+            <Button variant="outline" onClick={() => window.open(transaction.attached_url, "_blank")}>
+              <Download className="ml-2 h-4 w-4" />
+              تنزيل المرفق
+            </Button>
+          )}
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -305,7 +388,7 @@ export default function TransactionDetailsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">المبلغ</p>
                   <p className="font-medium text-xl">
-                    {transaction.amount.toLocaleString()} {transaction.currency}
+                    {transaction.amount.toLocaleString()} USD
                   </p>
                 </div>
               </div>
@@ -325,33 +408,26 @@ export default function TransactionDetailsPage() {
                 <h3 className="text-lg font-semibold">تفاصيل المعاملة</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">رق�� المرجع</span>
-                    <span className="font-medium">{transaction.reference}</span>
+                    <span className="text-muted-foreground">رقم المرجع</span>
+                    <span className="font-medium">#{transaction.id}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">طريقة الدفع</span>
-                    <span className="font-medium">{getPaymentMethodLabel(transaction.payment_method)}</span>
+                    <span className="font-medium">{getPaymentMethodLabel(transaction.method)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المبلغ</span>
                     <span className="font-medium">
-                      {transaction.amount.toLocaleString()} {transaction.currency}
+                      {transaction.amount.toLocaleString()} USD
                     </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">رسوم المعاملة</span>
+                    <span className="text-muted-foreground">الاتجاه</span>
                     <span className="font-medium">
-                      {transaction.transaction_fee.toLocaleString()} {transaction.currency}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">المبلغ الإجمالي</span>
-                    <span className="font-medium text-lg">
-                      {transaction.total_amount.toLocaleString()} {transaction.currency}
+                      {transaction.direction === "in" ? "وارد" : "صادر"}
                     </span>
                   </div>
                   <Separator />
@@ -374,56 +450,41 @@ export default function TransactionDetailsPage() {
 
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">معلومات متعلقة</h3>
-                {transaction.related_type === "booking" && (
+                {transaction.transactionable_id && transaction.transactionable_type && (
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">رقم الحجز</span>
-                      <span className="font-medium">#{transaction.related_info.booking_id}</span>
+                      <span className="text-muted-foreground">نوع العلاقة</span>
+                      <span className="font-medium">
+                        {transaction.transactionable_type.includes("Booking") ? "حجز" : transaction.transactionable_type.replace("App\\Models\\", "")}
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">عنوان الإعلان</span>
-                      <span className="font-medium">{transaction.related_info.listing_title}</span>
+                      <span className="text-muted-foreground">معرف العلاقة</span>
+                      <span className="font-medium">#{transaction.transactionable_id}</span>
                     </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">اسم المضيف</span>
-                      <span className="font-medium">{transaction.related_info.host_name}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">تاريخ الوصول</span>
-                      <span className="font-medium">{transaction.related_info.check_in}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">تاريخ المغادرة</span>
-                      <span className="font-medium">{transaction.related_info.check_out}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">عدد الضيوف</span>
-                      <span className="font-medium">{transaction.related_info.guests}</span>
-                    </div>
+                    {transaction.related_info && (
+                      <>
+                        <Separator />
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">عنوان الإعلان</span>
+                          <span className="font-medium">{transaction.related_info.listing_title}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
                 <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-medium mb-2">الوصف</h4>
-                  <p>{transaction.description}</p>
-                  {transaction.notes && (
-                    <>
-                      <h4 className="font-medium mt-4 mb-2">ملاحظات</h4>
-                      <p>{transaction.notes}</p>
-                    </>
-                  )}
+                  <p>{getDescription(transaction.description)}</p>
                 </div>
               </div>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between border-t p-4">
             <div className="text-sm text-muted-foreground">
-              تم إنشاء المعاملة بواسطة <span className="font-medium">النظام</span>
+              معرف المستخدم: {transaction.user_id}
             </div>
             <div className="text-sm text-muted-foreground">آخر تحديث: {formatDate(transaction.updated_at)}</div>
           </CardFooter>
@@ -436,13 +497,13 @@ export default function TransactionDetailsPage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={transaction.user.avatar || "/placeholder.svg"} alt={transaction.user.name} />
-                <AvatarFallback>{transaction.user.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={transaction.user?.avatar || "/placeholder.svg"} alt={transaction.user?.name} />
+                <AvatarFallback>{transaction.user?.name?.charAt(0) || ""}</AvatarFallback>
               </Avatar>
-              <h3 className="text-xl font-semibold">{transaction.user.name}</h3>
-              <p className="text-muted-foreground">{transaction.user.email}</p>
-              <p className="text-muted-foreground">{transaction.user.phone}</p>
-              <Button variant="outline" className="mt-4 w-full">
+              <h3 className="text-xl font-semibold">{transaction.user?.name}</h3>
+              {transaction.user?.email && <p className="text-muted-foreground">{transaction.user.email}</p>}
+              {transaction.user?.phone && <p className="text-muted-foreground">{transaction.user.phone}</p>}
+              <Button variant="outline" className="mt-4 w-full" onClick={() => router.push(`/users/${transaction.user_id}`)}>
                 <User className="ml-2 h-4 w-4" />
                 عرض ملف المستخدم
               </Button>
@@ -455,7 +516,7 @@ export default function TransactionDetailsPage() {
             </CardHeader>
             <CardContent>
               <div className="relative space-y-4 before:absolute before:inset-y-0 before:right-4 before:w-[2px] before:bg-muted">
-                {transaction.history.map((event: any, index: number) => (
+                {transactionHistory.map((event, index) => (
                   <div key={index} className="relative grid grid-cols-[1fr_auto] items-start gap-4 pb-4">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
@@ -483,24 +544,38 @@ export default function TransactionDetailsPage() {
             <CardContent className="space-y-2">
               {transaction.status === "pending" && (
                 <>
-                  <Button className="w-full" variant="default">
+                  <Button
+                    className="w-full"
+                    variant="default"
+                    onClick={() => handleUpdateStatus("completed")}
+                  >
                     <CheckCircle className="ml-2 h-4 w-4" />
                     تأكيد المعاملة
                   </Button>
-                  <Button className="w-full" variant="destructive">
+                  <Button
+                    className="w-full"
+                    variant="destructive"
+                    onClick={() => handleUpdateStatus("rejected")}
+                  >
                     <XCircle className="ml-2 h-4 w-4" />
                     رفض المعاملة
                   </Button>
                 </>
               )}
-              <Button className="w-full" variant="outline">
+              {/* <Button className="w-full" variant="outline" onClick={() => window.print()}>
                 <FileText className="ml-2 h-4 w-4" />
-                إنشاء فاتورة
-              </Button>
-              <Button className="w-full" variant="outline">
-                <Download className="ml-2 h-4 w-4" />
-                تنزيل الإيصال
-              </Button>
+                طباعة الإيصال
+              </Button> */}
+              {transaction.transactionable_id && transaction.transactionable_type?.includes("Booking") && (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => router.push(`/bookings/${transaction.transactionable_id}`)}
+                >
+                  <Calendar className="ml-2 h-4 w-4" />
+                  عرض الحجز المرتبط
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>

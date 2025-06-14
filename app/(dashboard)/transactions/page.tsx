@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {  useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { api } from "@/lib/api"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -40,211 +41,187 @@ import {
   XCircle,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { toast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import * as React from "react"
+import { DateRange } from "react-day-picker"
 
-// Mock data
-const initialTransactions = [
-  {
-    id: 1,
-    reference: "TRX-001",
-    amount: 250000,
-    currency: "USD",
-    type: "booking_payment",
-    status: "completed",
-    payment_method: "wallet",
-    user: {
-      id: 2,
-      name: "سارة أحمد",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 1,
-    related_type: "booking",
-    description: "دفع حجز شقة فاخرة في وسط دمشق",
-    created_at: "2023-06-15T10:30:00Z",
-  },
-  {
-    id: 2,
-    reference: "TRX-002",
-    amount: 840000,
-    currency: "USD",
-    type: "booking_payment",
-    status: "completed",
-    payment_method: "shamcash",
-    user: {
-      id: 4,
-      name: "فاطمة حسن",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 2,
-    related_type: "booking",
-    description: "دفع حجز فيلا مع مسبح في اللاذقية",
-    created_at: "2023-06-25T14:45:00Z",
-  },
-  {
-    id: 3,
-    reference: "TRX-003",
-    amount: 175000,
-    currency: "USD",
-    type: "booking_payment",
-    status: "pending",
-    payment_method: "wallet",
-    user: {
-      id: 1,
-      name: "أحمد محمد",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 3,
-    related_type: "booking",
-    description: "دفع حجز استوديو مفروش في حلب",
-    created_at: "2023-07-20T09:15:00Z",
-  },
-  {
-    id: 4,
-    reference: "TRX-004",
-    amount: 300000,
-    currency: "USD",
-    type: "booking_payment",
-    status: "completed",
-    payment_method: "alharam",
-    user: {
-      id: 3,
-      name: "محمد علي",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 4,
-    related_type: "booking",
-    description: "دفع حجز بيت ريفي في طرطوس",
-    created_at: "2023-08-15T16:20:00Z",
-  },
-  {
-    id: 5,
-    reference: "TRX-005",
-    amount: 450000,
-    currency: "USD",
-    type: "booking_refund",
-    status: "completed",
-    payment_method: "wallet",
-    user: {
-      id: 5,
-      name: "خالد عمر",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 5,
-    related_type: "booking",
-    description: "استرداد حجز شاليه على البحر في اللاذقية",
-    created_at: "2023-09-25T11:10:00Z",
-  },
-  {
-    id: 6,
-    reference: "TRX-006",
-    amount: 50000,
-    currency: "USD",
-    type: "commission",
-    status: "completed",
-    payment_method: "system",
-    user: {
-      id: 1,
-      name: "أحمد محمد",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 1,
-    related_type: "listing",
-    description: "عمولة إعلان شقة فاخرة في وسط دمشق",
-    created_at: "2023-06-16T08:30:00Z",
-  },
-  {
-    id: 7,
-    reference: "TRX-007",
-    amount: 120000,
-    currency: "USD",
-    type: "commission",
-    status: "completed",
-    payment_method: "system",
-    user: {
-      id: 2,
-      name: "سارة أحمد",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: 2,
-    related_type: "listing",
-    description: "عمولة إعلان فيلا مع مسبح في اللاذقية",
-    created_at: "2023-06-26T12:45:00Z",
-  },
-  {
-    id: 8,
-    reference: "TRX-008",
-    amount: 200000,
-    currency: "USD",
-    type: "deposit",
-    status: "completed",
-    payment_method: "shamcash",
-    user: {
-      id: 3,
-      name: "محمد علي",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: null,
-    related_type: null,
-    description: "إيداع رصيد في المحفظة",
-    created_at: "2023-07-05T10:20:00Z",
-  },
-  {
-    id: 9,
-    reference: "TRX-009",
-    amount: 150000,
-    currency: "USD",
-    type: "withdrawal",
-    status: "pending",
-    payment_method: "bank_transfer",
-    user: {
-      id: 4,
-      name: "فاطمة حسن",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: null,
-    related_type: null,
-    description: "سحب رصيد من المحفظة",
-    created_at: "2023-07-10T15:30:00Z",
-  },
-  {
-    id: 10,
-    reference: "TRX-010",
-    amount: 100000,
-    currency: "USD",
-    type: "withdrawal",
-    status: "rejected",
-    payment_method: "bank_transfer",
-    user: {
-      id: 5,
-      name: "خالد عمر",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    related_id: null,
-    related_type: null,
-    description: "سحب رصيد من المحفظة",
-    created_at: "2023-07-15T09:10:00Z",
-  },
-]
+// نوع البيانات للمعاملات
+interface Transaction {
+  id: number
+  user_id: number
+  amount: number
+  description: {
+    ar: string
+    en: string
+  }
+  status: string
+  type: string
+  direction: string
+  method: string
+  transactionable_id: number | null
+  transactionable_type: string | null
+  attached: string | null
+  attached_url: string
+  created_at: string
+  user?: {
+    id: number
+    name: string
+    avatar?: string
+  }
+}
+
+interface ApiResponse {
+  success: boolean
+  data: Transaction[]
+  meta: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+}
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState(initialTransactions)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>()
-  const router = useRouter();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 50,
+    total: 0,
+  })
+  const router = useRouter()
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true)
+      let url = `/admin/transactions?page=${currentPage}`
+
+      if (statusFilter !== "all") {
+        url += `&status=${statusFilter}`
+      }
+
+      if (typeFilter !== "all") {
+        url += `&type=${typeFilter}`
+      }
+
+      if (dateRange?.from && dateRange?.to) {
+        const formattedFrom = dateRange.from.toISOString().split('T')[0]
+        const formattedTo = dateRange.to.toISOString().split('T')[0]
+        url += `&from=${formattedFrom}&to=${formattedTo}`
+      }
+
+      if (searchTerm) {
+        url += `&search=${searchTerm}`
+      }
+
+      const response = await api.get<ApiResponse>(url)
+
+      if (response.data.success) {
+        // إضافة بيانات المستخدم المؤقتة للعرض حتى يتم تنفيذ واجهة برمجة التطبيقات الكاملة
+        const transactionsWithUsers = response.data.data.map(transaction => ({
+          ...transaction,
+          user: {
+            id: transaction.user_id,
+            name: `مستخدم ${transaction.user_id}`, // يمكن استبداله بالاسم الحقيقي عندما يكون متاحًا في API
+            avatar: "/placeholder.svg"
+          }
+        }))
+
+        setTransactions(transactionsWithUsers)
+        setPagination({
+          currentPage: response.data.meta.current_page,
+          lastPage: response.data.meta.last_page,
+          perPage: response.data.meta.per_page,
+          total: response.data.meta.total,
+        })
+      }
+    } catch (error) {
+      console.error("خطأ في جلب المعاملات:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب المعاملات",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTransactions()
+  }, [currentPage, statusFilter, typeFilter, dateRange])
+
+  const handleFilter = () => {
+    setCurrentPage(1) // إعادة التعيين إلى الصفحة الأولى عند التصفية
+    fetchTransactions()
+  }
+
+  const handleExport = async () => {
+    try {
+      let url = `/admin/transactions/export`
+
+      if (statusFilter !== "all") {
+        url += `?status=${statusFilter}`
+      }
+
+      if (typeFilter !== "all") {
+        url += `${url.includes('?') ? '&' : '?'}type=${typeFilter}`
+      }
+
+      if (dateRange?.from && dateRange?.to) {
+        const formattedFrom = dateRange.from.toISOString().split('T')[0]
+        const formattedTo = dateRange.to.toISOString().split('T')[0]
+        url += `${url.includes('?') ? '&' : '?'}from=${formattedFrom}&to=${formattedTo}`
+      }
+
+      if (searchTerm) {
+        url += `${url.includes('?') ? '&' : '?'}search=${searchTerm}`
+      }
+
+      const response = await api.get(url, { responseType: 'blob' })
+
+      // إنشاء رابط تنزيل للملف
+      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.setAttribute('download', `transactions-${new Date().toISOString().split('T')[0]}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      toast({
+        title: "تم التصدير بنجاح",
+        description: "تم تصدير المعاملات بنجاح",
+      })
+    } catch (error) {
+      console.error("خطأ في تصدير المعاملات:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تصدير المعاملات",
+        variant: "destructive",
+      })
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
         return (
-          <Badge variant="success" className="flex items-center gap-1">
+          <Badge className={cn("flex items-center gap-1 bg-green-500 hover:bg-green-600")}>
             <CheckCircle className="h-3 w-3" />
             مكتمل
           </Badge>
         )
       case "pending":
         return (
-          <Badge variant="warning" className="flex items-center gap-1">
+          <Badge className={cn("flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600")}>
             <RefreshCcw className="h-3 w-3" />
             قيد الانتظار
           </Badge>
@@ -312,29 +289,95 @@ export default function TransactionsPage() {
     }
   }
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch =
-      transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
-    const matchesStatus = statusFilter === "all" || transaction.status === statusFilter
-    const matchesType = typeFilter === "all" || transaction.type === typeFilter
+  const handleUpdateStatus = async (id: number, status: string) => {
+    try {
+      await api.put(`/admin/transactions/${id}`, { status })
+      toast({
+        title: "تم التحديث",
+        description: "تم تحديث حالة المعاملة بنجاح",
+      })
+      fetchTransactions() // إعادة تحميل البيانات بعد التحديث
+    } catch (error) {
+      console.error("خطأ في تحديث المعاملة:", error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة المعاملة",
+        variant: "destructive",
+      })
+    }
+  }
 
-    let matchesDate = true
-    if (dateRange?.from && dateRange?.to) {
-      const transactionDate = new Date(transaction.created_at)
-      matchesDate = transactionDate >= dateRange.from && transactionDate <= dateRange.to
+  // إنشاء صفحات الترقيم
+  const renderPagination = () => {
+    const pages = []
+    const { currentPage, lastPage } = pagination
+
+    // إضافة زر الصفحة السابقة
+    pages.push(
+      <PaginationItem key="prev">
+        <PaginationPrevious
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            if (currentPage > 1) handlePageChange(currentPage - 1)
+          }}
+          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+        />
+      </PaginationItem>
+    )
+
+    // حساب نطاق الصفحات التي سيتم عرضها
+    let startPage = Math.max(1, currentPage - 2)
+    let endPage = Math.min(lastPage, startPage + 4)
+
+    if (endPage - startPage < 4 && lastPage > 5) {
+      startPage = Math.max(1, endPage - 4)
     }
 
-    return matchesSearch && matchesStatus && matchesType && matchesDate
-  })
+    // إضافة أرقام الصفحات
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            isActive={i === currentPage}
+            onClick={(e) => {
+              e.preventDefault()
+              handlePageChange(i)
+            }}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      )
+    }
+
+    // إضافة زر الصفحة التالية
+    pages.push(
+      <PaginationItem key="next">
+        <PaginationNext
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            if (currentPage < lastPage) handlePageChange(currentPage + 1)
+          }}
+          className={currentPage === lastPage ? "pointer-events-none opacity-50" : ""}
+        />
+      </PaginationItem>
+    )
+
+    return pages
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">المعاملات المالية</h2>
-        <Button>
+        <Button onClick={handleExport}>
           <Download className="ml-2 h-4 w-4" />
           تصدير المعاملات
         </Button>
@@ -381,9 +424,13 @@ export default function TransactionsPage() {
                 </SelectContent>
               </Select>
               <div className="w-full md:w-[250px]">
-                <DatePickerWithRange className="w-full" />
+                <DatePickerWithRange
+                  className="w-full"
+                  value={dateRange}
+                  onChange={(range) => setDateRange(range)}
+                />
               </div>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleFilter}>
                 <Filter className="ml-2 h-4 w-4" />
                 تصفية
               </Button>
@@ -404,26 +451,32 @@ export default function TransactionsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTransactions.length === 0 ? (
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-24 text-center">
+                        جاري تحميل البيانات...
+                      </TableCell>
+                    </TableRow>
+                  ) : transactions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="h-24 text-center">
                         لا توجد نتائج.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredTransactions.map((transaction) => (
+                    transactions.map((transaction) => (
                       <TableRow key={transaction.id}>
-                        <TableCell className="font-medium">{transaction.reference}</TableCell>
+                        <TableCell className="font-medium">#{transaction.id}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarImage
-                                src={transaction.user.avatar || "/placeholder.svg"}
-                                alt={transaction.user.name}
+                                src={transaction.user?.avatar || "/placeholder.svg"}
+                                alt={transaction.user?.name || ""}
                               />
-                              <AvatarFallback>{transaction.user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{transaction.user?.name?.charAt(0) || ""}</AvatarFallback>
                             </Avatar>
-                            <span>{transaction.user.name}</span>
+                            <span>{transaction.user?.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -433,9 +486,9 @@ export default function TransactionsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {transaction.amount} {transaction.currency}
+                          {transaction.amount} USD
                         </TableCell>
-                        <TableCell>{getPaymentMethodLabel(transaction.payment_method)}</TableCell>
+                        <TableCell>{getPaymentMethodLabel(transaction.method)}</TableCell>
                         <TableCell>{getStatusBadge(transaction.status)}</TableCell>
                         <TableCell>
                           {new Date(transaction.created_at).toLocaleDateString("ar-SY")}{" "}
@@ -455,26 +508,28 @@ export default function TransactionsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={()=>router.push("/transactions/1")}>
+                              <DropdownMenuItem onClick={() => router.push(`/transactions/${transaction.id}`)}>
                                 <Eye className="ml-2 h-4 w-4" />
                                 عرض التفاصيل
                               </DropdownMenuItem>
                               {transaction.status === "pending" && (
                                 <>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "completed")}>
                                     <CheckCircle className="ml-2 h-4 w-4" />
                                     تأكيد
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "rejected")}>
                                     <XCircle className="ml-2 h-4 w-4" />
                                     رفض
                                   </DropdownMenuItem>
                                 </>
                               )}
-                              <DropdownMenuItem>
-                                <Download className="ml-2 h-4 w-4" />
-                                تصدير
-                              </DropdownMenuItem>
+                              {transaction.attached && (
+                                <DropdownMenuItem onClick={() => window.open(transaction.attached_url, '_blank')}>
+                                  <Download className="ml-2 h-4 w-4" />
+                                  تنزيل المرفق
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -485,27 +540,13 @@ export default function TransactionsPage() {
               </Table>
             </div>
 
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            {!loading && pagination.lastPage > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  {renderPagination()}
+                </PaginationContent>
+              </Pagination>
+            )}
           </div>
         </CardContent>
       </Card>
