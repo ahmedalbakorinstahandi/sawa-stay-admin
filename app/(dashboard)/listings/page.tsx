@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,15 +95,32 @@ export default function ListingsPage() {
     useState(false);
   const [selectedListing, setSelectedListing] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [selectedFeature, setSelectedFeature] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFeature, setSelectedFeature] = useState<any>(null);  const [isLoading, setIsLoading] = useState(true);
   const [perPage, setPerPage] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
-
   const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize current page from URL or default to 1
+  const [currentPage, setCurrentPage] = useState(() => {
+    const pageParam = searchParams.get("page");
+    return pageParam ? parseInt(pageParam, 10) : 1;
+  });
+
+  // Update URL when page changes
+  const updatePageInURL = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Function to update current page
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updatePageInURL(page);
+  };
 
   // Fetch listings
   useEffect(() => {
@@ -114,6 +131,7 @@ export default function ListingsPage() {
     statusFilter,
     propertyTypeFilter,
     categoryFilter,
+    perPage,
     searchTerm,
   ]);
   // Fetch categories and features when the tab changes
@@ -163,7 +181,6 @@ export default function ListingsPage() {
         setListings(response.data?.data || []);
         setTotalPages(response.data?.meta?.last_page || 1);
         setTotalCount(response.data?.meta?.total || 0);
-
       } else {
         toast({
           title: "خطأ في جلب الإعلانات",
@@ -904,6 +921,7 @@ export default function ListingsPage() {
                                   }
                                   alt={listing.title?.ar || ""}
                                   width={80}
+                                  priority
                                   height={60}
                                   className="h-12 w-16 rounded-md object-cover"
                                 />
@@ -1047,7 +1065,7 @@ export default function ListingsPage() {
                         value={perPage.toString()}
                         onValueChange={(value) => {
                           setPerPage(parseInt(value, 10));
-                          setCurrentPage(1);
+                          handlePageChange(1);
                         }}
                       >
                         <SelectTrigger className="w-[120px] sm:w-[150px] text-xs sm:text-sm">
@@ -1062,26 +1080,24 @@ export default function ListingsPage() {
                       </Select>
                     </div>
                     <PaginationContent className="flex-wrap justify-center">
-                      <PaginationItem>
-                        <PaginationPrevious
+                      <PaginationItem>                        <PaginationPrevious
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             if (currentPage > 1)
-                              setCurrentPage(currentPage - 1);
+                              handlePageChange(currentPage - 1);
                           }}
                           className={`${currentPage === 1
                             ? "pointer-events-none opacity-50"
                             : ""
                             } sm:hidden`}
                           aria-label="الصفحة السابقة"
-                        />
-                        <PaginationPrevious
+                        />                        <PaginationPrevious
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             if (currentPage > 1)
-                              setCurrentPage(currentPage - 1);
+                              handlePageChange(currentPage - 1);
                           }}
                           className={`${currentPage === 1
                             ? "pointer-events-none opacity-50"
@@ -1092,12 +1108,11 @@ export default function ListingsPage() {
 
                       {/* First page */}
                       {totalPages > 0 && (
-                        <PaginationItem>
-                          <PaginationLink
+                        <PaginationItem>                          <PaginationLink
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              setCurrentPage(1);
+                              handlePageChange(1);
                             }}
                             isActive={currentPage === 1}
                           >
@@ -1123,12 +1138,11 @@ export default function ListingsPage() {
                             page <= currentPage + 1
                         )
                         .map((page) => (
-                          <PaginationItem key={page}>
-                            <PaginationLink
+                          <PaginationItem key={page}>                            <PaginationLink
                               href="#"
                               onClick={(e) => {
                                 e.preventDefault();
-                                setCurrentPage(page);
+                                handlePageChange(page);
                               }}
                               isActive={currentPage === page}
                             >
@@ -1146,38 +1160,35 @@ export default function ListingsPage() {
 
                       {/* Last page */}
                       {totalPages > 1 && (
-                        <PaginationItem>
-                          <PaginationLink
+                        <PaginationItem>                          <PaginationLink
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              setCurrentPage(totalPages);
+                              handlePageChange(totalPages);
                             }}
                             isActive={currentPage === totalPages}
                           >
                             {totalPages}
                           </PaginationLink>
                         </PaginationItem>
-                      )}                      <PaginationItem>
-                        <PaginationNext
+                      )}                      <PaginationItem>                        <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             if (currentPage < totalPages)
-                              setCurrentPage(currentPage + 1);
+                              handlePageChange(currentPage + 1);
                           }}
                           className={`${currentPage === totalPages
                             ? "pointer-events-none opacity-50"
                             : ""
                             } sm:hidden`}
                           aria-label="الصفحة التالية"
-                        />
-                        <PaginationNext
+                        />                        <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             if (currentPage < totalPages)
-                              setCurrentPage(currentPage + 1);
+                              handlePageChange(currentPage + 1);
                           }}
                           className={`${currentPage === totalPages
                             ? "pointer-events-none opacity-50"
