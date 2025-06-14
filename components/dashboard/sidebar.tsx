@@ -243,7 +243,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={() => onOpenChange(!open)}
-          className={`fixed top-1/2 right-0 z-30 -translate-y-1/2 rounded-r-lg p-1.5 shadow-md transition-all duration-300 ${
+          className={`fixed top-1/2 right-0 z-30 -translate-y-1/2 rounded-l-lg p-1.5 shadow-md transition-all duration-300 ${
             open ? "right-64" : "right-0"
           } ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
         >

@@ -318,15 +318,35 @@ export const listingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to update listing status" }
     }
   },
-    // Reorder listing images
+  // Reorder listing images
   reorderImage: async (listingId: number, imageId: number, targetImageId: number) => {
     try {
-      const response = await api.put(`/admin/listings/${listingId}/images/${imageId}/reorder`, { 
-        orders: targetImageId 
+      const response = await api.put(`/admin/listings/${listingId}/images/${imageId}/reorder`, {
+        orders: targetImageId
       })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to reorder image" }
+    }
+  },
+
+  // حذف صورة الإعلان
+  deleteImage: async (listingId: number, imageId: number) => {
+    try {
+      const response = await api.delete(`/admin/listings/${listingId}/images/${imageId}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to delete image" }
+    }
+  },
+
+  // استعادة صورة الإعلان
+  restoreImage: async (listingId: number, imageId: number) => {
+    try {
+      const response = await api.post(`/admin/listings/${listingId}/images/${imageId}/restore`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to restore image" }
     }
   },
 }

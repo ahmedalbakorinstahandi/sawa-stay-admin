@@ -26,20 +26,47 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
     transition,
     width: "100%",
   };
+  
+  // إضافة معالج منفصل للنقر على زر الحذف
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    // منع انتشار الحدث حتى لا يتداخل مع أحداث السحب
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("تم النقر على زر الحذف:", id);
+    onRemove();
+  };
+
   return (
-    <div ref={setNodeRef}
+    <div 
+      ref={setNodeRef}
       style={style}
       className={`relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isMarkedForDeletion ? 'opacity-90' : ''
         }`}
       {...attributes}
-      {...listeners}
-    >      <Image
-        src={url || "/placeholder.svg"}
-        alt={`صورة الإعلان ${index + 1}`}
-        fill
-        priority
-        className={`object-cover ${isMarkedForDeletion ? 'grayscale brightness-50' : ''}`}
-      />{isMarkedForDeletion && (
+      // فصل أحداث السحب عن باقي العنصر
+      // سنضيف listeners للصورة فقط وليس للمكون بالكامل
+    >      <div className="relative w-full h-full cursor-grab group" {...listeners}>
+        <Image
+          src={url || "/placeholder.svg"}
+          alt={`صورة الإعلان ${index + 1}`}
+          fill
+          priority
+          className={`object-cover ${isMarkedForDeletion ? 'grayscale brightness-50' : ''}`}
+        />
+        <div className="absolute top-0 left-0 w-full h-full bg-transparent"></div>
+        
+        {/* إشارة السحب تظهر عند تحريك المؤشر فوق الصورة */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-80 bg-black/20 transition-opacity duration-300">
+          <div className="p-2 rounded-full bg-white/70">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-800">
+              <path d="M3 8V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1"></path>
+              <path d="M3 16v1a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1"></path>
+              <path d="m8 12 4-4 4 4"></path>
+              <path d="m8 12 4 4 4-4"></path>
+            </svg>
+          </div>
+        </div>
+      </div>{isMarkedForDeletion && (
         <>
           <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center">
             <div className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transform -rotate-12 shadow-md border-2 border-white">
@@ -51,19 +78,20 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
           </div>
           <div className="absolute inset-0 border-4 border-red-600 rounded-lg"></div>
         </>
-      )}
-      <Button
+      )}      <Button
         variant="destructive"
         size="icon"
-        className={`absolute top-2 right-2 h-9 w-9 rounded-full shadow-lg transition-all transform hover:scale-110 ${isMarkedForDeletion
+        className={`absolute top-2 right-2 h-9 w-9 rounded-full shadow-lg transition-all transform hover:scale-110 z-10 ${isMarkedForDeletion
           ? 'bg-green-600 text-white hover:bg-green-700 border-2 border-white animate-pulse'
           : 'bg-red-600 text-white hover:bg-red-700'
           }`}
-        onClick={(e) => {
+        onClick={handleRemoveClick} 
+        // نقوم بفصل زر الحذف تماما عن أحداث السحب
+        onMouseDown={e => {
           e.stopPropagation();
-          console.log("Removing item:", id);
-
-          onRemove();
+        }}
+        onTouchStart={e => {
+          e.stopPropagation();
         }}
       >        {isMarkedForDeletion ? (
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white">
