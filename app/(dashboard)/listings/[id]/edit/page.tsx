@@ -1613,13 +1613,12 @@ export default function EditListingPage() {
                       <span className="text-sm text-gray-500 mr-2">
                         (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
                       </span>
-                    </h3>
-                    <DndContext
+                    </h3>                    <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
                       onDragEnd={handleExistingImageDragEnd}
                     >
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="flex flex-wrap gap-4">
                         <SortableContext
                           items={listing.images.map(image => `existing-image-${image.id}`)}
                           strategy={horizontalListSortingStrategy}
