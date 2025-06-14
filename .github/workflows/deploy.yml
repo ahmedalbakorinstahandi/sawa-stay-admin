@@ -19,7 +19,8 @@ jobs:
           port: 22
           script: |
             cd /home/sawastay-dashboard-2/htdocs/dashboard.sawastay.com/syria-go-admin
+            rm -f .github/workflows/deploy.yml
             git pull origin main
-            npm install
+            npm install --force
             npm run build
             pm2 restart sawastay-dashboard || pm2 start npm --name "sawastay-dashboard" -- start
