@@ -103,6 +103,7 @@ interface Listing {
   images: {
     id: number;
     url: string;
+    orders: number;
     path: string;
   }[];
   features: {
@@ -425,18 +426,26 @@ export default function EditListingPage() {
     setPropertyImages((prev) => prev.filter((_, i) => i !== index));
     setPropertyImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
-
   // إضافة صورة للحذف
   const addImageToDelete = (imageId: number) => {
-    setImagesToDelete((prev) => [...prev, imageId]);
+    console.log("إضافة صورة للحذف بالمعرف:", imageId);
+    setImagesToDelete((prev) => {
+      const newState = [...prev, imageId];
+      console.log("حالة imagesToDelete الجديدة:", newState);
+      return newState;
+    });
   };
   // إعادة ترتيب الصور باستخدام السحب والإفلات باستخدام dnd-kit
   const handleDragEnd = (event: any) => {
+    console.log("handleDragEnd called with event:", event);
+
     const { active, over } = event;
+    console.log("handleDragEnd called with active:", active, "over:", over);
+
 
     if (active.id !== over.id) {
       const activeIndex = parseInt(active.id.split('-')[1]);
-      const overIndex = parseInt(over.orders.split('-')[1]);
+      const overIndex = parseInt(over.orders);
 
       // إعادة ترتيب معاينات الصور
       setPropertyImagePreviews((items) => {
@@ -502,21 +511,22 @@ export default function EditListingPage() {
 
     try {
       // رفع الصور الجديدة
-      // const uploadedImagePaths =propertyImages;
-
-      // تجهيز البيانات للإرسال
+      // const uploadedImagePaths =propertyImages;      // تجهيز البيانات للإرسال
       const formData = {
         ...data,
         images: [
           ...propertyImages,
           ...(listing?.images?.filter((img) => !imagesToDelete.includes(img.id))?.map((img) => img.path) || []),
         ].map((item: any) => (item?.image_name ? item?.image_name : item)),
-        delete_images: imagesToDelete,
+        images_to_delete: imagesToDelete, // تعديل اسم الحقل
+        delete_images: imagesToDelete, // الاحتفاظ بالاسم القديم للتوافقية
       };
 
       console.log("جاري إرسال البيانات:", formData);
       console.log("بدء الاتصال بـ API...");
-      console.log("الرابط:", `/admin/listings/${listingId}`);
+      console.log("الرابط:", `/admin/listings/${listingId}`);      // طباعة تفاصيل الصور للتشخيص
+      console.log("الصور المراد حذفها:", imagesToDelete);
+      console.log("الصور المحتفظ بها:", listing?.images?.filter((img) => !imagesToDelete.includes(img.id)));
 
       // إرسال البيانات
       const response = await api.put(`/admin/listings/${listingId}`, formData);
@@ -572,11 +582,24 @@ export default function EditListingPage() {
   // إعادة ترتيب الصور الحالية باستخدام السحب والإفلات
   const handleExistingImageDragEnd = async (event: any) => {
     const { active, over } = event;
+    console.log("handleExistingImageDragEnd called with active:", active, "over:", over);
 
     if (active.id !== over.id) {
       // استخراج معرفات الصور من معرّفات العناصر
       const activeImageId = parseInt(active.id.split('-')[2]);
       const overImageId = parseInt(over.id.split('-')[2]);
+      // get orders from listing?.images where id matches overImageId
+      const overImage = listing?.images.find(img => img.id === overImageId);
+      if (!overImage) {
+        console.error("الصورة المستهدفة غير موجودة في قائمة الصور");
+        return;
+      }
+
+      console.log("Active image ID:", overImage);
+
+
+      console.log("Reordering images from", activeImageId, "to", overImageId);
+
 
       // تحديث الواجهة بشكل فوري
       setListing(prevListing => {
@@ -604,7 +627,7 @@ export default function EditListingPage() {
           const result = await listingsAPI.reorderImage(
             parseInt(listingId),
             activeImageId,
-            overImageId
+            overImage.orders
           );
 
           if (result && !result.hasOwnProperty('success') || result.success) {
@@ -1637,10 +1660,14 @@ export default function EditListingPage() {
                                       (id) => id !== image.id
                                     )
                                   );
+                                  console.log("إزالة الصورة من الحذف:", image.id);
+
                                 } else {
                                   addImageToDelete(image.id);
+                                  console.log("تمت إضافة الصورة للحذف:", image.id);
                                 }
                               }}
+                              isMarkedForDeletion={imagesToDelete.includes(image.id)}
                             />
                           ))}
                         </SortableContext>
@@ -1744,16 +1771,15 @@ export default function EditListingPage() {
                   console.log("بيانات النموذج الأصلية:", formData);
 
                   // إظهار تقدم الحفظ
-                  setIsSaving(true);
-
-                  // تجهيز البيانات
+                  setIsSaving(true);                  // تجهيز البيانات
                   const dataToSubmit = {
                     ...formData,
                     images: [
                       ...propertyImages,
                       ...(listing?.images?.filter(img => !imagesToDelete.includes(img.id))?.map(img => img.path) || []),
                     ].map(item => (item?.image_name ? item?.image_name : item)),
-                    delete_images: imagesToDelete,
+                    images_to_delete: imagesToDelete, // تعديل اسم الحقل
+                    delete_images: imagesToDelete, // الاحتفاظ بالاسم القديم للتوافقية
                   };
 
                   console.log("البيانات المرسلة:", dataToSubmit);

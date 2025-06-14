@@ -9,9 +9,10 @@ interface SortableItemProps {
   index: number;
   url: string;
   onRemove: () => void;
+  isMarkedForDeletion?: boolean;
 }
 
-export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {
+export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = false }: SortableItemProps) {
   const {
     attributes,
     listeners,
@@ -26,11 +27,10 @@ export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {
     width: "100%",
   };
 
-  return (
-    <div
+  return (    <div
       ref={setNodeRef}
       style={style}
-      className="relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation"
+      className={`relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isMarkedForDeletion ? 'opacity-50' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -40,17 +40,20 @@ export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {
         fill
         priority
         className="object-cover"
-      />
-      <Button
-        variant="destructive"
+      />      <Button
+        variant={isMarkedForDeletion ? "outline" : "destructive"}
         size="icon"
-        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+        className={`absolute top-2 right-2 h-8 w-8 rounded-full ${isMarkedForDeletion ? 'bg-red-100' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
         }}
       >
-        <X className="h-4 w-4" />
+        {isMarkedForDeletion ? (
+          <div className="h-4 w-4 text-green-600">↩️</div>
+        ) : (
+          <X className="h-4 w-4" />
+        )}
       </Button>
       <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full h-6 w-6 flex items-center justify-center">
         {index + 1}
