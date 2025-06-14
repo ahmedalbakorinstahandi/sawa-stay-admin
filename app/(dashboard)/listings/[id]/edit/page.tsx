@@ -436,7 +436,7 @@ export default function EditListingPage() {
 
     if (active.id !== over.id) {
       const activeIndex = parseInt(active.id.split('-')[1]);
-      const overIndex = parseInt(over.id.split('-')[1]);
+      const overIndex = parseInt(over.orders.split('-')[1]);
 
       // إعادة ترتيب معاينات الصور
       setPropertyImagePreviews((items) => {
@@ -1618,33 +1618,32 @@ export default function EditListingPage() {
                       sensors={sensors}
                       collisionDetection={closestCenter}
                       onDragEnd={handleExistingImageDragEnd}
-                    >                      <div className="w-full overflow-x-auto pb-4">
-                        <div className="flex gap-4 min-w-full">
-                          <SortableContext
-                            items={listing.images.map(image => `existing-image-${image.id}`)}
-                            strategy={horizontalListSortingStrategy}
-                          >
-                            {listing.images.map((image, idx) => (
-                              <SortableItem
-                                key={`existing-image-${image.id}`}
-                                id={`existing-image-${image.id}`}
-                                index={idx}
-                                url={image.url || "/placeholder.svg"}
-                                onRemove={() => {
-                                  if (imagesToDelete.includes(image.id)) {
-                                    setImagesToDelete(
-                                      imagesToDelete.filter(
-                                        (id) => id !== image.id
-                                      )
-                                    );
-                                  } else {
-                                    addImageToDelete(image.id);
-                                  }
-                                }}
-                              />
-                            ))}
-                          </SortableContext>
-                        </div>
+                    >
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <SortableContext
+                          items={listing.images.map(image => `existing-image-${image.id}`)}
+                          strategy={horizontalListSortingStrategy}
+                        >
+                          {listing.images.map((image, idx) => (
+                            <SortableItem
+                              key={`existing-image-${image.id}`}
+                              id={`existing-image-${image.id}`}
+                              index={idx}
+                              url={image.url || "/placeholder.svg"}
+                              onRemove={() => {
+                                if (imagesToDelete.includes(image.id)) {
+                                  setImagesToDelete(
+                                    imagesToDelete.filter(
+                                      (id) => id !== image.id
+                                    )
+                                  );
+                                } else {
+                                  addImageToDelete(image.id);
+                                }
+                              }}
+                            />
+                          ))}
+                        </SortableContext>
                       </div>
                     </DndContext>
                   </div>
@@ -1694,7 +1693,7 @@ export default function EditListingPage() {
                       collisionDetection={closestCenter}
                       onDragEnd={handleDragEnd}
                     >
-                      <div className="flex flex-wrap gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <SortableContext
                           items={propertyImagePreviews.map((_, index) => `image-${index}`)}
                           strategy={horizontalListSortingStrategy}

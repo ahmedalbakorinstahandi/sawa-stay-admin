@@ -11,23 +11,26 @@ interface SortableItemProps {
   onRemove: () => void;
 }
 
-export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {  const {
+export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {
+  const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging,
   } = useSortable({ id });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : 'auto',
+    width: "100%",
   };
-  return (    <div
+
+  return (
+    <div
       ref={setNodeRef}
       style={style}
-      className={`relative min-w-[200px] w-[200px] flex-shrink-0 aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isDragging ? 'z-50' : ''}`}
+      className="relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation"
       {...attributes}
       {...listeners}
     >
