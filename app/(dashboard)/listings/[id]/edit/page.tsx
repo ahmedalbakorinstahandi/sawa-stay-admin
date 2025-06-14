@@ -66,6 +66,7 @@ import { uploadImage } from "@/lib/upload-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { LocationPicker } from "@/components/map/location-picker";
+import { set } from "date-fns";
 // نوع بيانات الإعلان
 interface Listing {
   id: number;
@@ -425,14 +426,17 @@ export default function EditListingPage() {
     // حذف الصورة والمعاينة من المصفوفات
     setPropertyImages((prev) => prev.filter((_, i) => i !== index));
     setPropertyImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-  // إضافة صورة للحذف
+  };  // إضافة صورة للحذف
   const addImageToDelete = (imageId: number) => {
     console.log("إضافة صورة للحذف بالمعرف:", imageId);
     setImagesToDelete((prev) => {
-      const newState = [...prev, imageId];
-      console.log("حالة imagesToDelete الجديدة:", newState);
-      return newState;
+      // تأكد من عدم تكرار المعرف
+      if (!prev.includes(imageId)) {
+        const newState = [...prev, imageId];
+        console.log("حالة imagesToDelete الجديدة:", newState);
+        return newState;
+      }
+      return prev;
     });
   };
   // إعادة ترتيب الصور باستخدام السحب والإفلات باستخدام dnd-kit
@@ -513,13 +517,13 @@ export default function EditListingPage() {
       // رفع الصور الجديدة
       // const uploadedImagePaths =propertyImages;      // تجهيز البيانات للإرسال
       const formData = {
-        ...data,
-        images: [
+        ...data, images: [
           ...propertyImages,
           ...(listing?.images?.filter((img) => !imagesToDelete.includes(img.id))?.map((img) => img.path) || []),
         ].map((item: any) => (item?.image_name ? item?.image_name : item)),
+        images_remove: imagesToDelete, // استخدام الحقل الصحيح حسب API
         images_to_delete: imagesToDelete, // تعديل اسم الحقل
-        delete_images: imagesToDelete, // الاحتفاظ بالاسم القديم للتوافقية
+        delete_images: imagesToDelete // الاحتفاظ بالاسم القديم للتوافقية
       };
 
       console.log("جاري إرسال البيانات:", formData);
@@ -631,8 +635,16 @@ export default function EditListingPage() {
           );
 
           if (result && !result.hasOwnProperty('success') || result.success) {
-            toast.toast({
-              title: "تم تحديث ترتيب الصور بنجاح",
+            setListing((prevListing) => {
+              if (!prevListing) return null;
+              // تحديث ترتيب الصور في الإعلان
+              const updatedImages = prevListing.images.map((img) => {
+                if (img.id === activeImageId) {
+                  return { ...img, orders: overImage.orders };
+                }
+                return img;
+              });
+              return { ...prevListing, images: updatedImages };
             });
           } else {
             toast.toast({
@@ -1630,13 +1642,27 @@ export default function EditListingPage() {
 
               <div className="space-y-4">                  {/* الصور الحالية */}
                 {listing?.images && listing.images.length > 0 && (
-                  <div>
-                    <h3 className="text-md font-medium mb-2">
-                      الصور الحالية
-                      <span className="text-sm text-gray-500 mr-2">
-                        (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
-                      </span>
-                    </h3>
+                  <div>                    <h3 className="text-md font-medium mb-2">
+                    الصور الحالية
+                    <span className="text-sm text-gray-500 mr-2">
+                      (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
+                    </span>
+                  </h3>
+                    <div className="mb-4 text-sm bg-amber-50 rounded-md p-3 border border-amber-200">
+                      <div className="flex items-center gap-2 mb-1 text-amber-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span className="font-medium">تعليمات الصور:</span>
+                      </div>
+                      <ul className="list-disc list-inside space-y-1 text-amber-700">
+                        <li><span className="font-medium">لحذف صورة:</span> اضغط على زر سلة المهملات (باللون الأحمر)</li>
+                        <li><span className="font-medium">لإلغاء الحذف:</span> اضغط على زر الاستعادة (باللون الأخضر)</li>
+                        <li><span className="font-medium">لإعادة الترتيب:</span> اسحب وأفلت الصور</li>
+                      </ul>
+                    </div>
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
@@ -1654,6 +1680,8 @@ export default function EditListingPage() {
                               index={idx}
                               url={image.url || "/placeholder.svg"}
                               onRemove={() => {
+                                console.log("ضغط زر إزالة الصورة:", image.id);
+
                                 if (imagesToDelete.includes(image.id)) {
                                   setImagesToDelete(
                                     imagesToDelete.filter(
@@ -1731,7 +1759,11 @@ export default function EditListingPage() {
                               id={`image-${index}`}
                               index={index}
                               url={preview}
-                              onRemove={() => removePropertyImage(index)}
+                              onRemove={() => {
+                                console.log("ضغط زر إزالة الصورة:", index);
+
+                                removePropertyImage(index)
+                              }}
                             />
                           ))}
                         </SortableContext>
@@ -1773,13 +1805,13 @@ export default function EditListingPage() {
                   // إظهار تقدم الحفظ
                   setIsSaving(true);                  // تجهيز البيانات
                   const dataToSubmit = {
-                    ...formData,
-                    images: [
+                    ...formData, images: [
                       ...propertyImages,
                       ...(listing?.images?.filter(img => !imagesToDelete.includes(img.id))?.map(img => img.path) || []),
                     ].map(item => (item?.image_name ? item?.image_name : item)),
+                    images_remove: imagesToDelete, // استخدام الحقل الصحيح حسب API
                     images_to_delete: imagesToDelete, // تعديل اسم الحقل
-                    delete_images: imagesToDelete, // الاحتفاظ بالاسم القديم للتوافقية
+                    delete_images: imagesToDelete // الاحتفاظ بالاسم القديم للتوافقية
                   };
 
                   console.log("البيانات المرسلة:", dataToSubmit);
