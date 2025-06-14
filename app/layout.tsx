@@ -15,7 +15,7 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: "Syria Go - لوحة التحكم",
   description: "لوحة تحكم لإدارة تطبيق Syria Go",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -29,6 +29,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
             {children}
+            {/* ss */}
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
