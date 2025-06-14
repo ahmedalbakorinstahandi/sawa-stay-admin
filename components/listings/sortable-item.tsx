@@ -27,11 +27,10 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
     width: "100%",
   };
   return (
-    <div      ref={setNodeRef}
+    <div ref={setNodeRef}
       style={style}
-      className={`relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${
-        isMarkedForDeletion ? 'opacity-90' : ''
-      }`}
+      className={`relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation ${isMarkedForDeletion ? 'opacity-90' : ''
+        }`}
       {...attributes}
       {...listeners}
     >      <Image
@@ -52,27 +51,29 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
           </div>
           <div className="absolute inset-0 border-4 border-red-600 rounded-lg"></div>
         </>
-      )}      <Button
+      )}
+      <Button
         variant="destructive"
         size="icon"
-        className={`absolute top-2 right-2 h-9 w-9 rounded-full shadow-lg transition-all transform hover:scale-110 ${
-          isMarkedForDeletion 
-            ? 'bg-green-600 text-white hover:bg-green-700 border-2 border-white animate-pulse' 
-            : 'bg-red-600 text-white hover:bg-red-700'
-        }`}
+        className={`absolute top-2 right-2 h-9 w-9 rounded-full shadow-lg transition-all transform hover:scale-110 ${isMarkedForDeletion
+          ? 'bg-green-600 text-white hover:bg-green-700 border-2 border-white animate-pulse'
+          : 'bg-red-600 text-white hover:bg-red-700'
+          }`}
         onClick={(e) => {
           e.stopPropagation();
+          console.log("Removing item:", id);
+
           onRemove();
         }}
       >        {isMarkedForDeletion ? (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white">
-            <path d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 1 1 0 12h-3"></path>
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
-          </svg>
-        )}
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white">
+          <path d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 1 1 0 12h-3"></path>
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
+        </svg>
+      )}
       </Button>
       <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full h-6 w-6 flex items-center justify-center">
         {index + 1}

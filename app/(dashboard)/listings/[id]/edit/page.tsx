@@ -635,17 +635,22 @@ export default function EditListingPage() {
           );
 
           if (result && !result.hasOwnProperty('success') || result.success) {
-            setListing((prevListing) => {
-              if (!prevListing) return null;
-              // تحديث ترتيب الصور في الإعلان
-              const updatedImages = prevListing.images.map((img) => {
-                if (img.id === activeImageId) {
-                  return { ...img, orders: overImage.orders };
-                }
-                return img;
+            //  i need to update the listing image with result.data
+            // Check if we have valid response data
+            if (result && result.data) {
+              // Update the listing state with the new image data
+              setListing(prevListing => {
+                if (!prevListing) return null;
+
+                // Create a new listing object with updated images
+                return {
+                  ...prevListing,
+                  images: result.data.images || prevListing.images
+                };
               });
-              return { ...prevListing, images: updatedImages };
-            });
+
+              console.log("تم تحديث ترتيب الصور بنجاح");
+            }
           } else {
             toast.toast({
               title: "حدث خطأ أثناء تحديث ترتيب الصور",
