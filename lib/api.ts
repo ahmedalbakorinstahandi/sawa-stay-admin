@@ -29,10 +29,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     return response
-  },
-  async (error) => {
+  }, async (error) => {
     if (error.response?.status === 401) {
-      // التحقق ما إذا كانت الصفحة الحالية هي إحدى صفحات استعادة كلمة المرور
+      // التحقق ما إذا كانت الصفحة الحالية هي إحدى صفحات استعادة كلمة المرور أو صفحة تسجيل الدخول
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         const isPasswordResetPage = [
@@ -41,12 +40,15 @@ api.interceptors.response.use(
           '/reset-password'
         ].includes(currentPath);
 
-        // إذا لم تكن صفحة استعادة كلمة المرور، قم بإعادة التوجيه إلى صفحة تسجيل الدخول
-        if (!isPasswordResetPage) {
+        // التحقق إذا كانت الصفحة الحالية هي صفحة تسجيل الدخول
+        const isLoginPage = currentPath === '/login';
+
+        // إذا لم تكن صفحة استعادة كلمة المرور أو صفحة تسجيل الدخول، قم بإعادة التوجيه إلى صفحة تسجيل الدخول
+        if (!isPasswordResetPage && !isLoginPage) {
           console.log("401 error detected, redirecting to login");
           window.location.href = "/login";
         } else {
-          console.log("401 error on password reset page, not redirecting");
+          console.log("401 error on password reset or login page, not redirecting");
         }
       }
     }

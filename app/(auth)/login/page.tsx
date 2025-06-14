@@ -65,14 +65,13 @@ export default function LoginPage() {
       console.log("Login page: Token found, redirecting to dashboard");
       router.push("/dashboard");
     }
-  }, [isAuthenticated, router]);
-
-  const validateForm = () => {
+  }, [isAuthenticated, router]); const validateForm = (data: { phone: string; password: string }) => {
     try {
-      loginSchema.parse({ phone, password });
+      loginSchema.parse(data);
       setErrors({});
       return true;
     } catch (error) {
+      // عدم رمي الاستثناء للخارج لمنع إعادة تحميل الصفحة
       if (error instanceof z.ZodError) {
         const formattedErrors: { phone?: string; password?: string } = {};
         error.errors.forEach((err) => {
@@ -84,15 +83,26 @@ export default function LoginPage() {
           }
         });
         setErrors(formattedErrors);
+
+        // عرض رسالة خطأ للمستخدم
+        toast({
+          title: "خطأ في البيانات المدخلة",
+          description: "يرجى التحقق من البيانات المدخلة وإصلاح الأخطاء",
+          variant: "destructive",
+        });
       }
       return false;
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  }; const handleSubmit = async (e: React.FormEvent) => {
+    // منع السلوك الافتراضي للنموذج (إعادة تحميل الصفحة)
     e.preventDefault();
+    e.stopPropagation();
 
-    if (!validateForm()) {
+    // تخزين البيانات المدخلة
+    const formData = { phone, password };
+
+    if (!validateForm(formData)) {
+      // منع إعادة تحميل الصفحة عند وجود أخطاء في التحقق
       return;
     }
 
@@ -103,29 +113,59 @@ export default function LoginPage() {
         phone,
         password: "********",
       });
+
+      // استخدام المتغير المحلي ليتم الاحتفاظ به حتى إذا تم إعادة تحميل المكون
       const response = await login(phone, password);
       console.log("Login response:", response);
 
+      // التأكد من أن المكون لا يزال موجوداً قبل استخدام setState
       if (response.success) {
         toast({
           title: "تم تسجيل الدخول بنجاح",
           description: "مرحباً بك في لوحة إدارة Sawa Stay",
         });
 
-        router.push("/dashboard");
-
-        // إضافة تأخير قصير قبل إعادة التوجيه للتأكد من تخزين التوكن
-        // setTimeout(() => {
-        //   console.log("Login successful, redirecting to dashboard");
-        // }, 500);
+        // تأخير قصير قبل التوجيه للتأكد من حفظ التوكن في الكوكيز
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 300);
+      } else {
+        // التعامل مع أخطاء الاستجابة بشكل صحيح
+        toast({
+          title: "فشل تسجيل الدخول",
+          description: response.message || "بيانات الدخول غير صحيحة",
+          variant: "destructive",
+        });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Login submission error:", error);
+
+      // منع إعادة تحميل الصفحة عند حدوث خطأ
+      e.preventDefault();
+
+      // الحصول على رسالة الخطأ من الاستجابة إذا كانت متاحة
+      let errorMessage = "حدث خطأ أثناء محاولة تسجيل الدخول";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      // إذا كان الخطأ من Axios
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message;
+        }
+      }
+
       toast({
         title: "فشل تسجيل الدخول",
-        description: "حدث خطأ أثناء محاولة تسجيل الدخول",
+        description: errorMessage,
         variant: "destructive",
       });
+
+      // التأكد من تحديث حالة التحميل
       setIsLoading(false);
     }
   };
@@ -152,7 +192,7 @@ export default function LoginPage() {
               أدخل بيانات الدخول للوصول إلى لوحة الإدارة
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">رقم الهاتف</Label>
@@ -261,7 +301,11 @@ export default function LoginPage() {
               </div> */}
             </CardContent>
             <CardFooter>
-              <Button className="w-full" type="submit" disabled={isLoading}>
+              <Button className="w-full" type="button"
+                onClick
+
+                ={handleSubmit}
+                disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
