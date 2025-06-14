@@ -318,6 +318,17 @@ export const listingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to update listing status" }
     }
   },
+    // Reorder listing images
+  reorderImage: async (listingId: number, imageId: number, targetImageId: number) => {
+    try {
+      const response = await api.put(`/admin/listings/${listingId}/images/${imageId}/reorder`, { 
+        orders: targetImageId 
+      })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to reorder image" }
+    }
+  },
 }
 
 // Bookings API

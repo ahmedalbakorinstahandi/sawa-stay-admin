@@ -23,13 +23,14 @@ export function SortableItem({ id, index, url, onRemove }: SortableItemProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    width: "100%",
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="relative w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation"
+      className="relative w-full w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation"
       {...attributes}
       {...listeners}
     >

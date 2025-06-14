@@ -61,7 +61,7 @@ import {
 } from "@/components/ui/select";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/lib/api";
+import { api, listingsAPI } from "@/lib/api";
 import { uploadImage } from "@/lib/upload-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -568,6 +568,65 @@ export default function EditListingPage() {
   const decrementValue = (key: string, min = 0) => {
     const currentValue = form.getValues(key as any) as number;
     form.setValue(key as any, Math.max(currentValue - 1, min));
+  };
+  // إعادة ترتيب الصور الحالية باستخدام السحب والإفلات
+  const handleExistingImageDragEnd = async (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      // استخراج معرفات الصور من معرّفات العناصر
+      const activeImageId = parseInt(active.id.split('-')[2]);
+      const overImageId = parseInt(over.id.split('-')[2]);
+
+      // تحديث الواجهة بشكل فوري
+      setListing(prevListing => {
+        if (!prevListing) return null;
+
+        // ابحث عن مواضع الصور في المصفوفة
+        const activeIndex = prevListing.images.findIndex(img => img.id === activeImageId);
+        const overIndex = prevListing.images.findIndex(img => img.id === overImageId);
+
+        if (activeIndex !== -1 && overIndex !== -1) {
+          // قم بتحديث مصفوفة الصور
+          const newImages = arrayMove([...prevListing.images], activeIndex, overIndex);
+
+          // إرجاع كائن الإعلان المحدث
+          return { ...prevListing, images: newImages };
+        }
+
+        return prevListing;
+      });
+
+      try {
+        // إرسال طلب إعادة الترتيب إلى API
+        // نستخدم معرّف الإعلان، ومعرّف الصورة النشطة، ومعرّف الصورة المستهدفة
+        if (listing) {
+          const result = await listingsAPI.reorderImage(
+            parseInt(listingId),
+            activeImageId,
+            overImageId
+          );
+
+          if (result && !result.hasOwnProperty('success') || result.success) {
+            toast.toast({
+              title: "تم تحديث ترتيب الصور بنجاح",
+            });
+          } else {
+            toast.toast({
+              title: "حدث خطأ أثناء تحديث ترتيب الصور",
+              description: result.message,
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("خطأ في إعادة ترتيب الصور:", error);
+        toast.toast({
+          title: "حدث خطأ أثناء تحديث ترتيب الصور",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -1551,57 +1610,42 @@ export default function EditListingPage() {
                   <div>
                     <h3 className="text-md font-medium mb-2">
                       الصور الحالية
+                      <span className="text-sm text-gray-500 mr-2">
+                        (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
+                      </span>
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {listing.images.map((image, idx) => (
-                        <div
-                          key={image.id}
-                          className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${imagesToDelete.includes(image.id)
-                            ? "opacity-50"
-                            : ""
-                            }`}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleExistingImageDragEnd}
+                    >
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <SortableContext
+                          items={listing.images.map(image => `existing-image-${image.id}`)}
+                          strategy={horizontalListSortingStrategy}
                         >
-                          <Image
-                            src={image.url || "/placeholder.svg"}
-                            alt="صورة الإعلان"
-                            fill
-                            priority
-                            // loading="eager"
-                            className="object-cover"
-                          />
-                          <Button
-                            type="button"
-                            variant={
-                              imagesToDelete.includes(image.id)
-                                ? "default"
-                                : "destructive"
-                            }
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                            onClick={() => {
-                              if (imagesToDelete.includes(image.id)) {
-                                setImagesToDelete(
-                                  imagesToDelete.filter(
-                                    (id) => id !== image.id
-                                  )
-                                );
-                              } else {
-                                addImageToDelete(image.id);
-                              }
-                            }}
-                          >
-                            {imagesToDelete.includes(image.id) ? (
-                              <Plus className="h-4 w-4" />
-                            ) : (
-                              <X className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full h-6 w-6 flex items-center justify-center">
-                            {idx + 1}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                          {listing.images.map((image, idx) => (
+                            <SortableItem
+                              key={`existing-image-${image.id}`}
+                              id={`existing-image-${image.id}`}
+                              index={idx}
+                              url={image.url || "/placeholder.svg"}
+                              onRemove={() => {
+                                if (imagesToDelete.includes(image.id)) {
+                                  setImagesToDelete(
+                                    imagesToDelete.filter(
+                                      (id) => id !== image.id
+                                    )
+                                  );
+                                } else {
+                                  addImageToDelete(image.id);
+                                }
+                              }}
+                            />
+                          ))}
+                        </SortableContext>
+                      </div>
+                    </DndContext>
                   </div>
                 )}
 
