@@ -9,6 +9,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   Save,
   Loader2,
   ArrowLeft,
@@ -237,6 +253,53 @@ const listingSchema = z.object({
     .optional(),
 });
 
+// Componente para elementos arrastrables
+function SortableItem({ id, index, url, onRemove }: { id: string; index: number; url: string; onRemove: () => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] aspect-square bg-gray-100 rounded-lg overflow-hidden touch-manipulation"
+      {...attributes}
+      {...listeners}
+    >
+      <Image
+        src={url || "/placeholder.svg"}
+        alt={`صورة الإعلان ${index + 1}`}
+        fill
+        className="object-cover"
+      />
+      <Button
+        variant="destructive"
+        size="icon"
+        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+      <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full h-6 w-6 flex items-center justify-center">
+        {index + 1}
+      </div>
+    </div>
+  );
+}
+
 export default function AddListingPage() {
   const router = useRouter();
   const toast = useToast();
@@ -383,6 +446,34 @@ export default function AddListingPage() {
   const addImageToDelete = (imageId: number) => {
     setImagesToDelete((prev) => [...prev, imageId]);
   };
+  // إعادة ترتيب الصور باستخدام السحب والإفلات باستخدام dnd-kit
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      const activeIndex = parseInt(active.id.split('-')[1]);
+      const overIndex = parseInt(over.id.split('-')[1]);
+      
+      // إعادة ترتيب معاينات الصور
+      setPropertyImagePreviews((items) => {
+        return arrayMove(items, activeIndex, overIndex);
+      });
+      
+      // إعادة ترتيب روابط الصور المرفوعة بنفس الترتيب
+      setPropertyImages((items) => {
+        return arrayMove(items, activeIndex, overIndex);
+      });
+    }
+  };
+  
+  // تكوين أجهزة الاستشعار للسحب والإفلات
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const categoryOptions = categories.map((category) => ({
     label: category.name?.ar || "",
     value: category.id,
@@ -570,11 +661,10 @@ export default function AddListingPage() {
                       <FormControl>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "House"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "House"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "House")
                             }
@@ -589,11 +679,10 @@ export default function AddListingPage() {
                           </Card>
 
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "Apartment"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "Apartment"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "Apartment")
                             }
@@ -608,11 +697,10 @@ export default function AddListingPage() {
                           </Card>
 
                           <Card
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              field.value === "Guesthouse"
-                                ? "ring-2 ring-rose-500"
-                                : "border"
-                            }`}
+                            className={`cursor-pointer transition-all hover:shadow-md ${field.value === "Guesthouse"
+                              ? "ring-2 ring-rose-500"
+                              : "border"
+                              }`}
                             onClick={() =>
                               form.setValue("property_type", "Guesthouse")
                             }
@@ -1328,11 +1416,10 @@ export default function AddListingPage() {
                             return (
                               <div
                                 key={feature.id}
-                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                  isSelected
-                                    ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
-                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected
+                                  ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
+                                  : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                  }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
                                   if (isSelected) {
@@ -1388,11 +1475,10 @@ export default function AddListingPage() {
                             return (
                               <div
                                 key={category.id}
-                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                  isSelected
-                                    ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
-                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected
+                                  ? "bg-green-100 text-green-700 dark:bg-green-200 dark:text-green-800"
+                                  : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                  }`}
                                 onClick={() => {
                                   const currentValues = field.value || [];
                                   if (isSelected) {
@@ -1662,14 +1748,13 @@ export default function AddListingPage() {
                         الصور الحالية
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {listing.images.map((image) => (
+                        {listing.images.map((image, idx) => (
                           <div
                             key={image.id}
-                            className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${
-                              imagesToDelete.includes(image.id)
-                                ? "opacity-50"
-                                : ""
-                            }`}
+                            className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden ${imagesToDelete.includes(image.id)
+                              ? "opacity-50"
+                              : ""
+                              }`}
                           >
                             <Image
                               src={image.url || "/placeholder.svg"}
@@ -1704,6 +1789,9 @@ export default function AddListingPage() {
                                 <X className="h-4 w-4" />
                               )}
                             </Button>
+                            <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full h-6 w-6 flex items-center justify-center">
+                              {idx + 1}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1741,37 +1829,37 @@ export default function AddListingPage() {
                         </Button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* معاينة الصور الجديدة */}
+                  </div>                  {/* معاينة الصور الجديدة */}
                   {propertyImagePreviews.length > 0 && (
                     <div>
                       <h3 className="text-md font-medium mb-2">
                         الصور الجديدة
+                        <span className="text-sm text-gray-500 mr-2">
+                          (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
+                        </span>
                       </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {propertyImagePreviews.map((preview, index) => (
-                          <div
-                            key={index}
-                            className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
+                      <DndContext 
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <div className="flex flex-wrap gap-4">
+                          <SortableContext
+                            items={propertyImagePreviews.map((_, index) => `image-${index}`)}
+                            strategy={horizontalListSortingStrategy}
                           >
-                            <Image
-                              src={preview || "/placeholder.svg"}
-                              alt={`صورة الإعلان ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                              onClick={() => removePropertyImage(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
+                            {propertyImagePreviews.map((preview, index) => (
+                              <SortableItem
+                                key={`image-${index}`}
+                                id={`image-${index}`}
+                                index={index}
+                                url={preview}
+                                onRemove={() => removePropertyImage(index)}
+                              />
+                            ))}
+                          </SortableContext>
+                        </div>
+                      </DndContext>
                     </div>
                   )}
 

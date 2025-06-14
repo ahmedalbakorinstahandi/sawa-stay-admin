@@ -230,6 +230,7 @@ export default function LoginPage() {
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
+              {/* 
               <div className="mt-4 text-center">
                 <p className="text-sm text-muted-foreground mb-2">
                   بيانات الدخول المؤقتة:
@@ -256,6 +257,7 @@ export default function LoginPage() {
                   استخدام بيانات الدخول المؤقتة
                 </Button>
               </div>
+              */}
               {/* <div className="flex justify-end">
                 <Link
                   href="/forgot-password"
