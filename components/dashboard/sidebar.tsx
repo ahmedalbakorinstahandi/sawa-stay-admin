@@ -138,13 +138,13 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           <div className="relative h-8 w-8 overflow-hidden rounded-full">
             <Image
               src="/logo.png"
-              alt="Syria Go"
+              alt="Sawa Stay"
               width={32}
               height={32}
               className="h-8 w-auto animate-pulse-slow"
             />
           </div>
-          <span className="text-lg font-bold gradient-text">Syria Go</span>
+          <span className="text-lg font-bold gradient-text">Sawa Stay</span>
         </Link>
         <Button
           variant="ghost"

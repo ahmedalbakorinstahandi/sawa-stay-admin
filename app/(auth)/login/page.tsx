@@ -104,11 +104,12 @@ export default function LoginPage() {
         password: "********",
       });
       const response = await login(phone, password);
+      console.log("Login response:", response);
 
       if (response.success) {
         toast({
           title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في لوحة إدارة Syria Go",
+          description: "مرحباً بك في لوحة إدارة Sawa Stay",
         });
 
         router.push("/dashboard");
@@ -117,14 +118,6 @@ export default function LoginPage() {
         // setTimeout(() => {
         //   console.log("Login successful, redirecting to dashboard");
         // }, 500);
-      } else {
-        toast({
-          title: "فشل تسجيل الدخول",
-          description:
-            response.message || "رقم الهاتف أو كلمة المرور غير صحيحة",
-          variant: "destructive",
-        });
-        setIsLoading(false);
       }
     } catch (error) {
       console.error("Login submission error:", error);
@@ -148,7 +141,7 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
               <Image
                 src="/logo.png"
-                alt="Syria Go"
+                alt="Sawa Stay"
                 width={120}
                 height={120}
                 className="h-16 w-auto"

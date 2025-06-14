@@ -18,7 +18,7 @@ const settings = [
   {
     id: 1,
     key: "site_name",
-    value: "Syria Go",
+    value: "Sawa Stay",
     type: "text",
     allow_null: false,
     is_settings: true,

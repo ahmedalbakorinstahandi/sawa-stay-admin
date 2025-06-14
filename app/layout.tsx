@@ -13,8 +13,8 @@ const tajawal = Tajawal({
 })
 
 export const metadata: Metadata = {
-  title: "Syria Go - لوحة التحكم",
-  description: "لوحة تحكم لإدارة تطبيق Syria Go",
+  title: "Sawa Stay - لوحة التحكم",
+  description: "لوحة تحكم لإدارة تطبيق Sawa Stay",
   generator: 'v0.dev'
 }
 

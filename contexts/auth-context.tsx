@@ -38,7 +38,7 @@ const defaultContextValue: AuthContextType = {
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false }),
-  logout: async () => {},
+  logout: async () => { },
 };
 
 const AuthContext = createContext<AuthContextType>(defaultContextValue);

@@ -43,7 +43,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-bold tracking-tight">لوحة التحكم</h2>
         <p className="text-muted-foreground">
-          مرحباً بك في لوحة تحكم Syria Go، هنا يمكنك متابعة جميع الإحصائيات
+          مرحباً بك في لوحة تحكم Sawa Stay، هنا يمكنك متابعة جميع الإحصائيات
           والبيانات المهمة.
         </p>
       </div>
