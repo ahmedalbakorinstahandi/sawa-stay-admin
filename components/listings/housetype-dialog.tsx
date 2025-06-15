@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -69,6 +69,10 @@ export function HouseTypeDialog({
   const [isPending, setIsPending] = useState(false);
   const [selectedTab, setSelectedTab] = useState("ar");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Initialize previewUrl with the housetype's icon_url when editing
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    housetype?.icon_url || null
+  );
 
   const defaultValues: Partial<HouseTypeFormValues> = {
     name: {
@@ -82,7 +86,7 @@ export function HouseTypeDialog({
     is_visible:
       housetype?.is_visible !== undefined ? housetype.is_visible : true,
   };
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -100,6 +104,28 @@ export function HouseTypeDialog({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
+
+  // Reset form when housetype changes or when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Reset form with housetype values when editing
+      form.reset({
+        name: {
+          ar: housetype?.name?.ar || "",
+          en: housetype?.name?.en || "",
+        },
+        description: {
+          ar: housetype?.description?.ar || "",
+          en: housetype?.description?.en || "",
+        },
+        is_visible: housetype?.is_visible !== undefined ? housetype.is_visible : true,
+      });
+      
+      // Reset the preview URL to the housetype icon URL if editing
+      setPreviewUrl(housetype?.icon_url || null);
+      setSelectedFile(null);
+    }
+  }, [housetype, open, form]);
 
   function onSubmit(data: HouseTypeFormValues) {
     setIsPending(true);
@@ -120,12 +146,41 @@ export function HouseTypeDialog({
     if (selectedFile) {
       formData.append("icon", selectedFile);
     }
+    
+    // If we're editing and we have an existing icon but no new one is selected
+    if (housetype?.id && !selectedFile && housetype?.icon_url) {
+      formData.append("keep_existing_icon", "1");
+    }
 
     // Call the onSave function with the form data
     onSave(formData);
+    // Reset form state
+    form.reset();
+    setSelectedFile(null);
+    setPreviewUrl(null);
     setIsPending(false);
     onOpenChange(false);
   }
+
+  // Reset the form when the housetype prop changes
+  useEffect(() => {
+    if (housetype) {
+      form.reset({
+        name: {
+          ar: housetype.name.ar,
+          en: housetype.name.en,
+        },
+        description: {
+          ar: housetype.description.ar,
+          en: housetype.description.en,
+        },
+        is_visible: housetype.is_visible,
+      });
+      setPreviewUrl(housetype.icon_url || null);
+    } else {
+      form.reset();
+    }
+  }, [housetype, form]);
 
   return (
     <Dialog
@@ -223,42 +278,35 @@ export function HouseTypeDialog({
               )}
             />
             {/* </TabsContent> */}
-            {/* </Tabs> */}
-
-            <FormField
+            {/* </Tabs> */}            <FormField
               control={form.control}
               name="icon"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>الأيقونة</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
+                    <div className="space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                      {housetype && (
+                        <p className="text-sm text-muted-foreground">
+                          اترك هذا الحقل فارغًا للاحتفاظ بالصورة الحالية
+                        </p>
+                      )}
+                    </div>
                   </FormControl>
                   <FormDescription>صورة تمثل نوع المنزل.</FormDescription>
-                  {housetype?.icon_url && !selectedFile && (
+                  {previewUrl && (
                     <div className="mt-2">
                       <p className="text-sm text-muted-foreground mb-2">
-                        الصورة الحالية:
-                      </p>
-                      <img
-                        src={housetype.icon_url || "/placeholder.svg"}
-                        alt={housetype.name?.ar || ""}
-                        className="h-16 w-16 object-cover rounded-md"
-                      />
-                    </div>
-                  )}
-                  {previewUrl && selectedFile && (
-                    <div className="mt-2">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        معاينة الصورة الجديدة:
+                        {selectedFile ? "معاينة الصورة الجديدة:" : "الصورة الحالية:"}
                       </p>
                       <img
                         src={previewUrl}
-                        alt="Preview"
+                        alt={housetype?.name?.ar || "Preview"}
                         className="h-16 w-16 object-cover rounded-md"
                       />
                     </div>

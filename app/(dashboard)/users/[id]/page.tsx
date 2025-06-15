@@ -47,6 +47,13 @@ import axios from "axios";
 interface UserData {
   id: number;
   first_name: string;
+  verifications: {
+    id: number;
+    type: string;
+    status: string;
+    created_at: string;
+    file_path: string;
+  }[];
   last_name: string;
   wallet_balance: number;
   avatar: string | null;
@@ -224,6 +231,28 @@ export default function UserDetailsPage({
   if (!userData) {
     return <UserDetailsLoading />;
   }
+  const fetchUserData = async () => {
+    try {
+      const response = await usersAPI.get(parseInt(params.id));
+      if (response.success) {
+        setUserData(response.data);
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب بيانات المستخدم",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast({
+        title: "خطأ",
+
+        description: "حدث خطأ أثناء جلب بيانات المستخدم",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleStatusChange = (newStatus: string) => {
     try {
@@ -463,7 +492,7 @@ export default function UserDetailsPage({
             className="w-full"
           >
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger
                   value="profile"
                   className="flex items-center gap-1"
@@ -492,9 +521,129 @@ export default function UserDetailsPage({
                   <CreditCard className="h-4 w-4" />
                   <span>المعاملات</span>
                 </TabsTrigger>
+                {/* verifications */}
+                <TabsTrigger
+                  value="verifications"
+                  className="flex items-center gap-1"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span>التحقق</span>
+                </TabsTrigger>
               </TabsList>
+
             </CardHeader>
             <CardContent>
+              <TabsContent value="verifications" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">وثائق التحقق</h3>
+                  </div>
+
+                  {userData.verifications && userData.verifications.length > 0 ? (
+                    <div className="space-y-4">
+                      {userData.verifications.map((verification) => (
+                        <div key={verification.id} className="rounded-lg border p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4 space-x-reverse">
+                              <div className="rounded-full bg-blue-100 p-2 text-blue-600">
+                                <Shield className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium">
+                                  {verification.type === "id_front" ? "وثيقة الهوية (الأمامية)" :
+                                    verification.type === "id_back" ? "وثيقة الهوية (الخلفية)" :
+                                      verification.type === "selfie" ? "صورة شخصية" :
+                                        "وثيقة أخرى"}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  تم الرفع بتاريخ: {new Date(verification.created_at).toLocaleDateString("ar-SY")}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                className={
+                                  verification.status === "approved" ? "bg-green-100 text-green-600" :
+                                    verification.status === "rejected" ? "bg-red-100 text-red-600" :
+                                      "bg-yellow-100 text-yellow-600"
+                                }
+                              >
+                                {verification.status === "approved" ? "تمت الموافقة" :
+                                  verification.status === "rejected" ? "تم الرفض" :
+                                    "قيد المراجعة"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center gap-2">
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={verification.file_path} target="_blank" rel="noopener noreferrer">
+                                عرض الوثيقة
+                              </a>
+                            </Button>
+                            {verification.status === "in_review" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="bg-green-600 hover:bg-green-700"
+                                  onClick={() => {
+                                    api.put(`/admin/verifications/${verification.id}`, {
+                                      status: "approved"
+                                    }).then(() => {
+                                      toast({
+                                        title: "تم قبول الوثيقة بنجاح",
+                                        variant: "default",
+                                      });
+
+                                      fetchUserData(); // Refresh user data
+                                    }).catch(() => {
+                                      toast({
+                                        title: "حدث خطأ أثناء قبول الوثيقة",
+                                        variant: "destructive",
+                                      });
+                                    });
+                                  }}
+                                >
+                                  قبول
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    api.put(`/admin/verifications/${verification.id}`, {
+                                      status: "rejected"
+                                    }).then(() => {
+                                      toast({
+                                        title: "تم رفض الوثيقة بنجاح",
+                                        variant: "default",
+                                      });
+                                      fetchUserData(); // Refresh user data
+                                    }).catch(() => {
+                                      toast({
+                                        title: "حدث خطأ أثناء رفض الوثيقة",
+                                        variant: "destructive",
+                                      });
+                                    });
+                                  }}
+                                >
+                                  رفض
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed p-8 text-center">
+                      <h4 className="text-lg font-semibold">لا توجد وثائق تحقق</h4>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        لم يقم المستخدم بتحميل أي وثائق للتحقق بعد.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
               <TabsContent value="profile" className="mt-0">
                 <div className="space-y-6">
                   <div>
@@ -513,11 +662,10 @@ export default function UserDetailsPage({
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div className="flex items-center gap-2 rounded-lg border p-3">
                         <div
-                          className={`rounded-full p-1 ${
-                            userData.is_verified
-                              ? "bg-green-100 text-green-600"
-                              : "bg-red-100 text-red-600"
-                          }`}
+                          className={`rounded-full p-1 ${userData.is_verified
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
+                            }`}
                         >
                           {userData.is_verified ? (
                             <UserCheck className="h-5 w-5" />
@@ -536,11 +684,10 @@ export default function UserDetailsPage({
                       </div>
                       <div className="flex items-center gap-2 rounded-lg border p-3">
                         <div
-                          className={`rounded-full p-1 ${
-                            userData.email_verified
-                              ? "bg-green-100 text-green-600"
-                              : "bg-red-100 text-red-600"
-                          }`}
+                          className={`rounded-full p-1 ${userData.email_verified
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
+                            }`}
                         >
                           {userData.email_verified ? (
                             <Mail className="h-5 w-5" />
@@ -559,11 +706,10 @@ export default function UserDetailsPage({
                       </div>
                       <div className="flex items-center gap-2 rounded-lg border p-3">
                         <div
-                          className={`rounded-full p-1 ${
-                            userData.phone_verified
-                              ? "bg-green-100 text-green-600"
-                              : "bg-red-100 text-red-600"
-                          }`}
+                          className={`rounded-full p-1 ${userData.phone_verified
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
+                            }`}
                         >
                           {userData.phone_verified ? (
                             <Phone className="h-5 w-5" />

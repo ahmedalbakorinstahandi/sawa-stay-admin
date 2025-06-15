@@ -41,7 +41,7 @@ const editUserSchema = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   email: z.string().optional(),
-  id_verified: z.enum(["none", "approved"]).optional(),
+  id_verified: z.enum(["none", "approved","stopped","rejected"]).optional(),
   // phone: z.string().optional(),
   // role: z.enum(["user", "admin", "host"]).optional(),
   avatar: z.string().optional(),
@@ -59,7 +59,7 @@ const createUserSchema = z.object({
     message: "الاسم الأخير يجب أن يكون أكثر من حرفين",
   }),
   email: z.string().optional(),
-  id_verified: z.enum(["none", "approved"]),
+  id_verified: z.enum(["none", "approved", "rejected", "stopped"]).optional(),
   bank_details: z.string().optional(),
   phone: z.string().min(9, {
     message: "رقم الهاتف يجب أن يكون أكثر من 9 أرقام",
@@ -94,40 +94,38 @@ export function UserDialog({
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(
-      user
-        ? (editUserSchema as unknown as z.ZodType<UserFormValues>)
-        : createUserSchema
-    ),
+      user ? editUserSchema : createUserSchema
+    ) as any,
     defaultValues: user
       ? {
-          first_name: user.first_name || "",
-          last_name: user.last_name || "",
-          email: user.email || "",
-          avatar: user.avatar || "",
-          // country_code: user.country_code || "+963",
-          id_verified: user.id_verified || "none",
-          bank_details: user.bank_details || "",
-          phone: user.country_code + user.phone_number || "",
-          role: (user.role as "user" | "admin" | "host") || "user",
-          status: (user.status as "active") || "banneded" || "active",
-          language: user.language || "ar",
-          // password: "",
-          password: user.password || "",
-        }
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        avatar: user.avatar || "",
+        // country_code: user.country_code || "+963",
+        id_verified: user.id_verified || "none",
+        bank_details: user.bank_details || "",
+        phone: user.country_code + user.phone_number || "",
+        role: (user.role as "user" | "admin" | "host") || "user",
+        status: (user.status as "active") || "banneded" || "active",
+        language: user.language || "ar",
+        // password: "",
+        password: user.password || "",
+      }
       : {
-          first_name: "",
-          last_name: "",
-          email: "",
-          avatar: "",
-          // country_code: "+963",
-          bank_details: "",
-          phone: "",
-          id_verified: "none",
-          role: "user",
-          password: "",
-          status: "active",
-          language: "ar",
-        },
+        first_name: "",
+        last_name: "",
+        email: "",
+        avatar: "",
+        // country_code: "+963",
+        bank_details: "",
+        phone: "",
+        id_verified: "none",
+        role: "user",
+        password: "",
+        status: "active",
+        language: "ar",
+      },
   });
   useEffect(() => {
     // user
@@ -156,6 +154,7 @@ export function UserDialog({
         phone: "",
         bank_details: "",
         id_verified: "none",
+
         role: "user",
         password: "",
         status: "active",
@@ -195,9 +194,8 @@ export function UserDialog({
         toast({
           title: user ? "تم تحديث المستخدم" : "تمت إضافة المستخدم",
           description: user
-            ? `تم تحديث بيانات المستخدم ${
-                values.first_name || user.first_name
-              } ${values.last_name || user.last_name} بنجاح`
+            ? `تم تحديث بيانات المستخدم ${values.first_name || user.first_name
+            } ${values.last_name || user.last_name} بنجاح`
             : `تمت إضافة المستخدم ${values.first_name} ${values.last_name} بنجاح`,
         });
         onSuccess();
@@ -426,7 +424,7 @@ export function UserDialog({
             {/* </div> */}
             <div className="grid grid-cols-2 gap-4">
               {/* "id_verified": "none", // required|in:none,approved */}
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="id_verified"
                 render={({ field }) => (
@@ -449,7 +447,7 @@ export function UserDialog({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -475,7 +473,33 @@ export function UserDialog({
                   </FormItem>
                 )}
               />
-
+              {/*  */}
+              <FormField
+                control={form.control}
+                name="id_verified"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>حالة التحقق</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر حالة التحقق" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">غير محقق</SelectItem>
+                        <SelectItem value="approved">موافق عليه</SelectItem>
+                        <SelectItem value="rejected">مرفوض</SelectItem>
+                        <SelectItem value="stopped">موقوف</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               {/* bank_details */}
             </div>
             {/* <FormField
