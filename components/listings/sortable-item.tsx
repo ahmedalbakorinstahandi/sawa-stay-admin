@@ -35,7 +35,6 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
     console.log("تم النقر على زر الحذف:", id);
     onRemove();
   };
-
   return (
     <div 
       ref={setNodeRef}
@@ -45,7 +44,16 @@ export function SortableItem({ id, index, url, onRemove, isMarkedForDeletion = f
       {...attributes}
       // فصل أحداث السحب عن باقي العنصر
       // سنضيف listeners للصورة فقط وليس للمكون بالكامل
-    >      <div className="relative w-full h-full cursor-grab group" {...listeners}>
+    >      <div 
+        className="relative w-full h-full cursor-grab group" 
+        {...listeners} 
+        style={{ 
+          touchAction: 'none', // منع السلوك الافتراضي للتمرير على الأجهزة اللمسية
+          userSelect: 'none', // منع تحديد النص أثناء السحب
+          WebkitUserDrag: 'none', // منع السحب الافتراضي في متصفح سفاري
+          WebkitTapHighlightColor: 'transparent' // إزالة تأثير التظليل عند النقر
+        }}
+      >
         <Image
           src={url || "/placeholder.svg"}
           alt={`صورة الإعلان ${index + 1}`}

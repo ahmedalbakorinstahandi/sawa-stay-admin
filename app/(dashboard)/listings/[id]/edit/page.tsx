@@ -15,6 +15,7 @@ import {
   useSensors,
   PointerSensor,
   KeyboardSensor,
+  TouchSensor,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -462,10 +463,21 @@ export default function EditListingPage() {
       });
     }
   };
-
   // تكوين أجهزة الاستشعار للسحب والإفلات
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // زيادة مسافة السحب المطلوبة لبدء السحب
+      activationConstraint: {
+        distance: 8, // عدد البكسلات التي يجب تحريكها قبل بدء السحب
+      }
+    }),
+    useSensor(TouchSensor, {
+      // تكوين خاص بالأجهزة اللمسية
+      activationConstraint: {
+        delay: 250, // تأخير بالمللي ثانية للتمييز بين النقر والسحب
+        tolerance: 8, // المسافة المسموح بها للتحرك أثناء التأخير
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
