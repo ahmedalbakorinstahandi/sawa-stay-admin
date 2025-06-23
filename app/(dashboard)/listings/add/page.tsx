@@ -87,6 +87,7 @@ interface Listing {
     street_address: string;
     extra_address?: string;
   };
+  price_weekend: number;
   guests_count: number;
   bedrooms_count: number;
   beds_count: number;
@@ -191,7 +192,7 @@ const listingSchema = z.object({
     en: z.string().optional(),
   }),
   host_id: z.number().optional(),
-
+  price_weekend: z.number().optional(),
   description: z.object({
     ar: z
       .string()
@@ -375,6 +376,7 @@ export default function AddListingPage() {
       bedrooms_count: 1,
       beds_count: 1,
       bathrooms_count: 1,
+      price_weekend: 0,
       booking_capacity: 1,
       is_contains_cameras: false,
       camera_locations: { ar: "", en: "" },
@@ -449,23 +451,23 @@ export default function AddListingPage() {
   // إعادة ترتيب الصور باستخدام السحب والإفلات باستخدام dnd-kit
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
-    
+
     if (active.id !== over.id) {
       const activeIndex = parseInt(active.id.split('-')[1]);
       const overIndex = parseInt(over.id.split('-')[1]);
-      
+
       // إعادة ترتيب معاينات الصور
       setPropertyImagePreviews((items) => {
         return arrayMove(items, activeIndex, overIndex);
       });
-      
+
       // إعادة ترتيب روابط الصور المرفوعة بنفس الترتيب
       setPropertyImages((items) => {
         return arrayMove(items, activeIndex, overIndex);
       });
     }
   };
-  
+
   // تكوين أجهزة الاستشعار للسحب والإفلات
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -1088,7 +1090,55 @@ export default function AddListingPage() {
                       </FormItem>
                     )}
                   /> */}
-
+                  {/* price_weekend  optional */}
+                  <FormField
+                    control={form.control}
+                    name="price_weekend"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>سعر عطلة نهاية الأسبوع</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-l-none"
+                              onClick={() =>
+                                decrementValue("price_weekend", 0)
+                              }
+                              disabled={(field.value ?? 0) <= 0}
+                            >
+                              <span>-</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(
+                                  Math.max(0, Number(e.target.value))
+                                )
+                              }
+                              className="rounded-none text-center"
+                              min={0}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-r-none"
+                              onClick={() =>
+                                incrementValue("price_weekend", 9999999)
+                              }
+                            >
+                              <span>+</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="min_booking_days"
@@ -1838,7 +1888,7 @@ export default function AddListingPage() {
                           (يمكنك سحب وإفلات الصور لتغيير ترتيبها)
                         </span>
                       </h3>
-                      <DndContext 
+                      <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}

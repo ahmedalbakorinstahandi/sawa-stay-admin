@@ -87,6 +87,7 @@ interface Listing {
   bedrooms_count: number;
   beds_count: number;
   bathrooms_count: number;
+  price_weekend: number;
   booking_capacity: number;
   is_contains_cameras: boolean;
   camera_locations?: {
@@ -192,6 +193,7 @@ const listingSchema = z.object({
   property_type: z.enum(["House", "Apartment", "Guesthouse"], {
     required_error: "يرجى اختيار نوع الإعلان",
   }),
+  price_weekend: z.number().optional(),
   price: z.number().min(1, { message: "يجب أن يكون السعر أكبر من صفر" }),
   currency: z.string().optional(),
   guests_count: z
@@ -271,6 +273,7 @@ export default function EditListingPage() {
       currency: "SYP",
       guests_count: 1,
       bedrooms_count: 1,
+      price_weekend: 0,
       beds_count: 1,
       bathrooms_count: 1,
       booking_capacity: 1,
@@ -320,6 +323,7 @@ export default function EditListingPage() {
             },
             house_type_id: response.data.data.house_type_id,
             property_type: response.data.data.property_type,
+            price_weekend: response.data.data.price_weekend || 0,
             price: response.data.data.price,
             currency: response.data.data.currency,
             guests_count: response.data.data.guests_count,
@@ -1149,6 +1153,55 @@ export default function EditListingPage() {
                             size="icon"
                             className="h-10 w-10 rounded-r-none"
                             onClick={() => incrementValue("price", 9999999)}
+                          >
+                            <span>+</span>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* price_weekend optional */}
+                <FormField
+                  control={form.control}
+                  name="price_weekend"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>سعر عطلة نهاية الأسبوع (اختياري)</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-l-none"
+                            onClick={() =>
+                              decrementValue("price_weekend", 0)
+                            }
+                            disabled={(field.value ?? 0) <= 0}
+                          >
+                            <span>-</span>
+                          </Button>
+                          <Input
+                            type="number"
+                            value={field.value}
+                            onChange={(e) =>
+                              field.onChange(
+                                Math.max(0, Number(e.target.value))
+                              )
+                            }
+                            className="rounded-none text-center"
+                            min={0}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-r-none"
+                            onClick={() =>
+                              incrementValue("price_weekend", 9999999)
+                            }
                           >
                             <span>+</span>
                           </Button>

@@ -194,6 +194,7 @@ export default function ListingDetailsPage() {
             status: result.data.status,
             guests_count: result.data.guests_count,
             bedrooms_count: result.data.bedrooms_count,
+            price_weekend: result.data.price_weekend,
             beds_count: result.data.beds_count,
             bathrooms_count: result.data.bathrooms_count,
             size: 120, // Not provided in API
@@ -453,9 +454,8 @@ export default function ListingDetailsPage() {
               {listing.images.map((image: any) => (
                 <div
                   key={image.id}
-                  className={`relative w-24 h-16 cursor-pointer rounded-md overflow-hidden ${
-                    activeImage === image.url ? "ring-2 ring-primary" : ""
-                  }`}
+                  className={`relative w-24 h-16 cursor-pointer rounded-md overflow-hidden ${activeImage === image.url ? "ring-2 ring-primary" : ""
+                    }`}
                   onClick={() => setActiveImage(image.url)}
                 >
                   <Image
@@ -607,6 +607,16 @@ export default function ListingDetailsPage() {
                           {listing.price.toLocaleString()} {listing.currency}
                         </span>
                       </div>
+                      {/* price_weekend */}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          سعر عطلة نهاية الأسبوع
+                        </span>
+                        <span className="font-medium">
+                          {listing.price_weekend || 0} {listing.currency}
+                        </span>
+                      </div>
+
                       <Separator />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">العمولة</span>
