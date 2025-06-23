@@ -220,9 +220,14 @@ export const categoriesAPI = {
 
 // Features API
 export const featuresAPI = {
-  getAll: async (page = 1, perPage = 10) => {
+  getAll: async (params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    status?: string;
+  }) => {
     try {
-      const response = await api.get(`/admin/features?page=${page}&limit=${perPage}`)
+      const response = await api.get("/admin/features", { params })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to fetch features" }
@@ -236,17 +241,33 @@ export const featuresAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to fetch feature" }
     }
   },
-  create: async (data: any) => {
+  create: async (data: {
+    name: { ar: string; en?: string };
+    description: { ar: string; en?: string };
+    icon: string;
+    is_visible: boolean;
+  }) => {
     try {
-      const response = await api.post("/admin/features", data)
+      const response = await api.post("/admin/features", {
+        ...data,
+        is_visible: data.is_visible ? 1 : 0
+      })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to create feature" }
     }
   },
-  update: async (id: number, data: any) => {
+  update: async (id: number, data: {
+    name: { ar: string; en?: string };
+    description: { ar: string; en?: string };
+    icon: string;
+    is_visible: boolean;
+  }) => {
     try {
-      const response = await api.put(`/admin/features/${id}`, data)
+      const response = await api.put(`/admin/features/${id}`, {
+        ...data,
+        is_visible: data.is_visible ? 1 : 0
+      })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to update feature" }
@@ -258,6 +279,16 @@ export const featuresAPI = {
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to delete feature" }
+    }
+  },
+  toggleVisibility: async (id: number, is_visible: boolean) => {
+    try {
+      const response = await api.patch(`/admin/features/${id}/visibility`, {
+        is_visible: is_visible ? 1 : 0
+      })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to toggle feature visibility" }
     }
   },
 }
@@ -500,6 +531,6 @@ export const apiHelper = {
       return response.data
     } catch (error) {
       return { success: false }
-    }
-  },
+    }  },
+
 }

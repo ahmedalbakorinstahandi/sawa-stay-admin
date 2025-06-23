@@ -1,6 +1,9 @@
+@import '../styles/features.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Import features styles */
 
 @layer base {
   :root {

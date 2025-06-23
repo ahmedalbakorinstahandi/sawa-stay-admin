@@ -22,6 +22,7 @@ import {
   CreditCard,
   ChevronRight,
   ChevronLeft,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
 import { useMobile } from "@/hooks/use-mobile";
@@ -77,12 +78,17 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       icon: <Home className="ml-2 h-5 w-5" />,
       href: "/listings",
       active: pathname === "/listings",
-    },
-    {
+    },    {
       label: "أنواع المنازل",
       icon: <Home className="ml-2 h-5 w-5" />,
       href: "/housetypes",
       active: pathname === "/housetypes",
+    },
+    {
+      label: "الميزات والتقييمات",
+      icon: <Star className="ml-2 h-5 w-5" />,
+      href: "/features",
+      active: pathname === "/features",
     },
     {
       label: "الحجوزات",
