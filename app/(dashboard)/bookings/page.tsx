@@ -152,7 +152,7 @@ export default function BookingsPage() {
       case "accepted":
         return (<Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
           <CheckCircle className="h-3 w-3" />
-          مؤكد
+          تم الدفع
         </Badge>
         )
       case "paid":
@@ -435,7 +435,7 @@ export default function BookingsPage() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-medium">مؤكدة</CardTitle>
+                <CardTitle className="text-sm font-medium">تم الدفعة</CardTitle>
                 <div className="p-2 bg-green-100 rounded-full">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 </div>
@@ -540,7 +540,7 @@ export default function BookingsPage() {
                   </SelectItem>
                   <SelectItem value="confirmed" className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    مؤكد
+                    تم الدفع
                   </SelectItem>
                   <SelectItem value="completed" className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>

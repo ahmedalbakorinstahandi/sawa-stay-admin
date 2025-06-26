@@ -53,6 +53,7 @@ import {
   Loader2,
   RefreshCcw,
   Calendar,
+  ArrowUpDown,
 } from "lucide-react";
 import {
   Card,
@@ -64,6 +65,7 @@ import {
 import Image from "next/image";
 import { ListingDialog } from "@/components/listings/listing-dialog";
 import { ListingDeleteDialog } from "@/components/listings/listing-delete-dialog";
+import { ListingReorderDialog } from "@/components/listings/listing-reorder-dialog";
 import { CategoryDialog } from "@/components/listings/category-dialog";
 import { CategoryDeleteDialog } from "@/components/listings/category-delete-dialog";
 import { FeatureDialog } from "@/components/listings/feature-dialog";
@@ -83,9 +85,10 @@ export default function ListingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("all");  const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
   const [isListingDeleteDialogOpen, setIsListingDeleteDialogOpen] =
+    useState(false);
+  const [isListingReorderDialogOpen, setIsListingReorderDialogOpen] =
     useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isCategoryDeleteDialogOpen, setIsCategoryDeleteDialogOpen] =
@@ -387,146 +390,39 @@ export default function ListingsPage() {
     setIsListingDeleteDialogOpen(true);
   };
 
-  const handleSaveListing = async (listingData: any) => {
-    try {
-      if (selectedListing) {
-        // Update existing listing
-        const response = await api.put(
-          `/admin/listings/${selectedListing.id}`,
-          JSON.stringify(listingData),
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.data?.success) {
-          toast({
-            title: "تم تحديث الإعلان",
-            description: `تم تحديث الإعلان "${listingData.title.ar}" بنجاح`,
-          });
-          fetchListings();
-        } else {
-          toast({
-            title: "خطأ في تحديث الإعلان",
-            description:
-              response.data?.message ||
-              "حدث خطأ أثناء تحديث الإعلان. يرجى المحاولة مرة أخرى.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        // Add new listing
-        const response = await api.post("/admin/listings", listingData);
-
-        if (response.data?.success) {
-          toast({
-            title: "تم إضافة الإعلان",
-            description: `تم إضافة الإعلان "${listingData.title.ar}" بنجاح`,
-          });
-          fetchListings();
-        } else {
-          toast({
-            title: "خطأ في إضافة الإعلان",
-            description:
-              response.data?.message ||
-              "حدث خطأ أثناء إضافة الإعلان. يرجى المحاولة مرة أخرى.",
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error: any) {
-      console.error("Error saving listing:", error);
-      toast({
-        title: "خطأ في حفظ الإعلان",
-        description:
-          error.response?.data?.message ||
-          "حدث خطأ أثناء حفظ الإعلان. يرجى المحاولة مرة أخرى.",
-        variant: "destructive",
-      });
-    }
+  const handleReorderListing = (listing: any) => {
+    setSelectedListing(listing);
+    setIsListingReorderDialogOpen(true);
   };
 
-  const handleDeleteListingConfirm = async () => {
-    if (!selectedListing) return;
-
+  const handleReorderListingConfirm = async (listingId: number, newIndex: number) => {
     try {
-      const response = await api.delete(
-        `/admin/listings/${selectedListing.id}`
-      );
+      const response = await api.put(`/admin/listings/${listingId}/reorder`, {
+        listing_index: newIndex,
+      });
 
       if (response.data?.success) {
         toast({
-          title: "تم حذف الإعلان",
-          description: `تم حذف الإعلان بنجاح`,
+          title: "تم تغيير ترتيب الإعلان",
+          description: `تم تغيير ترتيب الإعلان إلى الموضع ${newIndex} بنجاح`,
         });
         fetchListings();
       } else {
         toast({
-          title: "خطأ في حذف الإعلان",
+          title: "خطأ في تغيير ترتيب الإعلان",
           description:
             response.data?.message ||
-            "حدث خطأ أثناء حذف الإعلان. يرجى المحاولة مرة أخرى.",
+            "حدث خطأ أثناء تغيير ترتيب الإعلان. يرجى المحاولة مرة أخرى.",
           variant: "destructive",
         });
       }
     } catch (error: any) {
-      console.error("Error deleting listing:", error);
+      console.error("Error reordering listing:", error);
       toast({
-        title: "خطأ في حذف الإعلان",
+        title: "خطأ في تغيير ترتيب الإعلان",
         description:
           error.response?.data?.message ||
-          "حدث خطأ أثناء حذف الإعلان. يرجى المحاولة مرة أخرى.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleUpdateListingStatus = async (listing: any, newStatus: string) => {
-    try {
-      const response = await api.put(`/admin/listings/${listing.id}`, {
-        status: newStatus,
-      });
-
-      if (response.data?.success) {
-        let statusText = "";
-        switch (newStatus) {
-          case "approved":
-            statusText = "اعتماد";
-            break;
-          case "paused":
-            statusText = "إيقاف";
-            break;
-          case "rejected":
-            statusText = "رفض";
-            break;
-          default:
-            statusText = "تحديث حالة";
-            break;
-        }
-
-        toast({
-          title: `تم ${statusText} الإعلان`,
-          description: `تم ${statusText} الإعلان بنجاح`,
-        });
-        fetchListings();
-      } else {
-        toast({
-          title: "خطأ في تحديث حالة الإعلان",
-          description:
-            response.data?.message ||
-            "حدث خطأ أثناء تحديث حالة الإعلان. يرجى المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error("Error updating listing status:", error);
-      toast({
-        title: "خطأ في تحديث حالة الإعلان",
-        description:
-          error.response?.data?.message ||
-          "حدث خطأ أثناء تحديث حالة الإعلان. يرجى المحاولة مرة أخرى.",
+          "حدث خطأ أثناء تغيير ترتيب الإعلان. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
     }
@@ -754,6 +650,151 @@ export default function ListingsPage() {
       return listing.images[0].url;
     }
     return "/placeholder.svg?height=80&width=120";
+  };
+
+  const handleSaveListing = async (listingData: any) => {
+    try {
+      if (selectedListing) {
+        // Update existing listing
+        const response = await api.put(
+          `/admin/listings/${selectedListing.id}`,
+          JSON.stringify(listingData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.success) {
+          toast({
+            title: "تم تحديث الإعلان",
+            description: `تم تحديث الإعلان "${listingData.title.ar}" بنجاح`,
+          });
+          fetchListings();
+        } else {
+          toast({
+            title: "خطأ في تحديث الإعلان",
+            description:
+              response.data?.message ||
+              "حدث خطأ أثناء تحديث الإعلان. يرجى المحاولة مرة أخرى.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // Add new listing
+        const response = await api.post("/admin/listings", listingData);
+
+        if (response.data?.success) {
+          toast({
+            title: "تم إضافة الإعلان",
+            description: `تم إضافة الإعلان "${listingData.title.ar}" بنجاح`,
+          });
+          fetchListings();
+        } else {
+          toast({
+            title: "خطأ في إضافة الإعلان",
+            description:
+              response.data?.message ||
+              "حدث خطأ أثناء إضافة الإعلان. يرجى المحاولة مرة أخرى.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error("Error saving listing:", error);
+      toast({
+        title: "خطأ في حفظ الإعلان",
+        description:
+          error.response?.data?.message ||
+          "حدث خطأ أثناء حفظ الإعلان. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteListingConfirm = async () => {
+    if (!selectedListing) return;
+
+    try {
+      const response = await api.delete(
+        `/admin/listings/${selectedListing.id}`
+      );
+
+      if (response.data?.success) {
+        toast({
+          title: "تم حذف الإعلان",
+          description: `تم حذف الإعلان بنجاح`,
+        });
+        fetchListings();
+      } else {
+        toast({
+          title: "خطأ في حذف الإعلان",
+          description:
+            response.data?.message ||
+            "حدث خطأ أثناء حذف الإعلان. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error deleting listing:", error);
+      toast({
+        title: "خطأ في حذف الإعلان",
+        description:
+          error.response?.data?.message ||
+          "حدث خطأ أثناء حذف الإعلان. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateListingStatus = async (listing: any, newStatus: string) => {
+    try {
+      const response = await api.put(`/admin/listings/${listing.id}`, {
+        status: newStatus,
+      });
+
+      if (response.data?.success) {
+        let statusText = "";
+        switch (newStatus) {
+          case "approved":
+            statusText = "اعتماد";
+            break;
+          case "paused":
+            statusText = "إيقاف";
+            break;
+          case "rejected":
+            statusText = "رفض";
+            break;
+          default:
+            statusText = "تحديث حالة";
+            break;
+        }
+
+        toast({
+          title: `تم ${statusText} الإعلان`,
+          description: `تم ${statusText} الإعلان بنجاح`,
+        });
+        fetchListings();
+      } else {
+        toast({
+          title: "خطأ في تحديث حالة الإعلان",
+          description:
+            response.data?.message ||
+            "حدث خطأ أثناء تحديث حالة الإعلان. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error updating listing status:", error);
+      toast({
+        title: "خطأ في تحديث حالة الإعلان",
+        description:
+          error.response?.data?.message ||
+          "حدث خطأ أثناء تحديث حالة الإعلان. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -1001,8 +1042,7 @@ export default function ListingsPage() {
                                   >
                                     <Calendar className="ml-2 h-4 w-4" />
                                     ادارة التواقيت
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
+                                  </DropdownMenuItem>                                  <DropdownMenuItem
                                     onClick={() =>
                                       router.push(
                                         `/listings/${listing.id}/edit`
@@ -1011,6 +1051,12 @@ export default function ListingsPage() {
                                   >
                                     <Edit className="ml-2 h-4 w-4" />
                                     تعديل
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleReorderListing(listing)}
+                                  >
+                                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                                    ترتيب الإعلان
                                   </DropdownMenuItem>
                                   {listing.status !== "approved" && (
                                     <DropdownMenuItem
@@ -1424,13 +1470,19 @@ export default function ListingsPage() {
         onOpenChange={setIsListingDialogOpen}
         listing={selectedListing}
         onSave={handleSaveListing}
-      />
-
-      <ListingDeleteDialog
+      />      <ListingDeleteDialog
         open={isListingDeleteDialogOpen}
         onOpenChange={setIsListingDeleteDialogOpen}
         listing={selectedListing}
         onDelete={handleDeleteListingConfirm}
+      />
+
+      <ListingReorderDialog
+        open={isListingReorderDialogOpen}
+        onOpenChange={setIsListingReorderDialogOpen}
+        listing={selectedListing}
+        totalCount={totalCount}
+        onReorder={handleReorderListingConfirm}
       />
 
       <CategoryDialog
