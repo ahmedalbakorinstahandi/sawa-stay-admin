@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -88,9 +89,14 @@ type BookingStats = {
 }
 
 export default function BookingsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")  // Initialize status filter from URL or default to "all"
+  const [statusFilter, setStatusFilter] = useState(() => {
+    return searchParams.get("status") || "all"
+  })
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -98,11 +104,44 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [stats, setStats] = useState<BookingStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [perPage, setPerPage] = useState(25)
   const { toast } = useToast()
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0)
+
+  // Initialize current page from URL or default to 1
+  const [page, setPage] = useState(() => {
+    const pageParam = searchParams.get("page")
+    return pageParam ? parseInt(pageParam, 10) : 1
+  })
+
+  // Update URL when page changes
+  const updatePageInURL = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (pageNumber > 1) {
+      params.set("page", pageNumber.toString())
+    } else {
+      params.delete("page")
+    }
+    router.push(`?${params.toString()}`, { scroll: false })
+  }
+
+  // Update URL when filters change
+  const updateFiltersInURL = (newStatusFilter?: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    
+    if (newStatusFilter && newStatusFilter !== "all") {
+      params.set("status", newStatusFilter)
+    } else {
+      params.delete("status")
+    }
+    
+    // Reset page to 1 when filters change
+    params.delete("page")
+    setPage(1)
+    
+    router.push(`?${params.toString()}`, { scroll: false })
+  }
 
   // Fetch bookings from API
   const fetchBookings = async () => {
@@ -145,6 +184,27 @@ export default function BookingsPage() {
   useEffect(() => {
     fetchBookings()
   }, [page, statusFilter, perPage, searchTerm])
+
+  // Update state when URL parameters change
+  useEffect(() => {
+    const pageParam = searchParams.get("page")
+    const statusParam = searchParams.get("status")
+    
+    if (pageParam) {
+      const pageNumber = parseInt(pageParam, 10)
+      if (pageNumber !== page) {
+        setPage(pageNumber)
+      }
+    } else if (page !== 1) {
+      setPage(1)
+    }
+    
+    if (statusParam && statusParam !== statusFilter) {
+      setStatusFilter(statusParam)
+    } else if (!statusParam && statusFilter !== "all") {
+      setStatusFilter("all")
+    }
+  }, [searchParams])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -367,10 +427,10 @@ export default function BookingsPage() {
       })
     }
   }
-
   // Handle pagination
   const handlePageChange = (pageNumber: number) => {
     setPage(pageNumber)
+    updatePageInURL(pageNumber)
   }
   return (
     <div className="space-y-4">
@@ -513,7 +573,10 @@ export default function BookingsPage() {
                 className="pr-9 border-gray-200 focus-visible:ring-blue-500"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => {
+              setStatusFilter(value)
+              updateFiltersInURL(value)
+            }}>
               <SelectTrigger className="w-full md:w-[180px] border-gray-200 focus:ring-blue-500">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-blue-500' :
@@ -713,12 +776,11 @@ export default function BookingsPage() {
                 <span className="text-sm text-muted-foreground flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   إجمالي <span className="font-bold text-blue-600">{totalCount}</span> الحجوزات
-                </span>
-                <Select
+                </span>                <Select
                   value={perPage.toString()}
                   onValueChange={(value) => {
                     setPerPage(parseInt(value, 10));
-                    setPage(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
+                    handlePageChange(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
                   }}
                 >
                   <SelectTrigger className="w-[150px] border-gray-200 focus:ring-blue-500">
