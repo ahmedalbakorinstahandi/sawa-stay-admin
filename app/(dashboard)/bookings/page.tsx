@@ -504,59 +504,58 @@ export default function BookingsPage() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex flex-col space-y-4">            <div className="flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0 md:space-x-reverse p-4 bg-gray-50 rounded-lg border border-gray-100 mb-2">
-              <div className="relative flex-1">
-                <Search className="absolute right-3 top-3 h-4 w-4 text-blue-600" />
-                <Input
-                  placeholder="بحث عن حجز..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pr-9 border-gray-200 focus-visible:ring-blue-500"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[180px] border-gray-200 focus:ring-blue-500">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      statusFilter === 'all' ? 'bg-blue-500' :
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-3 h-4 w-4 text-blue-600" />
+              <Input
+                placeholder="بحث عن حجز..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-9 border-gray-200 focus-visible:ring-blue-500"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full md:w-[180px] border-gray-200 focus:ring-blue-500">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-blue-500' :
                       statusFilter === 'pending' ? 'bg-yellow-500' :
-                      statusFilter === 'accepted' ? 'bg-blue-500' :
-                      statusFilter === 'confirmed' ? 'bg-green-500' :
-                      statusFilter === 'completed' ? 'bg-emerald-500' :
-                      statusFilter === 'cancelled' ? 'bg-red-500' :
-                      'bg-orange-500'
+                        statusFilter === 'accepted' ? 'bg-blue-500' :
+                          statusFilter === 'confirmed' ? 'bg-green-500' :
+                            statusFilter === 'completed' ? 'bg-emerald-500' :
+                              statusFilter === 'cancelled' ? 'bg-red-500' :
+                                'bg-orange-500'
                     }`}></div>
-                    <SelectValue placeholder="الحالة" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="pending" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                    بانتظار الدفع
-                  </SelectItem>
-                  <SelectItem value="accepted" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    مقبول
-                  </SelectItem>
-                  <SelectItem value="confirmed" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    تم الدفع
-                  </SelectItem>
-                  <SelectItem value="completed" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    مكتمل
-                  </SelectItem>
-                  <SelectItem value="cancelled" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    ملغي
-                  </SelectItem>
-                  <SelectItem value="rejected" className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                    مرفوض
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>            <div className="rounded-lg border overflow-hidden shadow-sm">
+                  <SelectValue placeholder="الحالة" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الحالات</SelectItem>
+                <SelectItem value="pending" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                  بانتظار الدفع
+                </SelectItem>
+                <SelectItem value="accepted" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  مقبول
+                </SelectItem>
+                <SelectItem value="confirmed" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  تم الدفع
+                </SelectItem>
+                <SelectItem value="completed" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  مكتمل
+                </SelectItem>
+                <SelectItem value="cancelled" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  ملغي
+                </SelectItem>
+                <SelectItem value="rejected" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  مرفوض
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>            <div className="rounded-lg border overflow-hidden shadow-sm">
               <Table>
                 <TableHeader className="bg-gray-50 border-b">
                   <TableRow className="hover:bg-transparent">
@@ -583,129 +582,129 @@ export default function BookingsPage() {
                         لا توجد نتائج.
                       </TableCell>
                     </TableRow>
-                  ) : (                    filteredBookings.map((booking) => (
-                      <TableRow 
-                        key={booking.id} 
-                        className="hover:bg-gray-50/60 transition-colors border-b border-gray-100 hover:shadow-sm"
-                      >
-                        <TableCell className="font-medium text-blue-600">#{booking.id}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span>{booking.listing?.title?.ar || `إعلان #${booking.listing_id}`}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {booking.guest?.avatar_url ? (
-                              <div className="w-6 h-6 rounded-full overflow-hidden">
-                                <img src={booking.guest.avatar_url} alt="الضيف" className="w-full h-full object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs">{booking.guest?.first_name?.charAt(0) || '?'}</span>
-                              </div>
-                            )}
-                            <span>
-                              {booking.guest
-                                ? `${booking.guest.first_name} ${booking.guest.last_name}`
-                                : `ضيف #${booking.guest_id}`}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {booking.host?.avatar_url ? (
-                              <div className="w-6 h-6 rounded-full overflow-hidden">
-                                <img src={booking.host.avatar_url} alt="المضيف" className="w-full h-full object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs">{booking.host?.first_name?.charAt(0) || '?'}</span>
-                              </div>
-                            )}
-                            <span>
-                              {booking.host
-                                ? `${booking.host.first_name} ${booking.host.last_name}`
-                                : `مضيف #${booking.host_id}`}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-nowrap">
-                          <div className="flex flex-col text-nowrap">
-                            <span className="font-medium">{new Date(booking.start_date).toLocaleDateString("ar-SY")}</span>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <div className="w-4 h-[1px] bg-gray-300"></div>
-                              إلى
-                              <div className="w-4 h-[1px] bg-gray-300"></div>
-                            </span>
-                            <span className="font-medium">{new Date(booking.end_date).toLocaleDateString("ar-SY")}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-bold">{booking.price} <span className="text-xs text-muted-foreground">{booking.currency}</span></div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">فتح القائمة</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
-                              <DropdownMenuSeparator />                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
-                                <Eye className="ml-2 h-4 w-4" />
-                                عرض التفاصيل
+                  ) : (filteredBookings.map((booking) => (
+                    <TableRow
+                      key={booking.id}
+                      className="hover:bg-gray-50/60 transition-colors border-b border-gray-100 hover:shadow-sm"
+                    >
+                      <TableCell className="font-medium text-blue-600">#{booking.id}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          <span>{booking.listing?.title?.ar || `إعلان #${booking.listing_id}`}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {booking.guest?.avatar_url ? (
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <img src={booking.guest.avatar_url} alt="الضيف" className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-xs">{booking.guest?.first_name?.charAt(0) || '?'}</span>
+                            </div>
+                          )}
+                          <span>
+                            {booking.guest
+                              ? `${booking.guest.first_name} ${booking.guest.last_name}`
+                              : `ضيف #${booking.guest_id}`}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {booking.host?.avatar_url ? (
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <img src={booking.host.avatar_url} alt="المضيف" className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-xs">{booking.host?.first_name?.charAt(0) || '?'}</span>
+                            </div>
+                          )}
+                          <span>
+                            {booking.host
+                              ? `${booking.host.first_name} ${booking.host.last_name}`
+                              : `مضيف #${booking.host_id}`}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-nowrap">
+                        <div className="flex flex-col text-nowrap">
+                          <span className="font-medium">{new Date(booking.start_date).toLocaleDateString("ar-SY")}</span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <div className="w-4 h-[1px] bg-gray-300"></div>
+                            إلى
+                            <div className="w-4 h-[1px] bg-gray-300"></div>
+                          </span>
+                          <span className="font-medium">{new Date(booking.end_date).toLocaleDateString("ar-SY")}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-bold">{booking.price} <span className="text-xs text-muted-foreground">{booking.currency}</span></div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">فتح القائمة</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+                            <DropdownMenuSeparator />                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
+                              <Eye className="ml-2 h-4 w-4" />
+                              عرض التفاصيل
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
+                              <Edit className="ml-2 h-4 w-4" />
+                              تعديل
+                            </DropdownMenuItem>
+                            {(booking.status === "pending") && (
+                              <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
+                                <CheckCircle className="ml-2 h-4 w-4" />
+                                تأكيد الدفع
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
-                                <Edit className="ml-2 h-4 w-4" />
-                                تعديل
+                            )}
+                            {booking.status === "accepted" && (
+                              <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
+                                <CheckCircle className="ml-2 h-4 w-4" />
+                                تأكيد الحجز
                               </DropdownMenuItem>
-                              {(booking.status === "pending" || booking.status === "waiting_payment") && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
-                                  <CheckCircle className="ml-2 h-4 w-4" />
-                                  تأكيد الدفع
+                            )}
+                            {(booking.status === "pending" ||
+                              // booking.status === "waiting_payment" ||
+                              booking.status === "accepted") && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
+                                  <XCircle className="ml-2 h-4 w-4" />
+                                  رفض
                                 </DropdownMenuItem>
                               )}
-                              {booking.status === "accepted" && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
-                                  <CheckCircle className="ml-2 h-4 w-4" />
-                                  تأكيد الحجز
+                            {(booking.status === "pending" ||
+                              // booking.status === "waiting_payment" ||
+                              booking.status === "accepted" ||
+                              booking.status === "confirmed") && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
+                                  <XCircle className="ml-2 h-4 w-4" />
+                                  إلغاء
                                 </DropdownMenuItem>
                               )}
-                              {(booking.status === "pending" ||
-                                booking.status === "waiting_payment" ||
-                                booking.status === "accepted") && (
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
-                                    <XCircle className="ml-2 h-4 w-4" />
-                                    رفض
-                                  </DropdownMenuItem>
-                                )}
-                              {(booking.status === "pending" ||
-                                booking.status === "waiting_payment" ||
-                                booking.status === "accepted" ||
-                                booking.status === "confirmed") && (
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
-                                    <XCircle className="ml-2 h-4 w-4" />
-                                    إلغاء
-                                  </DropdownMenuItem>
-                                )}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => handleDeleteBooking(booking)}
-                              >
-                                <Trash2 className="ml-2 h-4 w-4" />
-                                حذف
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeleteBooking(booking)}
+                            >
+                              <Trash2 className="ml-2 h-4 w-4" />
+                              حذف
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
                   )}
                 </TableBody>
               </Table>
@@ -736,16 +735,14 @@ export default function BookingsPage() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => page > 1 && handlePageChange(page - 1)}
-                    className={`${
-                      page <= 1 ? "pointer-events-none opacity-50" : ""
-                    } sm:hidden border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                    className={`${page <= 1 ? "pointer-events-none opacity-50" : ""
+                      } sm:hidden border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
                     aria-label="الصفحة السابقة"
                   />
                   <PaginationPrevious
                     onClick={() => page > 1 && handlePageChange(page - 1)}
-                    className={`${
-                      page <= 1 ? "pointer-events-none opacity-50" : ""
-                    } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                    className={`${page <= 1 ? "pointer-events-none opacity-50" : ""
+                      } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
                   />
                 </PaginationItem>{/* First page */}                {totalPages > 0 && (
                   <PaginationItem>
@@ -768,10 +765,10 @@ export default function BookingsPage() {
 
                 {/* Pages around current page */}                {[...Array(totalPages)].map((_, i) => {
                   const pageNum = i + 1;
-                  return pageNum !== 1 && 
-                         pageNum !== totalPages && 
-                         pageNum >= page - 1 && 
-                         pageNum <= page + 1 ? (
+                  return pageNum !== 1 &&
+                    pageNum !== totalPages &&
+                    pageNum >= page - 1 &&
+                    pageNum <= page + 1 ? (
                     <PaginationItem key={i}>
                       <PaginationLink
                         onClick={() => handlePageChange(pageNum)}
@@ -804,16 +801,14 @@ export default function BookingsPage() {
                 )}                <PaginationItem>
                   <PaginationNext
                     onClick={() => page < totalPages && handlePageChange(page + 1)}
-                    className={`${
-                      page >= totalPages ? "pointer-events-none opacity-50" : ""
-                    } sm:hidden cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                    className={`${page >= totalPages ? "pointer-events-none opacity-50" : ""
+                      } sm:hidden cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
                     aria-label="الصفحة التالية"
                   />
                   <PaginationNext
                     onClick={() => page < totalPages && handlePageChange(page + 1)}
-                    className={`${
-                      page >= totalPages ? "pointer-events-none opacity-50" : ""
-                    } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                    className={`${page >= totalPages ? "pointer-events-none opacity-50" : ""
+                      } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
                   />
                 </PaginationItem>
               </PaginationContent>
