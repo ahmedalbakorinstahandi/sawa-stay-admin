@@ -11,11 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-react";
+import { Bell, LogOut, Menu, Moon, Settings, Sun, User, RefreshCw } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Badge } from "@/components/ui/badge";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
+import { notificationsAPI } from "@/lib/api";
+import { 
+  Notification, 
+  isNotificationRead, 
+  getNotificationType 
+} from "@/types/notification";
 import Link from "next/link";
 
 interface HeaderProps {
@@ -28,52 +34,149 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const isMobile = useMobile();
   const [mounted, setMounted] = useState(false);
   const auth = useAuth();
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "حجز جديد",
-      message: "تم إنشاء حجز جديد بواسطة أحمد محمد",
-      time: "منذ 5 دقائق",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "إعلان جديد",
-      message: "تم إضافة إعلان جديد بواسطة سارة أحمد",
-      time: "منذ 30 دقيقة",
-      read: false,
-    },
-    {
-      id: 3,
-      title: "تقييم جديد",
-      message: "تم إضافة تقييم جديد بواسطة محمد علي",
-      time: "منذ ساعة",
-      read: true,
-    },
-    {
-      id: 4,
-      title: "تحديث النظام",
-      message: "تم تحديث النظام إلى الإصدار الجديد",
-      time: "منذ 3 ساعات",
-      read: true,
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
+  // جلب الإشعارات من الباك إند
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const response = await notificationsAPI.getAll(1, 10); // أول 10 إشعارات فقط للـ header
+      if (response.success) {
+        setNotifications(response.data);
+        const unread = response.data.filter((notification: Notification) => !isNotificationRead(notification)).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications in header:", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  // جلب عدد الإشعارات غير المقروءة
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await notificationsAPI.getUnreadCount();
+      if (response.success) {
+        setUnreadCount(response.count);
+      }
+    } catch (error) {
+      console.error("Error fetching unread count in header:", error);
+    }
+  };
   // هذا مهم لتجنب مشكلة عدم تطابق الترميز بين الخادم والعميل
   useEffect(() => {
     setMounted(true);
+    // جلب الإشعارات عند تحميل المكون
+    fetchNotifications();
+  }, []);
+  // تحديث الإشعارات كل دقيقة للحصول على أحدث البيانات
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+      // تحديث قائمة الإشعارات كل 2 دقيقة
+      if (Date.now() % 120000 < 60000) {
+        fetchNotifications();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markAsRead = async (id: number) => {
+    try {
+      const response = await notificationsAPI.markAsRead(id);
+      if (response.success) {
+        setNotifications(
+          notifications.map((notification) =>
+            notification.id === id
+              ? { ...notification, read_at: new Date().toISOString() }
+              : notification
+          )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      const response = await notificationsAPI.markAllAsRead();
+      if (response.success) {
+        const now = new Date().toISOString();
+        setNotifications(notifications.map((notification) => ({ 
+          ...notification, 
+          read_at: notification.read_at || now 
+        })));
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
+  // دالة للحصول على لون نوع الإشعار
+  const getNotificationTypeColor = (type: string) => {
+    switch (type) {
+      case "booking":
+        return "text-blue-600";
+      case "listing":
+        return "text-green-600";
+      case "review":
+        return "text-yellow-600";
+      case "payment":
+        return "text-purple-600";
+      case "system":
+        return "text-red-600";
+      case "user":
+        return "text-pink-600";
+      case "report":
+        return "text-orange-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  // دالة للحصول على رمز نوع الإشعار
+  const getNotificationTypeIcon = (type: string) => {
+    switch (type) {
+      case "booking":
+        return "📅";
+      case "listing":
+        return "🏠";
+      case "review":
+        return "⭐";
+      case "payment":
+        return "💰";
+      case "system":
+        return "⚙️";
+      case "user":
+        return "👤";
+      case "report":
+        return "📊";
+      default:        return "📢";
+    }
+  };
+
+  // دالة مساعدة لحساب الوقت النسبي
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "الآن";
+    if (diffInMinutes < 60) return `منذ ${diffInMinutes} دقيقة`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `منذ ${diffInHours} ساعة`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `منذ ${diffInDays} يوم`;
+    
+    return date.toLocaleDateString('ar-SY');
   };
 
   const handleLogout = async () => {
@@ -141,9 +244,22 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
-            <div className="flex items-center justify-between p-4 bg-primary/5">
-              <DropdownMenuLabel className="p-0">الإشعارات</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">            <div className="flex items-center justify-between p-4 bg-primary/5">
+              <div className="flex items-center gap-2">
+                <DropdownMenuLabel className="p-0">الإشعارات</DropdownMenuLabel>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchNotifications();
+                  }}
+                  disabled={loadingNotifications}
+                >
+                  <RefreshCw className={`h-3 w-3 ${loadingNotifications ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
               {unreadCount > 0 && (
                 <Button
                   variant="ghost"
@@ -154,39 +270,47 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                   تعيين الكل كمقروء
                 </Button>
               )}
-            </div>
-            <DropdownMenuSeparator className="m-0" />
-            {notifications.length === 0 ? (
+            </div><DropdownMenuSeparator className="m-0" />
+            {loadingNotifications ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                <div className="mb-2 text-xl">⏳</div>
+                <p>جارٍ تحميل الإشعارات...</p>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 <div className="mb-2 text-4xl">🔔</div>
                 <p>لا توجد إشعارات</p>
-              </div>
-            ) : (
+              </div>) : (
               <div className="max-h-[300px] overflow-auto">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`flex cursor-pointer flex-col items-start p-4 hover:bg-muted/50 transition-colors ${
-                      !notification.read ? "bg-primary/5" : ""
-                    }`}
-                    onClick={() => markAsRead(notification.id)}
-                  >
-                    <div className="flex w-full items-start justify-between">
-                      <div className="font-medium">{notification.title}</div>
-                      {!notification.read && (
-                        <Badge variant="default" className="ml-2">
-                          جديد
-                        </Badge>
-                      )}
+                {notifications.map((notification) => {
+                  const isRead = isNotificationRead(notification);
+                  const notificationType = getNotificationType(notification.notificationable_type);
+                  
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`flex cursor-pointer flex-col items-start p-4 hover:bg-muted/50 transition-colors ${
+                        !isRead ? "bg-primary/5" : ""
+                      }`}
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <div className="flex w-full items-start justify-between">
+                        <div className="font-medium">{notification.title}</div>
+                        {!isRead && (
+                          <Badge variant="default" className="ml-2">
+                            جديد
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {notification.message}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground/70">
+                        {getRelativeTime(notification.created_at)}
+                      </div>
                     </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      {notification.message}
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground/70">
-                      {notification.time}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             <DropdownMenuSeparator className="m-0" />

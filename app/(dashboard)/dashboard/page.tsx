@@ -15,6 +15,11 @@ import { RecentBookings } from "@/components/dashboard/recent-bookings";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { UserActivity } from "@/components/dashboard/user-activity";
 import { ListingStatus } from "@/components/dashboard/listing-status";
+import { NotificationSettings } from "@/components/notifications/notification-settings";
+import { NotificationTester } from "@/components/notifications/notification-tester";
+import { VapidKeyHelper } from "@/components/notifications/vapid-key-helper";
+import { FirebaseStatus } from "@/components/notifications/firebase-status";
+import { NotificationPermissionTester } from "@/components/notifications/notification-permission-tester";
 import { Button } from "@/components/ui/button";
 import {
   Download,
@@ -55,13 +60,18 @@ export default function DashboardPage() {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-background/50 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-4">            <TabsList className="bg-background/50 backdrop-blur-sm">
               <TabsTrigger
                 value="overview"
                 className="transition-all duration-300"
               >
                 نظرة عامة
+              </TabsTrigger>
+              <TabsTrigger
+                value="notifications"
+                className="transition-all duration-300"
+              >
+                الإشعارات
               </TabsTrigger>
               {/* 
               <TabsTrigger value="analytics" className="transition-all duration-300">
@@ -123,9 +133,7 @@ export default function DashboardPage() {
                   <ListingStatus />
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            </div>            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
               <Card className="lg:col-span-4 hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl flex items-center">
@@ -169,6 +177,9 @@ export default function DashboardPage() {
                 </CardFooter>
               </Card>
             </div>
+
+            {/* Notification Settings Section */}
+            <NotificationSettings />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
@@ -395,6 +406,70 @@ export default function DashboardPage() {
                     <div className="mb-4 text-6xl">📊</div>
                     <p>اختر نوع التقرير والفترة الزمنية لإنشاء تقرير مخصص</p>
                     <Button className="mt-4">إنشاء تقرير جديد</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>          <TabsContent value="notifications" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <FirebaseStatus />
+              <NotificationPermissionTester />
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <VapidKeyHelper />
+              <NotificationTester />
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <NotificationSettings />
+              <div></div>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center">
+                  <AlertCircle className="ml-2 h-5 w-5 text-primary" />
+                  معلومات مهمة حول الإشعارات
+                </CardTitle>
+                <CardDescription>
+                  إرشادات واستكشاف أخطاء الإشعارات
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      متطلبات النظام
+                    </h4>
+                    <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                      <li>• يجب أن يكون الموقع محمل على HTTPS في الإنتاج</li>
+                      <li>• يدعم Chrome, Firefox, Safari (iOS 16.4+)</li>
+                      <li>• يتطلب موافقة المستخدم على الإشعارات</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="font-medium text-green-900 dark:text-green-100 mb-1">
+                      الميزات المتاحة
+                    </h4>
+                    <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                      <li>• إشعارات فورية عند الحجوزات الجديدة</li>
+                      <li>• تنبيهات تحديث حالة الحجوزات</li>
+                      <li>• إشعارات النظام والصيانة</li>
+                      <li>• دعم الإشعارات في الخلفية</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <h4 className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
+                      استكشاف الأخطاء
+                    </h4>
+                    <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
+                      <li>• تأكد من تفعيل الإشعارات في إعدادات المتصفح</li>
+                      <li>• أعد تحميل الصفحة إذا لم تظهر خيارات الإشعارات</li>
+                      <li>• تحقق من console المتصفح للأخطاء</li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>

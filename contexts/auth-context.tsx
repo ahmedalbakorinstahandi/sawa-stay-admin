@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { getToken, setToken, removeToken } from "@/lib/cookies";
 import { api } from "@/lib/api";
+import { getFCMToken } from "@/lib/firebase";
 
 interface User {
   id: string;
@@ -102,19 +103,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false
     }
   }
-
   const login = async (phone: string, password: string) => {
     setIsLoading(true);
 
     try {
       console.log("Attempting login with:", { phone, password: "********" });
 
+      // Get FCM token before login
+      let deviceToken = null;
+      try {
+        deviceToken = await getFCMToken();
+        console.log("FCM Token obtained:", deviceToken);
+      } catch (error) {
+        console.warn("Failed to get FCM token:", error);
+      }
+
       // استدعاء API تسجيل الدخول الحقيقي
-      const response = await api.post("/auth/login", {
+      const loginData: any = {
         phone: phone,
         password,
         role: "admin",
-      });
+      };
+
+      // Add device token if available
+      if (deviceToken) {
+        loginData.device_token = deviceToken;
+      }
+
+      const response = await api.post("/auth/login", loginData);
 
       console.log("Login API response:", response.data);
 
@@ -132,6 +148,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           // إذا لم تكن بيانات المستخدم متوفرة، حاول جلبها
           await fetchUserProfile(authToken);
+        }
+
+        // Send FCM token to server if not sent during login
+        if (deviceToken && !loginData.device_token) {
+          try {
+            await api.post("/admin/device-token", 
+              { device_token: deviceToken },
+              {
+                headers: {
+                  Authorization: `Bearer ${authToken}`,
+                },
+              }
+            );
+            console.log("FCM token sent to server successfully");
+          } catch (error) {
+            console.warn("Failed to send FCM token to server:", error);
+          }
         }
 
         setIsLoading(false);

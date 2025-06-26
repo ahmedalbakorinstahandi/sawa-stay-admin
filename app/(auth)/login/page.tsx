@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn, Bell, BellOff } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getToken } from "@/lib/cookies";
 import { de } from "date-fns/locale";
 import { set } from "date-fns";
+import { useFirebase } from "@/hooks/use-firebase";
 
 const loginSchema = z.object({
   phone: z.string().min(10, {
@@ -44,10 +45,10 @@ export default function LoginPage() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ phone?: string; password?: string }>(
     {}
-  );
-  const router = useRouter();
+  );  const router = useRouter();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
+  const { fcmToken, isSupported, requestNotificationPermission } = useFirebase();
 
   const isValidPhone = (phone: string) => {
     return phone.length >= 8 && /^\+?\d+$/.test(phone);
@@ -262,7 +263,39 @@ export default function LoginPage() {
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
-              </div>
+              </div>              {/* Notification permission section */}
+              {isSupported && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {fcmToken ? (
+                        <Bell className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <BellOff className="h-4 w-4 text-gray-500" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {fcmToken ? "الإشعارات مفعلة" : "تفعيل الإشعارات"}
+                      </span>
+                    </div>
+                    {!fcmToken && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={requestNotificationPermission}
+                      >
+                        تفعيل
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {fcmToken 
+                      ? "ستصلك إشعارات عن الحجوزات والتحديثات المهمة"
+                      : "اسمح بالإشعارات لتلقي تحديثات فورية عن الحجوزات"
+                    }
+                  </p>
+                </div>
+              )}
               {/* 
               <div className="mt-4 text-center">
                 <p className="text-sm text-muted-foreground mb-2">
