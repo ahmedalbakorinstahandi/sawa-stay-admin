@@ -534,3 +534,102 @@ export const apiHelper = {
     }  },
 
 }
+
+// دوال API للإشعارات
+export const notificationsAPI = {
+  // جلب جميع الإشعارات
+  getAll: async (page = 1, perPage = 50) => {
+    try {
+      const response = await api.get(`/general/notifications?page=${page}&per_page=${perPage}`)
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        meta: response.data.meta || { current_page: 1, last_page: 1, per_page: 50, total: 0 }
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error)
+      return { 
+        success: false, 
+        data: [], 
+        meta: { current_page: 1, last_page: 1, per_page: 50, total: 0 } 
+      }
+    }
+  },
+
+  // تعيين إشعار كمقروء
+  markAsRead: async (id: number) => {
+    try {
+      const response = await api.post(`/general/notifications/${id}/read`)
+      return { success: true, data: response.data }
+    } catch (error) {
+      console.error("Error marking notification as read:", error)
+      return { success: false }
+    }
+  },
+
+  // جلب عدد الإشعارات غير المقروءة
+  getUnreadCount: async () => {
+    try {
+      const response = await api.get("/general/notifications/unread-count")
+      return { 
+        success: true, 
+        count: response.data.count || response.data.unread_count || 0 
+      }
+    } catch (error) {
+      console.error("Error fetching unread count:", error)
+      return { success: false, count: 0 }
+    }
+  },
+
+  // تعيين جميع الإشعارات كمقروءة
+  markAllAsRead: async () => {
+    try {
+      // نظراً لعدم وجود endpoint مخصص، سنقوم بجلب جميع الإشعارات غير المقروءة وتعيينها كمقروءة
+      const notificationsResponse = await api.get("/general/notifications")
+      if (notificationsResponse.data) {
+        const notifications = notificationsResponse.data.data || notificationsResponse.data
+        const unreadNotifications = notifications.filter((n: any) => !n.read_at)
+        const markPromises = unreadNotifications.map((notification: any) => 
+          api.put(`/general/notifications/${notification.id}/read`)
+        )
+        await Promise.all(markPromises)
+        return { success: true }
+      }
+      return { success: false }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error)
+      return { success: false }
+    }
+  },
+
+  // حذف إشعار
+  delete: async (id: number) => {
+    try {
+      const response = await api.delete(`/general/notifications/${id}`)
+      return { success: true, data: response.data }
+    } catch (error) {
+      console.error("Error deleting notification:", error)
+      return { success: false }
+    }
+  },
+
+  // حذف جميع الإشعارات
+  deleteAll: async () => {
+    try {
+      // نظراً لعدم وجود endpoint مخصص، سنقوم بجلب جميع الإشعارات وحذفها واحداً تلو الآخر
+      const notificationsResponse = await api.get("/general/notifications")
+      if (notificationsResponse.data) {
+        const notifications = notificationsResponse.data.data || notificationsResponse.data
+        const deletePromises = notifications.map((notification: any) => 
+          api.delete(`/general/notifications/${notification.id}`)
+        )
+        await Promise.all(deletePromises)
+        return { success: true }
+      }
+      return { success: false }
+    } catch (error) {
+      console.error("Error deleting all notifications:", error)
+      return { success: false }
+    }
+  },
+}
