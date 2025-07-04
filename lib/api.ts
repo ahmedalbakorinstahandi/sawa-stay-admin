@@ -633,3 +633,65 @@ export const notificationsAPI = {
     }
   },
 }
+
+// Settings API
+export const settingsAPI = {
+  getAll: async () => {
+    try {
+      const response = await api.get("/admin/settings")
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch settings" }
+    }
+  },
+  
+  // Get single setting by ID
+  getById: async (id: number) => {
+    try {
+      const response = await api.get(`/admin/settings/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch setting" }
+    }
+  },
+  
+  // Create new setting
+  create: async (setting: { key: string; value: string; type: string; allow_null: boolean; is_settings: boolean }) => {
+    try {
+      const response = await api.post("/admin/settings", setting)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to create setting" }
+    }
+  },
+  
+  // Update single setting by key or ID
+  update: async (keyOrId: string | number, value: string) => {
+    try {
+      const response = await api.put(`/admin/settings/${keyOrId}`, { value })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to update setting" }
+    }
+  },
+  
+  // Update multiple settings
+  updateMultiple: async (settings: Array<{ key: string; value: string }>) => {
+    try {
+      const response = await api.put("/admin/settings", { settings })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to update settings" }
+    }
+  },
+  
+  // Delete setting by ID
+  delete: async (id: number) => {
+    try {
+      const response = await api.delete(`/admin/settings/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to delete setting" }
+    }
+  },
+}

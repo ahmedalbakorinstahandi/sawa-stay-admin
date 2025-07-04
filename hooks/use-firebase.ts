@@ -152,4 +152,4 @@ export const useFirebase = () => {
         sendTokenToServer,
         initializeFirebase
     };
-};
+}; 
