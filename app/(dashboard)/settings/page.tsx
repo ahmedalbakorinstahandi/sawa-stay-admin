@@ -22,7 +22,7 @@ interface Setting {
   id: number
   key: string
   value: string
-  type: 'text' | 'html' | 'float' | 'int' | 'boolean'
+  type: 'int' | 'float' | 'text' | 'long_text' | 'list' | 'json' | 'image' | 'file' | 'bool' | 'time' | 'date' | 'datetime' | 'html'
   allow_null: boolean
   is_settings: boolean
 }
@@ -400,7 +400,52 @@ export default function SettingsPage() {
       )
     }
 
-    if (setting.type === 'boolean') {
+    if (setting.type === 'long_text') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة</Label>
+          <textarea
+            id={setting.key}
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="أدخل النص الطويل..."
+          />
+        </div>
+      )
+    }
+
+    if (setting.type === 'json') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة (JSON)</Label>
+          <textarea
+            id={setting.key}
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+            placeholder='{"key": "value"}'
+          />
+        </div>
+      )
+    }
+
+    if (setting.type === 'list') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة (قائمة - كل عنصر في سطر)</Label>
+          <textarea
+            id={setting.key}
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="عنصر 1&#10;عنصر 2&#10;عنصر 3"
+          />
+        </div>
+      )
+    }
+
+    if (setting.type === 'bool') {
       return (
         <div className="space-y-2">
           <Label htmlFor={setting.key}>القيمة</Label>
@@ -416,6 +461,70 @@ export default function SettingsPage() {
               {currentValue === 'true' || currentValue === '1' ? 'مفعل' : 'معطل'}
             </Label>
           </div>
+        </div>
+      )
+    }
+
+    if (setting.type === 'image' || setting.type === 'file') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة ({setting.type === 'image' ? 'رابط الصورة' : 'رابط الملف'})</Label>
+          <div className="relative">
+            <Input
+              id={setting.key}
+              type="url"
+              value={currentValue}
+              onChange={(e) => handleInputChange(setting.key, e.target.value)}
+              placeholder={setting.type === 'image' ? 'https://example.com/image.jpg' : 'https://example.com/file.pdf'}
+            />
+          </div>
+          {currentValue && setting.type === 'image' && (
+            <div className="mt-2">
+              <img src={currentValue} alt="Preview" className="max-w-xs max-h-40 rounded-md border" />
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (setting.type === 'date') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة</Label>
+          <Input
+            id={setting.key}
+            type="date"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+          />
+        </div>
+      )
+    }
+
+    if (setting.type === 'time') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة</Label>
+          <Input
+            id={setting.key}
+            type="time"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+          />
+        </div>
+      )
+    }
+
+    if (setting.type === 'datetime') {
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={setting.key}>القيمة</Label>
+          <Input
+            id={setting.key}
+            type="datetime-local"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+          />
         </div>
       )
     }
@@ -454,10 +563,18 @@ export default function SettingsPage() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'text': return 'bg-blue-100 text-blue-800'
+      case 'long_text': return 'bg-indigo-100 text-indigo-800'
       case 'html': return 'bg-green-100 text-green-800'
       case 'float': return 'bg-yellow-100 text-yellow-800'
       case 'int': return 'bg-purple-100 text-purple-800'
-      case 'boolean': return 'bg-red-100 text-red-800'
+      case 'bool': return 'bg-red-100 text-red-800'
+      case 'json': return 'bg-orange-100 text-orange-800'
+      case 'list': return 'bg-teal-100 text-teal-800'
+      case 'image': return 'bg-pink-100 text-pink-800'
+      case 'file': return 'bg-cyan-100 text-cyan-800'
+      case 'date': return 'bg-emerald-100 text-emerald-800'
+      case 'time': return 'bg-violet-100 text-violet-800'
+      case 'datetime': return 'bg-rose-100 text-rose-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -480,13 +597,13 @@ export default function SettingsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* <Button
+          <Button
             onClick={() => setShowAddDialog(true)}
             className="bg-green-600 hover:bg-green-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             إضافة إعداد جديد
-          </Button> */}
+          </Button>
           <Button
             variant="outline"
             onClick={() => fetchSettings()}
@@ -611,15 +728,22 @@ export default function SettingsPage() {
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="تصفية حسب النوع" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">جميع الأنواع</SelectItem>
-                <SelectItem value="text">نص</SelectItem>
-                <SelectItem value="html">HTML</SelectItem>
-                <SelectItem value="float">عدد عشري</SelectItem>
-                <SelectItem value="int">عدد صحيح</SelectItem>
-                <SelectItem value="boolean">منطقي</SelectItem>
-              </SelectContent>
+              </SelectTrigger>                <SelectContent>
+                  <SelectItem value="all">جميع الأنواع</SelectItem>
+                  <SelectItem value="text">نص</SelectItem>
+                  <SelectItem value="long_text">نص طويل</SelectItem>
+                  <SelectItem value="html">HTML</SelectItem>
+                  <SelectItem value="int">عدد صحيح</SelectItem>
+                  <SelectItem value="float">عدد عشري</SelectItem>
+                  <SelectItem value="bool">منطقي</SelectItem>
+                  <SelectItem value="json">JSON</SelectItem>
+                  <SelectItem value="list">قائمة</SelectItem>
+                  <SelectItem value="image">صورة</SelectItem>
+                  <SelectItem value="file">ملف</SelectItem>
+                  <SelectItem value="date">تاريخ</SelectItem>
+                  <SelectItem value="time">وقت</SelectItem>
+                  <SelectItem value="datetime">تاريخ ووقت</SelectItem>
+                </SelectContent>
             </Select>
           </div>
 
@@ -794,10 +918,18 @@ export default function SettingsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">نص</SelectItem>
+                    <SelectItem value="long_text">نص طويل</SelectItem>
                     <SelectItem value="html">HTML</SelectItem>
-                    <SelectItem value="float">عدد عشري</SelectItem>
                     <SelectItem value="int">عدد صحيح</SelectItem>
-                    <SelectItem value="boolean">منطقي</SelectItem>
+                    <SelectItem value="float">عدد عشري</SelectItem>
+                    <SelectItem value="bool">منطقي</SelectItem>
+                    <SelectItem value="json">JSON</SelectItem>
+                    <SelectItem value="list">قائمة</SelectItem>
+                    <SelectItem value="image">صورة</SelectItem>
+                    <SelectItem value="file">ملف</SelectItem>
+                    <SelectItem value="date">تاريخ</SelectItem>
+                    <SelectItem value="time">وقت</SelectItem>
+                    <SelectItem value="datetime">تاريخ ووقت</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -843,7 +975,28 @@ export default function SettingsPage() {
                     }}
                   />
                 </div>
-              ) : newSetting.type === 'boolean' ? (
+              ) : newSetting.type === 'long_text' ? (
+                <textarea
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                  className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="أدخل النص الطويل..."
+                />
+              ) : newSetting.type === 'json' ? (
+                <textarea
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                  className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+                  placeholder='{"key": "value"}'
+                />
+              ) : newSetting.type === 'list' ? (
+                <textarea
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                  className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="عنصر 1&#10;عنصر 2&#10;عنصر 3"
+                />
+              ) : newSetting.type === 'bool' ? (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="new-boolean-value"
@@ -853,6 +1006,36 @@ export default function SettingsPage() {
                   <Label htmlFor="new-boolean-value">
                     {newSetting.value === 'true' || newSetting.value === '1' ? 'مفعل' : 'معطل'}
                   </Label>
+                </div>
+              ) : newSetting.type === 'date' ? (
+                <Input
+                  type="date"
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                />
+              ) : newSetting.type === 'time' ? (
+                <Input
+                  type="time"
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                />
+              ) : newSetting.type === 'datetime' ? (
+                <Input
+                  type="datetime-local"
+                  value={newSetting.value}
+                  onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                />
+              ) : newSetting.type === 'image' || newSetting.type === 'file' ? (
+                <div className="space-y-2">
+                  <Input
+                    type="url"
+                    placeholder={newSetting.type === 'image' ? 'https://example.com/image.jpg' : 'https://example.com/file.pdf'}
+                    value={newSetting.value}
+                    onChange={(e) => setNewSetting(prev => ({ ...prev, value: e.target.value }))}
+                  />
+                  {newSetting.value && newSetting.type === 'image' && (
+                    <img src={newSetting.value} alt="Preview" className="max-w-xs max-h-40 rounded-md border" />
+                  )}
                 </div>
               ) : (
                 <Input

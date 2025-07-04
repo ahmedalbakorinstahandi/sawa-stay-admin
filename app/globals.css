@@ -96,7 +96,9 @@
     font-family: var(--font-tajawal), var(--font-sans);
   }
 }
-
+.tox-statusbar__branding{
+  display: none !important;
+}
 /* تنسيق خاص بمكون إدخال الهاتف */
 .phone-input-container {
   display: flex;

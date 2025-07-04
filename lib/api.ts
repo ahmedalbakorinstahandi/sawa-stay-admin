@@ -656,7 +656,13 @@ export const settingsAPI = {
   },
   
   // Create new setting
-  create: async (setting: { key: string; value: string; type: string; allow_null: boolean; is_settings: boolean }) => {
+  create: async (setting: { 
+    key: string; 
+    value: string; 
+    type: 'int' | 'float' | 'text' | 'long_text' | 'list' | 'json' | 'image' | 'file' | 'bool' | 'time' | 'date' | 'datetime' | 'html'; 
+    allow_null: boolean; 
+    is_settings: boolean 
+  }) => {
     try {
       const response = await api.post("/admin/settings", setting)
       return response.data
