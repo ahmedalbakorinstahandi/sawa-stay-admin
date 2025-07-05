@@ -99,8 +99,8 @@ interface Listing {
   floor_number: number;
   min_booking_days: number;
   max_booking_days: number;
-  check_in: string;
-  check_out: string;
+  check_in_time: string;
+  check_out_time: string;
   allow_pets: boolean;
   status: string;
   images: {
@@ -221,8 +221,8 @@ const listingSchema = z.object({
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
   max_booking_days: z.number().min(1),
-  check_in: z.string().optional(),
-  check_out: z.string().optional(),
+  check_in_time: z.string().optional(),
+  check_out_time: z.string().optional(),
   allow_pets: z.boolean({
     required_error: "لا يمكن تخطي السماح بالحيوانات الأليفة",
   }),
@@ -284,8 +284,8 @@ export default function EditListingPage() {
       floor_number: 1,
       min_booking_days: 1,
       max_booking_days: 30,
-      check_in: "14:00",
-      check_out: "12:00",
+      check_in_time: "14:00",
+      check_out_time: "12:00",
       allow_pets: false,
       features: [],
       categories: [],
@@ -341,8 +341,8 @@ export default function EditListingPage() {
             floor_number: response.data.data.floor_number,
             min_booking_days: response.data.data.min_booking_days,
             max_booking_days: response.data.data.max_booking_days,
-            check_in: response.data.data.check_in || "14:00",
-            check_out: response.data.data.check_out || "12:00",
+            check_in_time: response.data.data.check_in_time || "14:00",
+            check_out_time: response.data.data.check_out_time || "12:00",
             allow_pets: response.data.data.allow_pets || false,
             features:
               response.data.data.features?.map((feature: any) => feature.id) ||
@@ -1341,33 +1341,33 @@ export default function EditListingPage() {
                     </FormItem>
                   )}
                 />
-                {/* <FormField
-                    control={form.control}
-                    name="check_in"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>وقت تسجيل الدخول</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
-                {/* 
-                  <FormField
-                    control={form.control}
-                    name="check_out"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>وقت تسجيل الخروج</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
+                <FormField
+                  control={form.control}
+                  name="check_in_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>وقت تسجيل الدخول</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="check_out_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>وقت تسجيل الخروج</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>

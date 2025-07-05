@@ -103,8 +103,8 @@ interface Listing {
   floor_number: number;
   min_booking_days: number;
   max_booking_days: number;
-  check_in: string;
-  check_out: string;
+  check_in_time: string;
+  check_out_time: string;
   allow_pets: boolean;
   status: string;
   images: {
@@ -232,8 +232,8 @@ const listingSchema = z.object({
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
   max_booking_days: z.number().min(1),
-  check_in: z.string().optional(),
-  check_out: z.string().optional(),
+  check_in_time: z.string().optional(),
+  check_out_time: z.string().optional(),
   allow_pets: z.boolean({
     required_error: "لا يمكن تخطي السماح بالحيوانات الأليفة",
   }),
@@ -385,8 +385,8 @@ export default function AddListingPage() {
       floor_number: 1,
       min_booking_days: 1,
       max_booking_days: 30,
-      check_in: "14:00",
-      check_out: "12:00",
+      check_in_time: "14:00",
+      check_out_time: "12:00",
       allow_pets: false,
       features: [],
       categories: [],
@@ -1300,9 +1300,9 @@ export default function AddListingPage() {
                       </FormItem>
                     )}
                   />
-                  {/* <FormField
+                  <FormField
                     control={form.control}
-                    name="check_in"
+                    name="check_in_time"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>وقت تسجيل الدخول</FormLabel>
@@ -1312,11 +1312,11 @@ export default function AddListingPage() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  /> */}
-                  {/* 
+                  />
+
                   <FormField
                     control={form.control}
-                    name="check_out"
+                    name="check_out_time"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>وقت تسجيل الخروج</FormLabel>
@@ -1326,7 +1326,7 @@ export default function AddListingPage() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  /> */}
+                  />
                 </div>
               </CardContent>
             </Card>
