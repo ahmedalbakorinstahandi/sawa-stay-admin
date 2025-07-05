@@ -65,6 +65,7 @@ import { uploadImage } from "@/lib/upload-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { LocationPicker } from "@/components/map/location-picker";
+import AsyncSelect from "react-select/async";
 // نوع بيانات الإعلان
 interface Listing {
   id: number;
@@ -315,7 +316,7 @@ export default function AddListingPage() {
   const [houseTypes, setHouseTypes] = useState<HouseType[]>([]);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [hosts, setHosts] = useState<any[]>([]);
+  const [selectedHost, setSelectedHost] = useState<{value: string, label: string} | null>(null);
 
   // صور الإعلان
   const [propertyImages, setPropertyImages] = useState<any[]>([]);
@@ -333,13 +334,6 @@ export default function AddListingPage() {
         const houseTypesResponse = await api.get("/admin/house-types");
         if (houseTypesResponse.data.success && houseTypesResponse.data) {
           setHouseTypes(houseTypesResponse.data.data);
-        }
-        // جلب أنواع الإعلانات
-        const HostsResponse = await api.get(
-          "/admin/users?id_verified=approved&role=user"
-        );
-        if (HostsResponse.data.success && HostsResponse.data) {
-          setHosts(HostsResponse.data.data);
         }
 
         // جلب الميزات
@@ -401,6 +395,18 @@ export default function AddListingPage() {
       },
     },
   });
+
+  // Effect لتحديد المضيف المحدد إذا كان هناك قيمة
+  useEffect(() => {
+    const hostId = form.watch("host_id");
+    if (hostId && !selectedHost) {
+      getHostById(hostId).then((host) => {
+        if (host) {
+          setSelectedHost(host);
+        }
+      });
+    }
+  }, [form.watch("host_id"), selectedHost]);
 
   // جلب بيانات الإعلان
 
@@ -483,6 +489,48 @@ export default function AddListingPage() {
     label: category.name?.ar || "",
     value: category.id,
   }));
+
+  // دالة البحث الغير متزامن للمضيفين
+  const loadHostOptions = async (inputValue: string) => {
+    try {
+      let url = "/admin/users?id_verified=approved&role=user&limit=20&page=1";
+      
+      if (inputValue && inputValue.length >= 2) {
+        url += `&search=${encodeURIComponent(inputValue)}`;
+      }
+
+      const response = await api.get(url);
+
+      if (response.data.success && response.data.data) {
+        return response.data.data.map((host: any) => ({
+          value: host.id.toString(),
+          label: `${host.first_name} ${host.last_name}`,
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error loading hosts:", error);
+      return [];
+    }
+  };
+
+  // دالة للحصول على المضيف بواسطة ID
+  const getHostById = async (hostId: number) => {
+    try {
+      const response = await api.get(`/admin/users/${hostId}`);
+      if (response.data.success && response.data.data) {
+        const host = response.data.data;
+        return {
+          value: host.id.toString(),
+          label: `${host.first_name} ${host.last_name}`,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading host:", error);
+      return null;
+    }
+  };
 
   // حفظ التغييرات
   const onSubmit = async (data: z.infer<typeof listingSchema>) => {
@@ -1284,28 +1332,65 @@ export default function AddListingPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>المضيف</FormLabel>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(Number.parseInt(value))
-                          }
-                          defaultValue={field.value?.toString()}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="اختر المضيف" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {hosts.map((host: any) => (
-                              <SelectItem
-                                key={host.id}
-                                value={host.id.toString()}
-                              >
-                                {host.first_name} {host.last_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <AsyncSelect
+                            cacheOptions
+                            defaultOptions
+                            loadOptions={loadHostOptions}
+                            onChange={(selectedOption: any) => {
+                              field.onChange(selectedOption ? Number(selectedOption.value) : undefined);
+                              setSelectedHost(selectedOption);
+                            }}
+                            value={selectedHost}
+                            placeholder="ابحث عن المضيف أو اختر من القائمة..."
+                            loadingMessage={() => "جاري البحث..."}
+                            noOptionsMessage={({ inputValue }) => 
+                              inputValue.length < 2 
+                                ? "اكتب على الأقل حرفين للبحث" 
+                                : "لا توجد نتائج"
+                            }
+                            styles={{
+                              control: (provided: any, state: any) => ({
+                                ...provided,
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "0.375rem",
+                                minHeight: "2.5rem",
+                                borderColor: state.isFocused ? "#3b82f6" : "#e2e8f0",
+                                boxShadow: state.isFocused ? "0 0 0 2px rgba(59, 130, 246, 0.1)" : "none",
+                                "&:hover": {
+                                  borderColor: state.isFocused ? "#3b82f6" : "#cbd5e1",
+                                },
+                              }),
+                              menu: (provided: any) => ({
+                                ...provided,
+                                zIndex: 9999,
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "0.375rem",
+                                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                              }),
+                              option: (provided: any, state: any) => ({
+                                ...provided,
+                                backgroundColor: state.isSelected
+                                  ? "#3b82f6"
+                                  : state.isFocused
+                                  ? "#f1f5f9"
+                                  : "white",
+                                color: state.isSelected ? "white" : "#1f2937",
+                                "&:hover": {
+                                  backgroundColor: state.isSelected ? "#3b82f6" : "#f1f5f9",
+                                },
+                              }),
+                              placeholder: (provided: any) => ({
+                                ...provided,
+                                color: "#9ca3af",
+                              }),
+                              singleValue: (provided: any) => ({
+                                ...provided,
+                                color: "#1f2937",
+                              }),
+                            }}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
