@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,6 +19,8 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Save } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import AsyncSelectComponent from "@/components/ui/async-select"
+import { api } from "@/lib/api"
 
 const bookingFormSchema = z.object({
   listing_id: z.coerce.number().positive(),
@@ -29,17 +31,12 @@ const bookingFormSchema = z.object({
   end_date: z.string().min(1, {
     message: "يرجى اختيار تاريخ الانتهاء",
   }),
-  status: z.enum(["draft", "waiting_payment", "paid", "confirmed", "completed", "cancelled", "rejected"]),
-  payment_method: z.enum(["wallet", "shamcash", "alharam", "cash", "crypto"]),
-  price: z.coerce.number().positive(),
-  service_fees: z.coerce.number().nonnegative(),
-  commission: z.coerce.number().nonnegative(),
   message: z.string().optional(),
-  adults_count: z.coerce.number().nonnegative(),
-  children_count: z.coerce.number().nonnegative(),
-  infants_count: z.coerce.number().nonnegative(),
-  pets_count: z.coerce.number().nonnegative(),
-  host_notes: z.string().optional(),
+  adults_count: z.coerce.number().min(0),
+  children_count: z.coerce.number().min(0),
+  infants_count: z.coerce.number().min(0),
+  pets_count: z.coerce.number().min(0),
+  status: z.enum(["pending", "accepted", "confirmed", "completed", "cancelled", "rejected"]).optional(),
   admin_notes: z.string().optional(),
 })
 
@@ -54,46 +51,127 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
+  // حالة لحفظ بيانات الإعلان والضيف المحددين
+  const [selectedListing, setSelectedListing] = useState<string>("")
+  const [selectedGuest, setSelectedGuest] = useState<string>("")
+
+  // دوال البحث للـ AsyncSelect
+  const loadListings = async (inputValue: string) => {
+    try {
+      const response = await api.get(`/admin/listings?search=${inputValue}&per_page=10`)
+      if (response.data.success) {
+        return response.data.data.map((listing: any) => ({
+          value: listing.id.toString(),
+          label: `#${listing.id} - ${listing.title?.ar || listing.title?.en || 'بدون عنوان'}`
+        }))
+      }
+      return []
+    } catch (error) {
+      console.error('Error loading listings:', error)
+      return []
+    }
+  }
+
+  const loadGuests = async (inputValue: string) => {
+    try {
+      const response = await api.get(`/admin/users?search=${inputValue}&per_page=10&role=user`)
+      if (response.data.success) {
+        return response.data.data.map((user: any) => ({
+          value: user.id.toString(),
+          label: `#${user.id} - ${user.first_name} ${user.last_name} (${user.country_code}${user.phone_number})`
+        }))
+      }
+      return []
+    } catch (error) {
+      console.error('Error loading guests:', error)
+      return []
+    }
+  }
+
+  // دالة لجلب بيانات الإعلان والضيف للعرض
+  const fetchInitialData = async () => {
+    if (booking) {
+      // جلب بيانات الإعلان
+      if (booking.listing_id) {
+        try {
+          const listingResponse = await api.get(`/admin/listings/${booking.listing_id}`)
+          if (listingResponse.data.success) {
+            const listing = listingResponse.data.data
+            setSelectedListing(`#${listing.id} - ${listing.title?.ar || listing.title?.en || 'بدون عنوان'}`)
+          }
+        } catch (error) {
+          console.error('Error fetching listing:', error)
+        }
+      }
+
+      // جلب بيانات الضيف
+      if (booking.guest_id) {
+        try {
+          const guestResponse = await api.get(`/admin/users/${booking.guest_id}`)
+          if (guestResponse.data.success) {
+            const guest = guestResponse.data.data
+            setSelectedGuest(`#${guest.id} - ${guest.first_name} ${guest.last_name} (${guest.country_code}${guest.phone_number})`)
+          }
+        } catch (error) {
+          console.error('Error fetching guest:', error)
+        }
+      }
+    }
+  }
+
   const form = useForm<z.infer<typeof bookingFormSchema>>({
     resolver: zodResolver(bookingFormSchema),
-    defaultValues: booking
-      ? {
-          listing_id: booking.listing_id,
-          guest_id: booking.guest_id,
-          start_date: booking.start_date ? new Date(booking.start_date).toISOString().split("T")[0] : "",
-          end_date: booking.end_date ? new Date(booking.end_date).toISOString().split("T")[0] : "",
-          status: booking.status,
-          payment_method: booking.payment_method,
-          price: booking.price,
-          service_fees: booking.service_fees,
-          commission: booking.commission,
-          message: booking.message || "",
-          adults_count: booking.adults_count,
-          children_count: booking.children_count,
-          infants_count: booking.infants_count,
-          pets_count: booking.pets_count,
-          host_notes: booking.host_notes || "",
-          admin_notes: booking.admin_notes || "",
-        }
-      : {
-          listing_id: 1,
-          guest_id: 1,
-          start_date: "",
-          end_date: "",
-          status: "draft",
-          payment_method: "wallet",
-          price: 0,
-          service_fees: 0,
-          commission: 0,
-          message: "",
-          adults_count: 1,
-          children_count: 0,
-          infants_count: 0,
-          pets_count: 0,
-          host_notes: "",
-          admin_notes: "",
-        },
+    defaultValues: {
+      listing_id: 1,
+      guest_id: 1,
+      start_date: "",
+      end_date: "",
+      message: "",
+      adults_count: 1,
+      children_count: 0,
+      infants_count: 0,
+      pets_count: 0,
+      status: "pending",
+      admin_notes: "",
+    },
   })
+
+  // تحديث القيم عند تغيير الـ booking
+  useEffect(() => {
+    if (booking) {
+      form.reset({
+        listing_id: booking.listing_id,
+        guest_id: booking.guest_id,
+        start_date: booking.start_date ? new Date(booking.start_date).toISOString().split("T")[0] : "",
+        end_date: booking.end_date ? new Date(booking.end_date).toISOString().split("T")[0] : "",
+        message: booking.message || "",
+        adults_count: booking.adults_count,
+        children_count: booking.children_count,
+        infants_count: booking.infants_count,
+        pets_count: booking.pets_count,
+        status: booking.status,
+        admin_notes: booking.admin_notes || "",
+      })
+      // جلب البيانات الأولية للعرض
+      fetchInitialData()
+    } else {
+      form.reset({
+        listing_id: 1,
+        guest_id: 1,
+        start_date: "",
+        end_date: "",
+        message: "",
+        adults_count: 1,
+        children_count: 0,
+        infants_count: 0,
+        pets_count: 0,
+        status: "pending",
+        admin_notes: "",
+      })
+      setSelectedListing("")
+      setSelectedGuest("")
+    }
+  }, [booking, form])
 
   function onSubmit(values: z.infer<typeof bookingFormSchema>) {
     setIsLoading(true)
@@ -134,207 +212,203 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>تاريخ البدء</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>تاريخ الانتهاء</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>حالة الحجز</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+            {booking ? (
+              // عند التعديل: إظهار الحالة والملاحظات فقط
+              <>
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>حالة الحجز</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر حالة الحجز" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="pending">بانتظار الدفع</SelectItem>
+                          <SelectItem value="accepted">مقبول</SelectItem>
+                          <SelectItem value="confirmed">مؤكد</SelectItem>
+                          <SelectItem value="completed">مكتمل</SelectItem>
+                          <SelectItem value="cancelled">ملغي</SelectItem>
+                          <SelectItem value="rejected">مرفوض</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="admin_notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ملاحظات الإدارة</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر حالة الحجز" />
-                        </SelectTrigger>
+                        <Textarea rows={3} {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="draft">مسودة</SelectItem>
-                        <SelectItem value="waiting_payment">بانتظار الدفع</SelectItem>
-                        <SelectItem value="paid">مدفوع</SelectItem>
-                        <SelectItem value="confirmed">مؤكد</SelectItem>
-                        <SelectItem value="completed">مكتمل</SelectItem>
-                        <SelectItem value="cancelled">ملغي</SelectItem>
-                        <SelectItem value="rejected">مرفوض</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="payment_method"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>طريقة الدفع</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            ) : (
+              // عند الإضافة: إظهار جميع الحقول المطلوبة
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="listing_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الإعلان *</FormLabel>
+                        <FormControl>
+                          <AsyncSelectComponent
+                            placeholder="ابحث عن إعلان..."
+                            value={field.value?.toString()}
+                            onChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
+                            loadOptions={loadListings}
+                            defaultLabel={selectedListing}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="guest_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الضيف *</FormLabel>
+                        <FormControl>
+                          <AsyncSelectComponent
+                            placeholder="ابحث عن ضيف..."
+                            value={field.value?.toString()}
+                            onChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
+                            loadOptions={loadGuests}
+                            defaultLabel={selectedGuest}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="start_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>تاريخ البدء</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>تاريخ الانتهاء</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} min={
+                            form.getValues("start_date") ? new Date(form.getValues("start_date")).toISOString().split("T")[0] : ""
+                          } />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="adults_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>البالغين</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="children_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الأطفال</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="infants_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الرضع</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pets_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الحيوانات الأليفة</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>رسالة الضيف</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر طريقة الدفع" />
-                        </SelectTrigger>
+                        <Textarea rows={3} {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="wallet">محفظة</SelectItem>
-                        <SelectItem value="shamcash">شام كاش</SelectItem>
-                        <SelectItem value="alharam">الهرم</SelectItem>
-                        <SelectItem value="cash">نقدي</SelectItem>
-                        <SelectItem value="crypto">عملات رقمية</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>السعر</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="service_fees"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>رسوم الخدمة</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="commission"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>العمولة</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <FormField
-                control={form.control}
-                name="adults_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>البالغين</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="children_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>الأطفال</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="infants_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>الرضع</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="pets_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>الحيوانات الأليفة</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>رسالة الضيف</FormLabel>
-                  <FormControl>
-                    <Textarea rows={3} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="admin_notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ملاحظات الإدارة</FormLabel>
-                  <FormControl>
-                    <Textarea rows={3} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="admin_notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ملاحظات الإدارة</FormLabel>
+                      <FormControl>
+                        <Textarea rows={3} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             <DialogFooter>
               <Button type="submit" disabled={isLoading} className="flex items-center gap-2">
                 {isLoading ? (

@@ -17,6 +17,7 @@ interface AsyncSelectProps {
   isLoading?: boolean;
   isDisabled?: boolean;
   className?: string;
+  defaultLabel?: string; // إضافة prop للعرض الافتراضي
 }
 
 const AsyncSelectComponent: React.FC<AsyncSelectProps> = ({
@@ -27,8 +28,21 @@ const AsyncSelectComponent: React.FC<AsyncSelectProps> = ({
   isLoading = false,
   isDisabled = false,
   className = "",
+  defaultLabel = "",
 }) => {
+  const [selectedOption, setSelectedOption] = React.useState<Option | null>(null);
+
+  // تحديث الخيار المحدد عند تغيير القيمة
+  React.useEffect(() => {
+    if (value && defaultLabel) {
+      setSelectedOption({ value, label: defaultLabel });
+    } else if (!value) {
+      setSelectedOption(null);
+    }
+  }, [value, defaultLabel]);
+
   const handleChange = (selectedOption: Option | null) => {
+    setSelectedOption(selectedOption);
     onChange(selectedOption?.value);
   };
 
@@ -86,7 +100,7 @@ const AsyncSelectComponent: React.FC<AsyncSelectProps> = ({
       defaultOptions
       loadOptions={loadOptions}
       onChange={handleChange}
-      value={value ? { value, label: value } : null}
+      value={selectedOption}
       placeholder={placeholder}
       isLoading={isLoading}
       isDisabled={isDisabled}

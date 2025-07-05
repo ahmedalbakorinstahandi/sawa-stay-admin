@@ -416,9 +416,9 @@ export default function UsersPage() {
                         <TableCell style={{ unicodeBidi: "plaintext" }}>
                           {user.country_code} {user.phone_number}
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           {getRoleBadge(user.role, user.id_verified)}
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>{getStatusBadge(user.status)}</TableCell>
                         <TableCell>
                           {new Date(user.created_at).toLocaleDateString(

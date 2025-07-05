@@ -731,7 +731,7 @@ export default function BookingsPage() {
                               <>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
-                                  قبول
+                                  تم الدفع
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
                                   <XCircle className="ml-2 h-4 w-4" />

@@ -231,6 +231,13 @@ export default function TransactionsPage() {
             مرفوض
           </Badge>
         )
+      case "refund":
+        return (
+          <Badge variant="secondary" className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600">
+            <ArrowDownCircle className="h-3 w-3" />
+            استرداد
+          </Badge>
+        )
       default:
         return <Badge>{status}</Badge>
     }
@@ -510,6 +517,15 @@ export default function TransactionsPage() {
                                 <Eye className="ml-2 h-4 w-4" />
                                 عرض التفاصيل
                               </DropdownMenuItem>
+                              {transaction.status === "completed" && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "refund")}>
+                                  <ArrowDownCircle className="ml-2 h-4 w-4 text-red-500" />
+                                  استرجاع المبلغ
+                                </DropdownMenuItem>
+
+
+                              )}
+
                               {transaction.status === "pending" && (
                                 <>
                                   <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "completed")}>

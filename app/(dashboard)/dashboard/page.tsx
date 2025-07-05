@@ -67,12 +67,12 @@ export default function DashboardPage() {
               >
                 نظرة عامة
               </TabsTrigger>
-              <TabsTrigger
+              {/* <TabsTrigger
                 value="notifications"
                 className="transition-all duration-300"
               >
                 الإشعارات
-              </TabsTrigger>
+              </TabsTrigger> */}
               {/* 
               <TabsTrigger value="analytics" className="transition-all duration-300">
                 التحليلات
