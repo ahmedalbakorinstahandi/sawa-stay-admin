@@ -1193,7 +1193,7 @@ export default function ListingsPage() {
                             <TableCell>
                               {listing.vip ? (
                                 <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-                                  <Heart className="h-3 w-3 mr-1" />
+                                  <Heart className="h-3 w-3 ml-1" />
                                   VIP
                                 </Badge>
                               ) : (
