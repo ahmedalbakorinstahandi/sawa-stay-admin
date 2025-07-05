@@ -66,7 +66,7 @@ import { Feature, FeatureResponse } from "@/types/features";
 export default function FeaturesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -126,19 +126,19 @@ export default function FeaturesPage() {
         page: currentPage,
         per_page: perPage,
       };
-      
+
       // Apply search filter
       if (searchTerm) {
         params.search = searchTerm;
       }
-      
+
       // Apply status filter
       if (statusFilter !== "all") {
         params.status = statusFilter;
       }
-      
+
       const response = await featuresAPI.getAll(params);
-      
+
       if (response.success) {
         setFeatures(response.data || []);
         setTotalCount(response.meta?.total || 0);
@@ -207,9 +207,9 @@ export default function FeaturesPage() {
   const handleToggleVisibility = async (feature: Feature) => {
     try {
       const response = await featuresAPI.toggleVisibility(feature.id, !feature.is_visible);
-        if (response.success) {
+      if (response.success) {
         // Update local state
-        setFeatures(prev => prev.map(f => 
+        setFeatures(prev => prev.map(f =>
           f.id === feature.id ? { ...f, is_visible: !f.is_visible } : f
         ));
         toast({
@@ -248,7 +248,7 @@ export default function FeaturesPage() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-    className="space-y-4"
+      className="space-y-4"
     >
       {/* Header Section */}
       <motion.div variants={itemVariants} className="flex flex-col space-y-4">
@@ -258,14 +258,13 @@ export default function FeaturesPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              إدارة الميزات والتقييمات
-            </h1>
+              إدارة الميزات             </h1>
             <p className="text-muted-foreground mt-1">
               إدارة جميع الميزات المتاحة في المنصة
             </p>
           </div>
         </div>
-        
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-950 dark:to-emerald-950 dark:border-green-800">
@@ -281,7 +280,7 @@ export default function FeaturesPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 dark:from-orange-950 dark:to-amber-950 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -295,7 +294,7 @@ export default function FeaturesPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -337,7 +336,7 @@ export default function FeaturesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <Button
                 onClick={handleAdd}
                 className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 h-11 px-6"
@@ -432,11 +431,10 @@ export default function FeaturesPage() {
                           <TableCell>
                             <Badge
                               variant={feature.is_visible ? "default" : "secondary"}
-                              className={`${
-                                feature.is_visible
+                              className={`${feature.is_visible
                                   ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200"
                                   : "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200"
-                              } cursor-pointer transition-colors`}
+                                } cursor-pointer transition-colors`}
                               onClick={() => handleToggleVisibility(feature)}
                             >
                               {feature.is_visible ? (
@@ -500,7 +498,7 @@ export default function FeaturesPage() {
                         className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
-                    
+
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
                       if (totalPages <= 5) {
@@ -512,7 +510,7 @@ export default function FeaturesPage() {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <PaginationItem key={pageNum}>
                           <PaginationLink
@@ -525,7 +523,7 @@ export default function FeaturesPage() {
                         </PaginationItem>
                       );
                     })}
-                    
+
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
@@ -544,7 +542,7 @@ export default function FeaturesPage() {
       <FeatureDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        feature={selectedFeature}        onFeatureChange={(feature: Feature) => {
+        feature={selectedFeature} onFeatureChange={(feature: Feature) => {
           if (selectedFeature) {
             setFeatures(prev => prev.map(f => f.id === feature.id ? feature : f));
           } else {
@@ -559,7 +557,7 @@ export default function FeaturesPage() {
       <FeatureDeleteDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        feature={selectedFeature}        onFeatureDeleted={(featureId: number) => {
+        feature={selectedFeature} onFeatureDeleted={(featureId: number) => {
           setFeatures(prev => prev.filter(f => f.id !== featureId));
           setTotalCount(prev => prev - 1);
           // Refresh data from server to ensure consistency

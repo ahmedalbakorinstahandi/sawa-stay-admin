@@ -701,3 +701,44 @@ export const settingsAPI = {
     }
   },
 }
+
+// Reviews API
+export const reviewsAPI = {
+  getAll: async (params: any = {}) => {
+    try {
+      const response = await api.get("/admin/reviews", { params })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch reviews" }
+    }
+  },
+  
+  block: async (id: number) => {
+    try {
+      const response = await api.post(`/admin/reviews/${id}/block`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to block review" }
+    }
+  },
+  
+  unblock: async (id: number) => {
+    try {
+      const response = await api.post(`/admin/reviews/${id}/unblock`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to unblock review" }
+    }
+  },
+  
+  get: async (id: number) => {
+    try {
+      const response = await api.get(`/admin/reviews/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch review" }
+    }
+  },
+}
+
+export default api

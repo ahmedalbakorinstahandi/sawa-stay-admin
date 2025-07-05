@@ -23,6 +23,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Star,
+  Bell,
 } from "lucide-react";
 import Image from "next/image";
 import { useMobile } from "@/hooks/use-mobile";
@@ -85,7 +86,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       active: pathname === "/housetypes",
     },
     {
-      label: "الميزات والتقييمات",
+      label: "الميزات ",
       icon: <Star className="ml-2 h-5 w-5" />,
       href: "/features",
       active: pathname === "/features",
@@ -95,6 +96,12 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       icon: <BookOpen className="ml-2 h-5 w-5" />,
       href: "/bookings",
       active: pathname === "/bookings",
+    },
+    {
+      label: "التقييمات",
+      icon: <MessageSquare className="ml-2 h-5 w-5" />,
+      href: "/reviews",
+      active: pathname === "/reviews",
     },
     {
       label: "المعاملات المالية",
@@ -110,7 +117,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
     },
     {
       label: "الإشعارات",
-      icon: <MessageSquare className="ml-2 h-5 w-5" />,
+      icon: <Bell className="ml-2 h-5 w-5" />,
       href: "/notifications",
       active: pathname === "/notifications",
     },
