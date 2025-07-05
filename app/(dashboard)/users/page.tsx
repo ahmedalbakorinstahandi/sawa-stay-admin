@@ -262,7 +262,10 @@ export default function UsersPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">المستخدمين</h2>
-        <Button onClick={handleAddUser}>
+        <Button onClick={handleAddUser}
+          className="gradient-primary hover:opacity-90"
+
+        >
           <Plus className="ml-2 h-4 w-4" /> إضافة مستخدم
         </Button>
       </div>

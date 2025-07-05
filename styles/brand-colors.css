@@ -1,0 +1,156 @@
+/* Brand Color Utilities */
+/* Based on the new visual identity palette */
+
+/* Primary Brand Colors */
+.text-crayola {
+  color: #EF3D5D;
+}
+
+.bg-crayola {
+  background-color: #EF3D5D;
+}
+
+.border-crayola {
+  border-color: #EF3D5D;
+}
+
+.text-cosmos {
+  color: #630E24;
+}
+
+.bg-cosmos {
+  background-color: #630E24;
+}
+
+.border-cosmos {
+  border-color: #630E24;
+}
+
+.text-tale {
+  color: #FFCCE0;
+}
+
+.bg-tale {
+  background-color: #FFCCE0;
+}
+
+.border-tale {
+  border-color: #FFCCE0;
+}
+
+.text-lavender {
+  color: #FFEEF5;
+}
+
+.bg-lavender {
+  background-color: #FFEEF5;
+}
+
+.border-lavender {
+  border-color: #FFEEF5;
+}
+
+/* Secondary Brand Colors */
+.text-indigo {
+  color: #737EFA;
+}
+
+.bg-indigo {
+  background-color: #737EFA;
+}
+
+.border-indigo {
+  border-color: #737EFA;
+}
+
+.text-tiffany {
+  color: #8AD6D6;
+}
+
+.bg-tiffany {
+  background-color: #8AD6D6;
+}
+
+.border-tiffany {
+  border-color: #8AD6D6;
+}
+
+.text-amethyst {
+  color: #956BD6;
+}
+
+.bg-amethyst {
+  background-color: #956BD6;
+}
+
+.border-amethyst {
+  border-color: #956BD6;
+}
+
+/* Brand Gradients */
+.gradient-brand-primary {
+  background: linear-gradient(135deg, #EF3D5D 0%, #630E24 100%);
+}
+
+.gradient-brand-secondary {
+  background: linear-gradient(135deg, #737EFA 0%, #956BD6 100%);
+}
+
+.gradient-brand-soft {
+  background: linear-gradient(135deg, #FFCCE0 0%, #FFEEF5 100%);
+}
+
+.gradient-brand-ocean {
+  background: linear-gradient(135deg, #8AD6D6 0%, #737EFA 100%);
+}
+
+.gradient-brand-sunset {
+  background: linear-gradient(135deg, #EF3D5D 0%, #956BD6 100%);
+}
+
+/* Brand Shadows */
+.shadow-crayola {
+  box-shadow: 0 4px 14px 0 rgba(239, 61, 93, 0.25);
+}
+
+.shadow-cosmos {
+  box-shadow: 0 4px 14px 0 rgba(99, 14, 36, 0.25);
+}
+
+.shadow-indigo {
+  box-shadow: 0 4px 14px 0 rgba(115, 126, 250, 0.25);
+}
+
+.shadow-tiffany {
+  box-shadow: 0 4px 14px 0 rgba(138, 214, 214, 0.25);
+}
+
+.shadow-amethyst {
+  box-shadow: 0 4px 14px 0 rgba(149, 107, 214, 0.25);
+}
+
+/* Brand Hover Effects */
+.hover-brand-scale:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.hover-brand-glow:hover {
+  box-shadow: 0 0 20px rgba(239, 61, 93, 0.4);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Brand Text Effects */
+.text-brand-gradient {
+  background: linear-gradient(135deg, #EF3D5D 0%, #630E24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-brand-secondary-gradient {
+  background: linear-gradient(135deg, #737EFA 0%, #956BD6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

@@ -1,4 +1,5 @@
 @import '../styles/features.css';
+@import '../styles/brand-colors.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,82 +9,82 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 345 76% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 345 76% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 345 76% 11%;
 
-    --primary: 346 100% 58%;
-    --primary-foreground: 355 100% 97%;
+    --primary: 351 93% 58%;
+    --primary-foreground: 345 100% 97%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 345 100% 88%;
+    --secondary-foreground: 345 76% 11%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 345 100% 95%;
+    --muted-foreground: 345 30% 46%;
 
-    --accent: 346 100% 58%;
-    --accent-foreground: 355 100% 97%;
+    --accent: 229 92% 73%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --success: 142 76% 36%;
+    --success: 180 65% 68%;
     --success-foreground: 0 0% 98%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    --info: 217 91% 60%;
+    --info: 229 92% 73%;
     --info-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 346 100% 58%;
+    --border: 345 30% 90%;
+    --input: 345 30% 90%;
+    --ring: 351 93% 58%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 95%;
+    --background: 345 76% 4%;
+    --foreground: 345 100% 95%;
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 95%;
+    --card: 345 76% 6%;
+    --card-foreground: 345 100% 95%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 345 76% 6%;
+    --popover-foreground: 345 100% 95%;
 
-    --primary: 346 100% 58%;
-    --primary-foreground: 355 100% 97%;
+    --primary: 351 93% 58%;
+    --primary-foreground: 345 100% 97%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 345 30% 15%;
+    --secondary-foreground: 345 100% 98%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 345 30% 15%;
+    --muted-foreground: 345 30% 65%;
 
-    --accent: 346 100% 58%;
-    --accent-foreground: 355 100% 97%;
+    --accent: 229 92% 73%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
 
-    --success: 142 76% 36%;
+    --success: 180 65% 68%;
     --success-foreground: 0 0% 98%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    --info: 217 91% 60%;
+    --info: 229 92% 73%;
     --info-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 346 100% 58%;
+    --border: 345 30% 15%;
+    --input: 345 30% 15%;
+    --ring: 351 93% 58%;
   }
 }
 
@@ -236,24 +237,24 @@
 .gradient-primary {
   background: linear-gradient(
     135deg,
-    hsl(346, 100%, 58%) 0%,
-    hsl(326, 100%, 50%) 100%
+    hsl(351, 93%, 58%) 0%,
+    hsl(345, 76%, 11%) 100%
   );
 }
 
 .gradient-secondary {
   background: linear-gradient(
     135deg,
-    hsl(217, 91%, 60%) 0%,
-    hsl(246, 91%, 60%) 100%
+    hsl(229, 92%, 73%) 0%,
+    hsl(271, 57%, 64%) 100%
   );
 }
 
 .gradient-success {
   background: linear-gradient(
     135deg,
-    hsl(142, 76%, 36%) 0%,
-    hsl(162, 76%, 36%) 100%
+    hsl(180, 65%, 68%) 0%,
+    hsl(160, 65%, 68%) 100%
   );
 }
 
@@ -268,7 +269,7 @@
 .gradient-info {
   background: linear-gradient(
     135deg,
-    hsl(217, 91%, 60%) 0%,
+    hsl(229, 92%, 73%) 0%,
     hsl(197, 91%, 60%) 100%
   );
 }
@@ -337,12 +338,12 @@
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 5px rgba(255, 77, 109, 0.2),
-      0 0 10px rgba(255, 77, 109, 0.2);
+    box-shadow: 0 0 5px rgba(239, 61, 93, 0.2),
+      0 0 10px rgba(239, 61, 93, 0.2);
   }
   to {
-    box-shadow: 0 0 10px rgba(255, 77, 109, 0.5),
-      0 0 20px rgba(255, 77, 109, 0.3);
+    box-shadow: 0 0 10px rgba(239, 61, 93, 0.5),
+      0 0 20px rgba(239, 61, 93, 0.3);
   }
 }
 
@@ -361,11 +362,11 @@
 
 /* Neon Effects */
 .neon-text {
-  text-shadow: 0 0 5px rgba(255, 77, 109, 0.5), 0 0 10px rgba(255, 77, 109, 0.3);
+  text-shadow: 0 0 5px rgba(239, 61, 93, 0.5), 0 0 10px rgba(239, 61, 93, 0.3);
 }
 
 .neon-border {
-  box-shadow: 0 0 5px rgba(255, 77, 109, 0.5), 0 0 10px rgba(255, 77, 109, 0.3);
+  box-shadow: 0 0 5px rgba(239, 61, 93, 0.5), 0 0 10px rgba(239, 61, 93, 0.3);
 }
 
 /* Hover Effects */
@@ -378,14 +379,14 @@
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 10px rgba(255, 77, 109, 0.5), 0 0 20px rgba(255, 77, 109, 0.3);
+  box-shadow: 0 0 10px rgba(239, 61, 93, 0.5), 0 0 20px rgba(239, 61, 93, 0.3);
 }
 
 /* Dashboard Background Pattern */
 .bg-pattern {
   background-color: var(--background);
   background-image: radial-gradient(
-    rgba(255, 77, 109, 0.1) 1px,
+    rgba(239, 61, 93, 0.1) 1px,
     transparent 1px
   );
   background-size: 20px 20px;
@@ -393,7 +394,7 @@
 
 .dark .bg-pattern {
   background-image: radial-gradient(
-    rgba(255, 77, 109, 0.15) 1px,
+    rgba(239, 61, 93, 0.15) 1px,
     transparent 1px
   );
 }
@@ -418,8 +419,8 @@
 .gradient-text {
   background: linear-gradient(
     135deg,
-    hsl(346, 100%, 58%) 0%,
-    hsl(326, 100%, 50%) 100%
+    hsl(351, 93%, 58%) 0%,
+    hsl(345, 76%, 11%) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

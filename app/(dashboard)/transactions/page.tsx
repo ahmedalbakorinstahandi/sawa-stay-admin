@@ -224,7 +224,7 @@ export default function TransactionsPage() {
             قيد الانتظار
           </Badge>
         )
-      case "rejected":
+      case "failed":
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <XCircle className="h-3 w-3" />
@@ -516,7 +516,7 @@ export default function TransactionsPage() {
                                     <CheckCircle className="ml-2 h-4 w-4" />
                                     تأكيد
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "rejected")}>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(transaction.id, "failed")}>
                                     <XCircle className="ml-2 h-4 w-4" />
                                     رفض
                                   </DropdownMenuItem>

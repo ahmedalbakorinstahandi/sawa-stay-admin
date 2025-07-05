@@ -117,7 +117,7 @@ export default function ListingsPage() {
     const category = searchParams.get("house_type_id") || "all";
     const vip = searchParams.get("vip") || "all";
     const stars = searchParams.get("stars") || "all";
-    
+
     setSearchTerm(search);
     setDebouncedSearchTerm(search);
     setStatusFilter(status);
@@ -137,7 +137,7 @@ export default function ListingsPage() {
     stars?: string;
   }) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (filters.search !== undefined) {
       if (filters.search) {
         params.set("search", filters.search);
@@ -145,7 +145,7 @@ export default function ListingsPage() {
         params.delete("search");
       }
     }
-    
+
     if (filters.status !== undefined) {
       if (filters.status !== "all") {
         params.set("status", filters.status);
@@ -153,7 +153,7 @@ export default function ListingsPage() {
         params.delete("status");
       }
     }
-    
+
     if (filters.propertyType !== undefined) {
       if (filters.propertyType !== "all") {
         params.set("property_type", filters.propertyType);
@@ -161,7 +161,7 @@ export default function ListingsPage() {
         params.delete("property_type");
       }
     }
-    
+
     if (filters.category !== undefined) {
       if (filters.category !== "all") {
         params.set("house_type_id", filters.category);
@@ -169,7 +169,7 @@ export default function ListingsPage() {
         params.delete("house_type_id");
       }
     }
-    
+
     if (filters.vip !== undefined) {
       if (filters.vip !== "all") {
         params.set("vip", filters.vip);
@@ -177,7 +177,7 @@ export default function ListingsPage() {
         params.delete("vip");
       }
     }
-    
+
     if (filters.stars !== undefined) {
       if (filters.stars !== "all") {
         params.set("stars", filters.stars);
@@ -185,11 +185,11 @@ export default function ListingsPage() {
         params.delete("stars");
       }
     }
-    
+
     // Reset to page 1 when filters change
     params.set("page", "1");
     router.push(`?${params.toString()}`, { scroll: false });
-  };  const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
+  }; const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
   const [isListingDeleteDialogOpen, setIsListingDeleteDialogOpen] =
     useState(false);
   const [isListingReorderDialogOpen, setIsListingReorderDialogOpen] =
@@ -202,7 +202,7 @@ export default function ListingsPage() {
     useState(false);
   const [selectedListing, setSelectedListing] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [selectedFeature, setSelectedFeature] = useState<any>(null);  const [isLoading, setIsLoading] = useState(true);
+  const [selectedFeature, setSelectedFeature] = useState<any>(null); const [isLoading, setIsLoading] = useState(true);
   const [perPage, setPerPage] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -957,17 +957,18 @@ export default function ListingsPage() {
         <h2 className="text-3xl font-bold tracking-tight">الإعلانات</h2>
         <div className="flex gap-2">
           {activeTab === "listings" && (
-            <Button onClick={() => router.push(`/listings/add?returnPage=${currentPage}`)}>
-              <Plus className="ml-2 h-4 w-4" /> إضافة إعلان
+            <Button onClick={() => router.push(`/listings/add?returnPage=${currentPage}`)} className="gradient-primary hover:opacity-90"
+            >
+              <Plus className="ml-2 h-4 w-4 " /> إضافة إعلان
             </Button>
           )}
           {activeTab === "categories" && (
-            <Button onClick={handleAddCategory}>
+            <Button onClick={handleAddCategory} className="gradient-primary hover:opacity-90">
               <Plus className="ml-2 h-4 w-4" /> إضافة تصنيف
             </Button>
           )}
           {activeTab === "features" && (
-            <Button onClick={handleAddFeature}>
+            <Button onClick={handleAddFeature} className="gradient-primary hover:opacity-90">
               <Plus className="ml-2 h-4 w-4" /> إضافة ميزة
             </Button>
           )}
@@ -1349,18 +1350,18 @@ export default function ListingsPage() {
                     </div>
                     <PaginationContent className="flex-wrap justify-center">
                       <PaginationItem>                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (currentPage > 1)
-                              handlePageChange(currentPage - 1);
-                          }}
-                          className={`${currentPage === 1
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                            } sm:hidden`}
-                          aria-label="الصفحة السابقة"
-                        />                        <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1)
+                            handlePageChange(currentPage - 1);
+                        }}
+                        className={`${currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                          } sm:hidden`}
+                        aria-label="الصفحة السابقة"
+                      />                        <PaginationPrevious
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
@@ -1377,15 +1378,15 @@ export default function ListingsPage() {
                       {/* First page */}
                       {totalPages > 0 && (
                         <PaginationItem>                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handlePageChange(1);
-                            }}
-                            isActive={currentPage === 1}
-                          >
-                            1
-                          </PaginationLink>
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(1);
+                          }}
+                          isActive={currentPage === 1}
+                        >
+                          1
+                        </PaginationLink>
                         </PaginationItem>
                       )}
 
@@ -1407,15 +1408,15 @@ export default function ListingsPage() {
                         )
                         .map((page) => (
                           <PaginationItem key={page}>                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handlePageChange(page);
-                              }}
-                              isActive={currentPage === page}
-                            >
-                              {page}
-                            </PaginationLink>
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePageChange(page);
+                            }}
+                            isActive={currentPage === page}
+                          >
+                            {page}
+                          </PaginationLink>
                           </PaginationItem>
                         ))}
 
@@ -1429,29 +1430,29 @@ export default function ListingsPage() {
                       {/* Last page */}
                       {totalPages > 1 && (
                         <PaginationItem>                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handlePageChange(totalPages);
-                            }}
-                            isActive={currentPage === totalPages}
-                          >
-                            {totalPages}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )}                      <PaginationItem>                        <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (currentPage < totalPages)
-                              handlePageChange(currentPage + 1);
+                            handlePageChange(totalPages);
                           }}
-                          className={`${currentPage === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                            } sm:hidden`}
-                          aria-label="الصفحة التالية"
-                        />                        <PaginationNext
+                          isActive={currentPage === totalPages}
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                        </PaginationItem>
+                      )}                      <PaginationItem>                        <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages)
+                            handlePageChange(currentPage + 1);
+                        }}
+                        className={`${currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                          } sm:hidden`}
+                        aria-label="الصفحة التالية"
+                      />                        <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();

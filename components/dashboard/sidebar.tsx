@@ -148,16 +148,16 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           className="flex items-center gap-2"
           onClick={() => onOpenChange(false)}
         >
-          <div className="relative h-8 w-8 overflow-hidden rounded-full">
+          <div className="relative overflow-hidden rounded-full">
             <Image
               src="/logo.png"
               alt="Sawa Stay"
-              width={32}
-              height={32}
-              className="h-8 w-auto animate-pulse-slow"
+              width={64}
+              height={64}
+              className=" w-auto animate-pulse-slow"
             />
           </div>
-          <span className="text-lg font-bold gradient-text">Sawa Stay</span>
+          {/* <span className="text-lg font-bold gradient-text">Sawa Stay</span> */}
         </Link>
         <Button
           variant="ghost"

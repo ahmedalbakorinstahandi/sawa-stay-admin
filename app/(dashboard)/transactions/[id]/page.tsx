@@ -51,7 +51,9 @@ interface Transaction {
   // بيانات إضافية للعرض
   user?: {
     id: number
-    name: string
+    first_name: string
+
+    last_name: string
     email?: string
     phone?: string
     avatar?: string
@@ -79,22 +81,8 @@ export default function TransactionDetailsPage() {
           // اضافة معلومات المستخدم (يمكن استبدالها بطلب API إضافي للحصول على معلومات المستخدم)
           const enhancedTransaction = {
             ...transactionData,
-            user: {
-              id: transactionData.user_id,
-              name: `مستخدم ${transactionData.user_id}`,
-              email: `user${transactionData.user_id}@example.com`,
-              phone: `+963 9${Math.floor(10000000 + Math.random() * 90000000)}`,
-              avatar: "/placeholder.svg?height=128&width=128",
-            },
-            // اضافة معلومات متعلقة إذا كان الحجز
-            related_info: transactionData.transactionable_type === "App\\Models\\Booking" ? {
-              booking_id: transactionData.transactionable_id,
-              listing_title: "عنوان الإعلان (سيتم استبداله بالبيانات الفعلية)",
-              host_name: "اسم المضيف (سيتم استبداله بالبيانات الفعلية)",
-              check_in: "2025-06-20",
-              check_out: "2025-06-25",
-              guests: 2,
-            } : null
+
+
           };
 
           setTransaction(enhancedTransaction)
@@ -497,10 +485,10 @@ export default function TransactionDetailsPage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={transaction.user?.avatar || "/placeholder.svg"} alt={transaction.user?.name} />
-                <AvatarFallback>{transaction.user?.name?.charAt(0) || ""}</AvatarFallback>
+                <AvatarImage src={transaction.user?.avatar || "/placeholder.svg"} alt={transaction.user?.first_name} />
+                <AvatarFallback>{transaction.user?.first_name?.charAt(0) || ""}</AvatarFallback>
               </Avatar>
-              <h3 className="text-xl font-semibold">{transaction.user?.name}</h3>
+              <h3 className="text-xl font-semibold">{transaction.user?.first_name + " " + transaction.user?.last_name}</h3>
               {transaction.user?.email && <p className="text-muted-foreground">{transaction.user.email}</p>}
               {transaction.user?.phone && <p className="text-muted-foreground">{transaction.user.phone}</p>}
               <Button variant="outline" className="mt-4 w-full" onClick={() => router.push(`/users/${transaction.user_id}`)}>

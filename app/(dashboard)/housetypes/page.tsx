@@ -200,7 +200,7 @@ export default function HouseTypesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">أنواع المنازل</h2>
-        <Button onClick={handleAddHouseType}>
+        <Button onClick={handleAddHouseType} className="gradient-primary hover:opacity-90">
           <Plus className="ml-2 h-4 w-4" /> إضافة نوع منزل
         </Button>
       </div>

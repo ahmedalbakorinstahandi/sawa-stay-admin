@@ -61,6 +61,35 @@ const config = {
           DEFAULT: "#f59e0b",
           foreground: "#ffffff",
         },
+        // New brand colors from the palette
+        crayola: {
+          DEFAULT: "#EF3D5D",
+          foreground: "#ffffff",
+        },
+        cosmos: {
+          DEFAULT: "#630E24",
+          foreground: "#ffffff",
+        },
+        tale: {
+          DEFAULT: "#FFCCE0",
+          foreground: "#333333",
+        },
+        lavender: {
+          DEFAULT: "#FFEEF5",
+          foreground: "#333333",
+        },
+        indigo: {
+          DEFAULT: "#737EFA",
+          foreground: "#ffffff",
+        },
+        tiffany: {
+          DEFAULT: "#8AD6D6",
+          foreground: "#333333",
+        },
+        amethyst: {
+          DEFAULT: "#956BD6",
+          foreground: "#ffffff",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -526,9 +526,9 @@ export default function ReviewsPage() {
                                 className={`h-8 w-8 p-0 hover:bg-${review.blocked_at ? 'green' : 'red'}-100 hover:text-${review.blocked_at ? 'green' : 'red'}-600`}
                               >
                                 {review.blocked_at ? (
-                                  <ShieldCheck className="h-4 w-4" />
+                                  <CheckCircle className="h-4 w-4" />
                                 ) : (
-                                  <Shield className="h-4 w-4" />
+                                  <Ban className="h-4 w-4" />
                                 )}
                               </Button>
                             </div>
