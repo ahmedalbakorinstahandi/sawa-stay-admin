@@ -73,6 +73,7 @@ const listingData = {
   size: 120, // square meters
   booking_capacity: 30,
   allow_pets: false,
+  allows_families_only: true,
   created_at: "2023-01-15T10:30:00Z",
   updated_at: "2023-05-20T14:20:00Z",
   images: [
@@ -200,6 +201,7 @@ export default function ListingDetailsPage() {
             size: 120, // Not provided in API
             booking_capacity: result.data.booking_capacity,
             allow_pets: result.data.rule?.allows_pets || false,
+            allows_families_only: result.data.rule?.allows_families_only || false,
             created_at: result.data.created_at,
             updated_at: result.data.created_at,
             images: result.data.images.map((img: any) => ({
@@ -597,6 +599,15 @@ export default function ListingDetailsPage() {
                         </span>
                         <span className="font-medium">
                           {listing.allow_pets ? "نعم" : "لا"}
+                        </span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          للعائلات فقط
+                        </span>
+                        <span className="font-medium">
+                          {listing.allows_families_only ? "نعم" : "لا"}
                         </span>
                       </div>
                     </div>

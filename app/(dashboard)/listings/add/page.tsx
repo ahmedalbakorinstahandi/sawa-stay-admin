@@ -100,6 +100,7 @@ interface Listing {
   };
   noise_monitoring_device: boolean;
   weapons_on_property: boolean;
+  allows_families_only: boolean;
   floor_number: number;
   min_booking_days: number;
   max_booking_days: number;
@@ -229,6 +230,7 @@ const listingSchema = z.object({
     .optional(),
   noise_monitoring_device: z.boolean(),
   weapons_on_property: z.boolean(),
+  allows_families_only: z.boolean(),
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
   max_booking_days: z.number().min(1),
@@ -382,6 +384,7 @@ export default function AddListingPage() {
       camera_locations: { ar: "", en: "" },
       noise_monitoring_device: false,
       weapons_on_property: false,
+      allows_families_only: false,
       floor_number: 1,
       min_booking_days: 1,
       max_booking_days: 30,
@@ -1057,6 +1060,45 @@ export default function AddListingPage() {
                           </div>
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="allows_families_only"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0">
+                        <div>
+                          <FormLabel className="flex items-center gap-2 cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-rose-500"
+                            >
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                              <path d="m22 2-2 20-4-9-9-4 20-2z" />
+                            </svg>
+                            للعائلات فقط
+                          </FormLabel>
+                          <p className="text-xs text-gray-500 mx-7">
+                            هل هذا العقار مخصص للعائلات فقط؟
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />

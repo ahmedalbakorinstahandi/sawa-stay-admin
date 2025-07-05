@@ -93,6 +93,10 @@ const listingFormSchema = z.object({
     .union([z.boolean(), z.number()])
     .transform((val) => Boolean(val))
     .default(false),
+  allows_families_only: z
+    .union([z.boolean(), z.number()])
+    .transform((val) => Boolean(val))
+    .default(false),
   floor_number: z.coerce.number().nonnegative().optional(),
   features: z.array(z.number()).default([]),
   categories: z.array(z.number()).default([]),
@@ -142,6 +146,10 @@ const listingFormSchemaEdit = z.object({
     .union([z.boolean(), z.number()])
     .transform((val) => Boolean(val))
     .default(false),
+  allows_families_only: z
+    .union([z.boolean(), z.number()])
+    .transform((val) => Boolean(val))
+    .default(false),
   floor_number: z.coerce.number().nonnegative().optional(),
   features: z.array(z.number()).default([]),
   categories: z.array(z.number()).default([]),
@@ -188,6 +196,7 @@ interface ListingFormValues {
   camera_locations?: CameraLocations;
   noise_monitoring_device: boolean;
   weapons_on_property: boolean;
+  allows_families_only: boolean;
   floor_number?: number;
   features: number[];
   categories: number[];
@@ -248,6 +257,7 @@ interface Listing {
   camera_locations?: CameraLocations;
   noise_monitoring_device: boolean;
   weapons_on_property: boolean;
+  allows_families_only: boolean;
   floor_number?: number;
   features: Feature[];
   categories: Category[];
@@ -258,11 +268,12 @@ interface Listing {
 interface RequestBody
   extends Omit<
     ListingFormValues,
-    "is_contains_cameras" | "noise_monitoring_device" | "weapons_on_property"
+    "is_contains_cameras" | "noise_monitoring_device" | "weapons_on_property" | "allows_families_only"
   > {
   is_contains_cameras: 0 | 1;
   noise_monitoring_device: 0 | 1;
   weapons_on_property: 0 | 1;
+  allows_families_only: 0 | 1;
   images_remove: number[];
 }
 
@@ -321,6 +332,7 @@ export function ListingDialog({
       is_contains_cameras: false,
       noise_monitoring_device: false,
       weapons_on_property: false,
+      allows_families_only: false,
       features: [],
       categories: [],
     },
@@ -474,6 +486,7 @@ export function ListingDialog({
           is_contains_cameras: Boolean(data.is_contains_cameras),
           noise_monitoring_device: Boolean(data.noise_monitoring_device),
           weapons_on_property: Boolean(data.weapons_on_property),
+          allows_families_only: Boolean(data.rule?.allows_families_only || data.allows_families_only),
           floor_number: data.floor_number,
           features: data.features.map((feature: Feature) => feature.id),
           categories: data.categories.map((category: Category) => category.id),
@@ -497,6 +510,7 @@ export function ListingDialog({
         is_contains_cameras: values.is_contains_cameras ? 1 : 0,
         noise_monitoring_device: values.noise_monitoring_device ? 1 : 0,
         weapons_on_property: values.weapons_on_property ? 1 : 0,
+        allows_families_only: values.allows_families_only ? 1 : 0,
         features: values.features,
         categories: values.categories,
         // Correctly handle images array
@@ -987,6 +1001,24 @@ export function ListingDialog({
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">أسلحة في العقار</FormLabel>
                     <FormDescription>هل يوجد أسلحة في العقار؟</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="allows_families_only"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">للعائلات فقط</FormLabel>
+                    <FormDescription>هل هذا العقار مخصص للعائلات فقط؟</FormDescription>
                   </div>
                   <FormControl>
                     <Switch
