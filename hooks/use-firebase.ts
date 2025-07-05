@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useFirebase = () => {
     const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [isSupported, setIsSupported] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -21,12 +22,20 @@ export const useFirebase = () => {
 
         setIsSupported(checkSupport());
 
-        if (checkSupport()) {
+        if (checkSupport() && !isInitialized) {
             initializeFirebase();
         }
-    }, []);
+    }, [isInitialized]);
     const initializeFirebase = async () => {
         try {
+            // Prevent multiple initializations
+            if (isInitialized) {
+                console.log('Firebase already initialized');
+                return;
+            }
+
+            console.log('Initializing Firebase...');
+            
             // Register service worker
             if ('serviceWorker' in navigator) {
                 const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
@@ -52,9 +61,13 @@ export const useFirebase = () => {
                     toast({
                         title: payload.notification?.title || 'إشعار جديد',
                         description: payload.notification?.body || '',
+                        duration: 5000, // Show for 5 seconds
                     });
                 })
                 .catch((err) => console.log('Failed to receive message:', err));
+
+            setIsInitialized(true);
+            console.log('Firebase initialized successfully');
 
         } catch (error) {
             console.error('Error initializing Firebase:', error);
@@ -148,6 +161,7 @@ export const useFirebase = () => {
     return {
         fcmToken,
         isSupported,
+        isInitialized,
         requestNotificationPermission,
         sendTokenToServer,
         initializeFirebase

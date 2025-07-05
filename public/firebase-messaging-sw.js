@@ -47,6 +47,19 @@ messaging.onBackgroundMessage((payload) => {
     ]
   };
 
+  // Send message to main thread if app is open
+  self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  }).then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'NOTIFICATION_RECEIVED',
+        payload: payload
+      });
+    });
+  });
+
   return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 

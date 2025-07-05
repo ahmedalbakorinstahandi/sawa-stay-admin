@@ -129,6 +129,8 @@ export const onMessageListener = () => {
       return;
     }
     
+    console.log('Setting up foreground message listener...');
+    
     onMessage(messaging, (payload) => {
       console.log('Message received in foreground:', payload);
       resolve(payload);

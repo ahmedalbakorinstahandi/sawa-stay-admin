@@ -17,6 +17,7 @@ import {
   isNotificationRead,
   getNotificationType
 } from "@/types/notification"
+import { NotificationTestHelper } from "@/components/notifications/notification-test-helper"
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -325,6 +326,9 @@ export default function NotificationsPage() {
           </Button> */}
         </div>
       </div>
+
+      {/* Test helper for notifications */}
+      <NotificationTestHelper />
 
       <Card>
         <CardHeader>
