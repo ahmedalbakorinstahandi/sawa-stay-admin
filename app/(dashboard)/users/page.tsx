@@ -290,7 +290,7 @@ export default function UsersPage() {
               <Button onClick={handleSearch} variant="secondary">
                 بحث
               </Button>
-              <Select
+              {/* <Select
                 value={roleFilter}
                 onValueChange={(value) => {
                   setRoleFilter(value);
@@ -306,7 +306,7 @@ export default function UsersPage() {
                   <SelectItem value="host">مضيف</SelectItem>
                   <SelectItem value="user">مستخدم</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
               <Select
                 value={statusFilter}
                 onValueChange={(value) => {
@@ -332,7 +332,7 @@ export default function UsersPage() {
                     <TableHead>المستخدم</TableHead>
                     <TableHead>البريد الإلكتروني</TableHead>
                     <TableHead>رقم الهاتف</TableHead>
-                    <TableHead>الدور</TableHead>
+                    {/* <TableHead>الدور</TableHead> */}
                     <TableHead>الحالة</TableHead>
                     <TableHead>تاريخ التسجيل</TableHead>
                     <TableHead className="text-left">الإجراءات</TableHead>
@@ -360,9 +360,9 @@ export default function UsersPage() {
                           <TableCell>
                             <Skeleton className="h-4 w-24" />
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Skeleton className="h-6 w-16" />
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell>
                             <Skeleton className="h-6 w-16" />
                           </TableCell>
