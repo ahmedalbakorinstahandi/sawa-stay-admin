@@ -91,7 +91,7 @@ type BookingStats = {
 export default function BookingsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   const [bookings, setBookings] = useState<Booking[]>([])
   const [searchTerm, setSearchTerm] = useState("")  // Initialize status filter from URL or default to "all"
   const [statusFilter, setStatusFilter] = useState(() => {
@@ -129,17 +129,17 @@ export default function BookingsPage() {
   // Update URL when filters change
   const updateFiltersInURL = (newStatusFilter?: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    
+
     if (newStatusFilter && newStatusFilter !== "all") {
       params.set("status", newStatusFilter)
     } else {
       params.delete("status")
     }
-    
+
     // Reset page to 1 when filters change
     params.delete("page")
     setPage(1)
-    
+
     router.push(`?${params.toString()}`, { scroll: false })
   }
 
@@ -189,7 +189,7 @@ export default function BookingsPage() {
   useEffect(() => {
     const pageParam = searchParams.get("page")
     const statusParam = searchParams.get("status")
-    
+
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10)
       if (pageNumber !== page) {
@@ -198,7 +198,7 @@ export default function BookingsPage() {
     } else if (page !== 1) {
       setPage(1)
     }
-    
+
     if (statusParam && statusParam !== statusFilter) {
       setStatusFilter(statusParam)
     } else if (!statusParam && statusFilter !== "all") {
@@ -580,12 +580,12 @@ export default function BookingsPage() {
               <SelectTrigger className="w-full md:w-[180px] border-gray-200 focus:ring-blue-500">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-blue-500' :
-                      statusFilter === 'pending' ? 'bg-yellow-500' :
-                        statusFilter === 'accepted' ? 'bg-blue-500' :
-                          statusFilter === 'confirmed' ? 'bg-green-500' :
-                            statusFilter === 'completed' ? 'bg-emerald-500' :
-                              statusFilter === 'cancelled' ? 'bg-red-500' :
-                                'bg-orange-500'
+                    statusFilter === 'pending' ? 'bg-yellow-500' :
+                      statusFilter === 'accepted' ? 'bg-blue-500' :
+                        statusFilter === 'confirmed' ? 'bg-green-500' :
+                          statusFilter === 'completed' ? 'bg-emerald-500' :
+                            statusFilter === 'cancelled' ? 'bg-red-500' :
+                              'bg-orange-500'
                     }`}></div>
                   <SelectValue placeholder="الحالة" />
                 </div>

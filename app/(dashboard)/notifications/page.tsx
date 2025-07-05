@@ -344,16 +344,16 @@ export default function NotificationsPage() {
             </div>
 
             <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-4 md:grid-cols-7">
+              <TabsList className="grid grid-cols-4 md:grid-cols-1">
                 <TabsTrigger value="all" className="relative">
                   الكل
-                  {notifications.length > 0 && (
-                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs z-10 flex items-center justify-center">
-                      {notifications.length}
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs  z-10 flex items-center justify-center">
+                      {unreadCount}
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="unread" className="relative">
+                {/* <TabsTrigger value="unread" className="relative">
                   غير مقروءة
                   {unreadCount > 0 && (
                     <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs  z-10 flex items-center justify-center">
@@ -371,7 +371,7 @@ export default function NotificationsPage() {
                 </TabsTrigger>
                 <TabsTrigger value="system" className="hidden md:inline-flex">
                   النظام
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">

@@ -536,25 +536,25 @@ export default function SettingsPage() {
           <Input
             id={setting.key}
             type={setting.type === 'float' || setting.type === 'int' ? 'number' : 'text'}
-            value={isValueVisible ? currentValue : '••••••••'}
+            value={currentValue}
             onChange={(e) => handleInputChange(setting.key, e.target.value)}
-            className="pr-10"
+            // className="pr-10"
             step={setting.type === 'float' ? '0.01' : '1'}
             min={setting.type === 'float' || setting.type === 'int' ? '0' : undefined}
           />
-          <Button
+          {/* <Button
             type="button"
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
             onClick={() => toggleShowValue(setting.key)}
-          >
-            {isValueVisible ? (
+          > */}
+            {/* {isValueVisible ? (
               <EyeOff className="h-4 w-4" />
             ) : (
               <Eye className="h-4 w-4" />
-            )}
-          </Button>
+            )} */}
+          {/* </Button> */}
         </div>
       </div>
     )
