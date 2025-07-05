@@ -161,6 +161,11 @@
   color: #1e40af;
 }
 
+.setting-type-long_text {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
 .setting-type-html {
   background-color: #dcfce7;
   color: #166534;
@@ -176,14 +181,54 @@
   color: #7c3aed;
 }
 
-.setting-type-boolean {
+.setting-type-bool {
   background-color: #fecaca;
   color: #dc2626;
+}
+
+.setting-type-json {
+  background-color: #fed7aa;
+  color: #ea580c;
+}
+
+.setting-type-list {
+  background-color: #ccfbf1;
+  color: #0f766e;
+}
+
+.setting-type-image {
+  background-color: #fce7f3;
+  color: #be185d;
+}
+
+.setting-type-file {
+  background-color: #cffafe;
+  color: #0e7490;
+}
+
+.setting-type-date {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.setting-type-time {
+  background-color: #ede9fe;
+  color: #6b21a8;
+}
+
+.setting-type-datetime {
+  background-color: #ffe4e6;
+  color: #be123c;
 }
 
 .dark .setting-type-text {
   background-color: #1e3a8a;
   color: #93c5fd;
+}
+
+.dark .setting-type-long_text {
+  background-color: #3730a3;
+  color: #c7d2fe;
 }
 
 .dark .setting-type-html {
@@ -201,9 +246,44 @@
   color: #c4b5fd;
 }
 
-.dark .setting-type-boolean {
+.dark .setting-type-bool {
   background-color: #991b1b;
   color: #fca5a5;
+}
+
+.dark .setting-type-json {
+  background-color: #9a3412;
+  color: #fdba74;
+}
+
+.dark .setting-type-list {
+  background-color: #134e4a;
+  color: #5eead4;
+}
+
+.dark .setting-type-image {
+  background-color: #9d174d;
+  color: #f9a8d4;
+}
+
+.dark .setting-type-file {
+  background-color: #155e75;
+  color: #67e8f9;
+}
+
+.dark .setting-type-date {
+  background-color: #064e3b;
+  color: #6ee7b7;
+}
+
+.dark .setting-type-time {
+  background-color: #581c87;
+  color: #ddd6fe;
+}
+
+.dark .setting-type-datetime {
+  background-color: #9f1239;
+  color: #fda4af;
 }
 
 /* Setting card animations */
