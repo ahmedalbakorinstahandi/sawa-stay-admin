@@ -69,9 +69,9 @@ export default function SettingsPage() {
     try {
       setLoading(true)
       setError(null)
-      
+
       const data = await settingsAPI.getAll()
-      
+
       if (data.success) {
         setSettings(data.data)
         // Initialize editing state
@@ -100,9 +100,9 @@ export default function SettingsPage() {
   const saveSetting = async (setting: Setting) => {
     try {
       setSaving(true)
-      
+
       const data = await settingsAPI.update(setting.id, editingSettings[setting.key])
-      
+
       if (data.success) {
         // Update settings state
         setSettings(prevSettings =>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
               : s
           )
         )
-        
+
         toast({
           title: "تم الحفظ",
           description: "تم حفظ الإعداد بنجاح",
@@ -136,14 +136,14 @@ export default function SettingsPage() {
   const saveMultipleSettings = async (settingsToSave: Setting[]) => {
     try {
       setSaving(true)
-      
+
       const settingsData = settingsToSave.map(setting => ({
         key: setting.key,
         value: editingSettings[setting.key]
       }))
 
       const data = await settingsAPI.updateMultiple(settingsData)
-      
+
       if (data.success) {
         // Update settings state
         setSettings(prevSettings =>
@@ -154,7 +154,7 @@ export default function SettingsPage() {
               : s
           })
         )
-        
+
         toast({
           title: "تم الحفظ",
           description: `تم حفظ ${settingsToSave.length} إعداد بنجاح`,
@@ -178,7 +178,7 @@ export default function SettingsPage() {
   const createSetting = async () => {
     try {
       setSaving(true)
-      
+
       const data = await settingsAPI.create({
         key: newSetting.key || '',
         value: newSetting.value || '',
@@ -186,7 +186,7 @@ export default function SettingsPage() {
         allow_null: newSetting.allow_null || false,
         is_settings: newSetting.is_settings || true
       })
-      
+
       if (data.success) {
         // Add new setting to the list
         setSettings(prevSettings => [...prevSettings, data.data])
@@ -194,7 +194,7 @@ export default function SettingsPage() {
           ...prev,
           [data.data.key]: data.data.value
         }))
-        
+
         // Reset form
         setNewSetting({
           key: '',
@@ -203,9 +203,9 @@ export default function SettingsPage() {
           allow_null: false,
           is_settings: true
         })
-        
+
         setShowAddDialog(false)
-        
+
         toast({
           title: "تم الإنشاء",
           description: "تم إنشاء الإعداد الجديد بنجاح",
@@ -229,7 +229,7 @@ export default function SettingsPage() {
   const deleteSetting = async (setting: Setting) => {
     try {
       const data = await settingsAPI.delete(setting.id)
-      
+
       if (data.success) {
         setSettings(prevSettings => prevSettings.filter(s => s.id !== setting.id))
         toast({
@@ -254,9 +254,9 @@ export default function SettingsPage() {
     try {
       const deletePromises = settingIds.map(id => settingsAPI.delete(id))
       const results = await Promise.all(deletePromises)
-      
+
       if (results.every(result => result.success)) {
-        setSettings(prevSettings => 
+        setSettings(prevSettings =>
           prevSettings.filter(s => !settingIds.includes(s.id))
         )
         setSelectedSettings([])
@@ -283,7 +283,7 @@ export default function SettingsPage() {
 
   const filteredSettings = settings.filter(setting => {
     const matchesSearch = setting.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         setting.value.toLowerCase().includes(searchTerm.toLowerCase())
+      setting.value.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = typeFilter === 'all' || setting.type === typeFilter
     return matchesSearch && matchesType
   })
@@ -292,7 +292,7 @@ export default function SettingsPage() {
   const groupedSettings = filteredSettings.reduce((groups, setting) => {
     const parts = setting.key.split('.')
     const category = parts.length > 1 ? parts[0] : 'general'
-    
+
     if (!groups[category]) {
       groups[category] = []
     }
@@ -340,7 +340,7 @@ export default function SettingsPage() {
   }
 
   const handleSelectSetting = (settingId: number) => {
-    setSelectedSettings(prev => 
+    setSelectedSettings(prev =>
       prev.includes(settingId)
         ? prev.filter(id => id !== settingId)
         : [...prev, settingId]
@@ -388,8 +388,8 @@ export default function SettingsPage() {
                 skin: 'oxide',
                 content_css: 'default',
                 body_class: 'mce-content-body',
-                setup: function(editor: any) {
-                  editor.on('init', function() {
+                setup: function (editor: any) {
+                  editor.on('init', function () {
                     editor.getDoc().documentElement.setAttribute('dir', 'rtl');
                   });
                 }
@@ -453,7 +453,7 @@ export default function SettingsPage() {
             <Checkbox
               id={setting.key}
               checked={currentValue === 'true' || currentValue === '1'}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 handleInputChange(setting.key, checked ? 'true' : 'false')
               }
             />
@@ -597,13 +597,13 @@ export default function SettingsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             onClick={() => setShowAddDialog(true)}
             className="bg-green-600 hover:bg-green-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             إضافة إعداد جديد
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             onClick={() => fetchSettings()}
@@ -642,7 +642,7 @@ export default function SettingsPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -705,12 +705,12 @@ export default function SettingsPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="list">قائمة الإعدادات</TabsTrigger>
-          <TabsTrigger value="bulk">التحرير الجماعي</TabsTrigger>
+          {/* <TabsTrigger value="bulk">التحرير الجماعي</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
@@ -729,21 +729,21 @@ export default function SettingsPage() {
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="تصفية حسب النوع" />
               </SelectTrigger>                <SelectContent>
-                  <SelectItem value="all">جميع الأنواع</SelectItem>
-                  <SelectItem value="text">نص</SelectItem>
-                  <SelectItem value="long_text">نص طويل</SelectItem>
-                  <SelectItem value="html">HTML</SelectItem>
-                  <SelectItem value="int">عدد صحيح</SelectItem>
-                  <SelectItem value="float">عدد عشري</SelectItem>
-                  <SelectItem value="bool">منطقي</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
-                  <SelectItem value="list">قائمة</SelectItem>
-                  <SelectItem value="image">صورة</SelectItem>
-                  <SelectItem value="file">ملف</SelectItem>
-                  <SelectItem value="date">تاريخ</SelectItem>
-                  <SelectItem value="time">وقت</SelectItem>
-                  <SelectItem value="datetime">تاريخ ووقت</SelectItem>
-                </SelectContent>
+                <SelectItem value="all">جميع الأنواع</SelectItem>
+                <SelectItem value="text">نص</SelectItem>
+                <SelectItem value="long_text">نص طويل</SelectItem>
+                <SelectItem value="html">HTML</SelectItem>
+                <SelectItem value="int">عدد صحيح</SelectItem>
+                <SelectItem value="float">عدد عشري</SelectItem>
+                <SelectItem value="bool">منطقي</SelectItem>
+                <SelectItem value="json">JSON</SelectItem>
+                <SelectItem value="list">قائمة</SelectItem>
+                <SelectItem value="image">صورة</SelectItem>
+                <SelectItem value="file">ملف</SelectItem>
+                <SelectItem value="date">تاريخ</SelectItem>
+                <SelectItem value="time">وقت</SelectItem>
+                <SelectItem value="datetime">تاريخ ووقت</SelectItem>
+              </SelectContent>
             </Select>
           </div>
 
@@ -758,7 +758,7 @@ export default function SettingsPage() {
                     {categorySettings.length} إعداد
                   </Badge>
                 </div>
-                
+
                 <div className="grid gap-4">
                   {categorySettings.map((setting) => (
                     <Card key={setting.id} className="relative setting-card">
@@ -793,7 +793,7 @@ export default function SettingsPage() {
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button
+                            {/* <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => {
@@ -802,7 +802,7 @@ export default function SettingsPage() {
                               }}
                             >
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </div>
                       </CardHeader>
@@ -837,7 +837,7 @@ export default function SettingsPage() {
                 <p className="text-muted-foreground mb-4">
                   لا توجد إعدادات تطابق البحث المحدد
                 </p>
-                <Button 
+                <Button
                   onClick={() => setShowAddDialog(true)}
                   className="bg-green-600 hover:bg-green-700"
                 >
@@ -967,8 +967,8 @@ export default function SettingsPage() {
                       skin: 'oxide',
                       content_css: 'default',
                       body_class: 'mce-content-body',
-                      setup: function(editor: any) {
-                        editor.on('init', function() {
+                      setup: function (editor: any) {
+                        editor.on('init', function () {
                           editor.getDoc().documentElement.setAttribute('dir', 'rtl');
                         });
                       }
