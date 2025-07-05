@@ -109,12 +109,12 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       href: "/transactions",
       active: pathname === "/transactions",
     },
-    {
-      label: "التقارير",
-      icon: <BarChart3 className="ml-2 h-5 w-5" />,
-      href: "/reports",
-      active: pathname === "/reports",
-    },
+    // {
+    //   label: "التقارير",
+    //   icon: <BarChart3 className="ml-2 h-5 w-5" />,
+    //   href: "/reports",
+    //   active: pathname === "/reports",
+    // },
     {
       label: "الإشعارات",
       icon: <Bell className="ml-2 h-5 w-5" />,
