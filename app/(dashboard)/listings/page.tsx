@@ -54,6 +54,7 @@ import {
   RefreshCcw,
   Calendar,
   ArrowUpDown,
+  Star,
 } from "lucide-react";
 import {
   Card,
@@ -91,6 +92,8 @@ export default function ListingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [vipFilter, setVipFilter] = useState("all");
+  const [starsFilter, setStarsFilter] = useState("all");
 
   // Debounce search term
   useEffect(() => {
@@ -112,12 +115,16 @@ export default function ListingsPage() {
     const status = searchParams.get("status") || "all";
     const propertyType = searchParams.get("property_type") || "all";
     const category = searchParams.get("house_type_id") || "all";
+    const vip = searchParams.get("vip") || "all";
+    const stars = searchParams.get("stars") || "all";
     
     setSearchTerm(search);
     setDebouncedSearchTerm(search);
     setStatusFilter(status);
     setPropertyTypeFilter(propertyType);
     setCategoryFilter(category);
+    setVipFilter(vip);
+    setStarsFilter(stars);
   }, [searchParams]);
 
   // Update URL when filters change
@@ -126,6 +133,8 @@ export default function ListingsPage() {
     status?: string;
     propertyType?: string;
     category?: string;
+    vip?: string;
+    stars?: string;
   }) => {
     const params = new URLSearchParams(searchParams.toString());
     
@@ -158,6 +167,22 @@ export default function ListingsPage() {
         params.set("house_type_id", filters.category);
       } else {
         params.delete("house_type_id");
+      }
+    }
+    
+    if (filters.vip !== undefined) {
+      if (filters.vip !== "all") {
+        params.set("vip", filters.vip);
+      } else {
+        params.delete("vip");
+      }
+    }
+    
+    if (filters.stars !== undefined) {
+      if (filters.stars !== "all") {
+        params.set("stars", filters.stars);
+      } else {
+        params.delete("stars");
       }
     }
     
@@ -253,6 +278,8 @@ export default function ListingsPage() {
     statusFilter,
     propertyTypeFilter,
     categoryFilter,
+    vipFilter,
+    starsFilter,
     perPage,
     debouncedSearchTerm,
   ]);
@@ -294,6 +321,14 @@ export default function ListingsPage() {
 
       if (categoryFilter !== "all") {
         params.append("house_type_id", categoryFilter);
+      }
+
+      if (vipFilter !== "all") {
+        params.append("vip", vipFilter === "true" ? "1" : "0");
+      }
+
+      if (starsFilter !== "all") {
+        params.append("stars", starsFilter);
       }
 
       const response = await api.get(`/admin/listings?${params.toString()}`);
@@ -1046,6 +1081,41 @@ export default function ListingsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Select
+                    value={vipFilter}
+                    onValueChange={(value) => {
+                      setVipFilter(value);
+                      updateFiltersInURL({ vip: value });
+                    }}
+                  >
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="VIP" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">الجميع</SelectItem>
+                      <SelectItem value="true">VIP فقط</SelectItem>
+                      <SelectItem value="false">عادي فقط</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={starsFilter}
+                    onValueChange={(value) => {
+                      setStarsFilter(value);
+                      updateFiltersInURL({ stars: value });
+                    }}
+                  >
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="التقييم" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">جميع التقييمات</SelectItem>
+                      <SelectItem value="5">5 نجوم</SelectItem>
+                      <SelectItem value="4">4 نجوم فأكثر</SelectItem>
+                      <SelectItem value="3">3 نجوم فأكثر</SelectItem>
+                      <SelectItem value="2">2 نجوم فأكثر</SelectItem>
+                      <SelectItem value="1">1 نجمة فأكثر</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="rounded-md border">
@@ -1057,6 +1127,8 @@ export default function ListingsPage() {
                         <TableHead>نوع العقار</TableHead>
                         <TableHead>السعر</TableHead>
                         <TableHead>العمولة</TableHead>
+                        <TableHead>VIP</TableHead>
+                        <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>تاريخ الإنشاء</TableHead>
                         <TableHead className="text-left">الإجراءات</TableHead>
@@ -1065,7 +1137,7 @@ export default function ListingsPage() {
                     <TableBody>
                       {isLoading ? (
                         <TableRow>
-                          <TableCell colSpan={10} className="h-24 text-center">
+                          <TableCell colSpan={12} className="h-24 text-center">
                             <div className="flex justify-center items-center">
                               <Loader2 className="h-6 w-6 animate-spin" />
                               <span className="mr-2">جاري التحميل...</span>
@@ -1074,7 +1146,7 @@ export default function ListingsPage() {
                         </TableRow>
                       ) : listings.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={10} className="h-24 text-center">
+                          <TableCell colSpan={12} className="h-24 text-center">
                             لا توجد نتائج.
                           </TableCell>
                         </TableRow>
@@ -1116,6 +1188,28 @@ export default function ListingsPage() {
                             </TableCell>
                             <TableCell>
                               {listing.commission} {listing.currency}
+                            </TableCell>
+                            <TableCell>
+                              {listing.vip ? (
+                                <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+                                  <Heart className="h-3 w-3 mr-1" />
+                                  VIP
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                                  عادي
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {listing.starts ? (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-yellow-500">⭐</span>
+                                  <span>{listing.starts}</span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </TableCell>
 
                             <TableCell className="text-nowrap">

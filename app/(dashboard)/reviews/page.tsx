@@ -65,7 +65,7 @@ import { ReviewDetailDialog } from "@/components/reviews/review-detail-dialog";
 export default function ReviewsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -90,21 +90,21 @@ export default function ReviewsPage() {
         page: currentPage,
         per_page: perPage,
       };
-      
+
       if (searchTerm) {
         params.search = searchTerm;
       }
-      
+
       if (statusFilter !== "all") {
         params.status = statusFilter;
       }
-      
+
       if (ratingFilter !== "all") {
         params.rating = ratingFilter;
       }
-      
+
       const response = await reviewsAPI.getAll(params);
-      
+
       if (response.success) {
         setReviews(response.data || []);
         setTotalCount(response.meta?.total || 0);
@@ -166,12 +166,12 @@ export default function ReviewsPage() {
 
   const handleToggleBlock = async (review: Review) => {
     try {
-      const response = review.blocked_at 
+      const response = review.blocked_at
         ? await reviewsAPI.unblock(review.id)
         : await reviewsAPI.block(review.id);
-        
+
       if (response.success) {
-        setReviews(prev => prev.map(r => 
+        setReviews(prev => prev.map(r =>
           r.id === review.id ? { ...r, blocked_at: review.blocked_at ? null : new Date().toISOString() } : r
         ));
         toast({
@@ -202,7 +202,7 @@ export default function ReviewsPage() {
   };
 
   const handleReviewUpdated = (updatedReview: Review) => {
-    setReviews(prev => prev.map(r => 
+    setReviews(prev => prev.map(r =>
       r.id === updatedReview.id ? updatedReview : r
     ));
   };
@@ -219,9 +219,8 @@ export default function ReviewsPage() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`h-4 w-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };
@@ -262,7 +261,7 @@ export default function ReviewsPage() {
             </p>
           </div>
         </div>
-        
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-blue-950 dark:to-blue-900 dark:border-blue-800">
@@ -278,7 +277,7 @@ export default function ReviewsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-950 dark:to-emerald-950 dark:border-green-800">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -292,7 +291,7 @@ export default function ReviewsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950 dark:to-red-900 dark:border-red-800">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -306,7 +305,7 @@ export default function ReviewsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 dark:from-yellow-950 dark:to-yellow-900 dark:border-yellow-800">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -492,11 +491,10 @@ export default function ReviewsPage() {
                           <TableCell>
                             <Badge
                               variant={review.blocked_at ? "destructive" : "default"}
-                              className={`${
-                                review.blocked_at
-                                  ? "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200"
-                                  : "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200"
-                              }`}
+                              className={`${review.blocked_at
+                                ? "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200"
+                                : "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200"
+                                }`}
                             >
                               {review.blocked_at ? (
                                 <>
@@ -563,7 +561,7 @@ export default function ReviewsPage() {
                         className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
-                    
+
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
                       if (totalPages <= 5) {
@@ -575,7 +573,7 @@ export default function ReviewsPage() {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <PaginationItem key={pageNum}>
                           <PaginationLink
@@ -588,7 +586,7 @@ export default function ReviewsPage() {
                         </PaginationItem>
                       );
                     })}
-                    
+
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}

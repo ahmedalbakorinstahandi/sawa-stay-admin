@@ -34,7 +34,7 @@ type Booking = {
     check_out: string | null
     status: string
     currency: string
-    price: number
+    total_price: number
     commission: number
     service_fees: number
     message: string | null
@@ -384,7 +384,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                             <div className="flex items-center justify-between">
                                                 <span>السعر الأساسي</span>
                                                 <span>
-                                                    {bookingDetails.price} {bookingDetails.currency}
+                                                    {bookingDetails.total_price} {bookingDetails.currency}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between">
@@ -403,7 +403,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                             <div className="flex items-center justify-between font-bold">
                                                 <span>المجموع</span>
                                                 <span>
-                                                    {bookingDetails.price + bookingDetails.service_fees} {bookingDetails.currency}
+                                                    {bookingDetails.total_price + bookingDetails.service_fees} {bookingDetails.currency}
                                                 </span>
                                             </div>
                                         </div>

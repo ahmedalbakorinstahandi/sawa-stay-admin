@@ -66,7 +66,9 @@ interface Transaction {
   created_at: string
   user?: {
     id: number
-    name: string
+    first_name: string
+    last_name: string
+
     avatar?: string
   }
 }
@@ -127,11 +129,7 @@ export default function TransactionsPage() {
         // إضافة بيانات المستخدم المؤقتة للعرض حتى يتم تنفيذ واجهة برمجة التطبيقات الكاملة
         const transactionsWithUsers = response.data.data.map(transaction => ({
           ...transaction,
-          user: {
-            id: transaction.user_id,
-            name: `مستخدم ${transaction.user_id}`, // يمكن استبداله بالاسم الحقيقي عندما يكون متاحًا في API
-            avatar: "/placeholder.svg"
-          }
+
         }))
 
         setTransactions(transactionsWithUsers)
@@ -472,11 +470,11 @@ export default function TransactionsPage() {
                             <Avatar className="h-8 w-8">
                               <AvatarImage
                                 src={transaction.user?.avatar || "/placeholder.svg"}
-                                alt={transaction.user?.name || ""}
+                                alt={transaction.user?.first_name + " " + transaction.user?.last_name || ""}
                               />
-                              <AvatarFallback>{transaction.user?.name?.charAt(0) || ""}</AvatarFallback>
+                              <AvatarFallback>{transaction.user?.first_name?.charAt(0) || ""}</AvatarFallback>
                             </Avatar>
-                            <span>{transaction.user?.name}</span>
+                            <span>{transaction.user?.first_name + " " + transaction.user?.last_name}</span>
                           </div>
                         </TableCell>
                         <TableCell>

@@ -44,7 +44,7 @@ type Booking = {
   check_out: string | null
   status: string
   currency: string
-  price: number
+  total_price: number
   commission: number
   service_fees: number
   message: string | null
@@ -705,7 +705,7 @@ export default function BookingsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-bold">{booking.price} <span className="text-xs text-muted-foreground">{booking.currency}</span></div>
+                        <div className="font-bold">{booking.total_price} <span className="text-xs text-muted-foreground">{booking.currency}</span></div>
                       </TableCell>
                       <TableCell>{getStatusBadge(booking.status)}</TableCell>
                       <TableCell>

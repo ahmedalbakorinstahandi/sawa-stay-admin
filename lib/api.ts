@@ -8,6 +8,7 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
+    "Accept-Language": "ar",
   },
 })
 
@@ -531,7 +532,8 @@ export const apiHelper = {
       return response.data
     } catch (error) {
       return { success: false }
-    }  },
+    }
+  },
 
 }
 
@@ -548,10 +550,10 @@ export const notificationsAPI = {
       }
     } catch (error) {
       console.error("Error fetching notifications:", error)
-      return { 
-        success: false, 
-        data: [], 
-        meta: { current_page: 1, last_page: 1, per_page: 50, total: 0 } 
+      return {
+        success: false,
+        data: [],
+        meta: { current_page: 1, last_page: 1, per_page: 50, total: 0 }
       }
     }
   },
@@ -571,9 +573,9 @@ export const notificationsAPI = {
   getUnreadCount: async () => {
     try {
       const response = await api.get("/general/notifications/unread-count")
-      return { 
-        success: true, 
-        count: response.data.count || response.data.unread_count || 0 
+      return {
+        success: true,
+        count: response.data.count || response.data.unread_count || 0
       }
     } catch (error) {
       console.error("Error fetching unread count:", error)
@@ -589,7 +591,7 @@ export const notificationsAPI = {
       if (notificationsResponse.data) {
         const notifications = notificationsResponse.data.data || notificationsResponse.data
         const unreadNotifications = notifications.filter((n: any) => !n.read_at)
-        const markPromises = unreadNotifications.map((notification: any) => 
+        const markPromises = unreadNotifications.map((notification: any) =>
           api.put(`/general/notifications/${notification.id}/read`)
         )
         await Promise.all(markPromises)
@@ -620,7 +622,7 @@ export const notificationsAPI = {
       const notificationsResponse = await api.get("/general/notifications")
       if (notificationsResponse.data) {
         const notifications = notificationsResponse.data.data || notificationsResponse.data
-        const deletePromises = notifications.map((notification: any) => 
+        const deletePromises = notifications.map((notification: any) =>
           api.delete(`/general/notifications/${notification.id}`)
         )
         await Promise.all(deletePromises)
@@ -644,7 +646,7 @@ export const settingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to fetch settings" }
     }
   },
-  
+
   // Get single setting by ID
   getById: async (id: number) => {
     try {
@@ -654,14 +656,14 @@ export const settingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to fetch setting" }
     }
   },
-  
+
   // Create new setting
-  create: async (setting: { 
-    key: string; 
-    value: string; 
-    type: 'int' | 'float' | 'text' | 'long_text' | 'list' | 'json' | 'image' | 'file' | 'bool' | 'time' | 'date' | 'datetime' | 'html'; 
-    allow_null: boolean; 
-    is_settings: boolean 
+  create: async (setting: {
+    key: string;
+    value: string;
+    type: 'int' | 'float' | 'text' | 'long_text' | 'list' | 'json' | 'image' | 'file' | 'bool' | 'time' | 'date' | 'datetime' | 'html';
+    allow_null: boolean;
+    is_settings: boolean
   }) => {
     try {
       const response = await api.post("/admin/settings", setting)
@@ -670,7 +672,7 @@ export const settingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to create setting" }
     }
   },
-  
+
   // Update single setting by key or ID
   update: async (keyOrId: string | number, value: string) => {
     try {
@@ -680,7 +682,7 @@ export const settingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to update setting" }
     }
   },
-  
+
   // Update multiple settings
   updateMultiple: async (settings: Array<{ key: string; value: string }>) => {
     try {
@@ -690,7 +692,7 @@ export const settingsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to update settings" }
     }
   },
-  
+
   // Delete setting by ID
   delete: async (id: number) => {
     try {
@@ -712,25 +714,30 @@ export const reviewsAPI = {
       return { success: false, message: error.response?.data?.message || "Failed to fetch reviews" }
     }
   },
-  
+
   block: async (id: number) => {
     try {
-      const response = await api.post(`/admin/reviews/${id}/block`)
+      const response = await api.put(`/admin/reviews/${id}`, {
+        block: true
+      }
+      )
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to block review" }
     }
   },
-  
+
   unblock: async (id: number) => {
     try {
-      const response = await api.post(`/admin/reviews/${id}/unblock`)
+      const response = await api.put(`/admin/reviews/${id}`, {
+        block: false
+      })
       return response.data
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || "Failed to unblock review" }
     }
   },
-  
+
   get: async (id: number) => {
     try {
       const response = await api.get(`/admin/reviews/${id}`)

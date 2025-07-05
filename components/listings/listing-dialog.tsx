@@ -101,6 +101,8 @@ const listingFormSchema = z.object({
   features: z.array(z.number()).default([]),
   categories: z.array(z.number()).default([]),
   host_id: z.number().optional(),
+  vip: z.boolean().default(false),
+  starts: z.coerce.number().min(0).max(5).optional(),
   // images vount more than 5
   images: z
     .array(z.union([z.string(), z.number()]))
@@ -154,6 +156,8 @@ const listingFormSchemaEdit = z.object({
   features: z.array(z.number()).default([]),
   categories: z.array(z.number()).default([]),
   host_id: z.number().optional(),
+  vip: z.boolean().default(false),
+  starts: z.coerce.number().min(0).max(5).optional(),
   // images vount more than 5
   // images: z.array(z.string()).min(5, { message: "يجب تحميل 5 صور على الأقل" }),
 });
@@ -201,6 +205,8 @@ interface ListingFormValues {
   features: number[];
   categories: number[];
   host_id?: number;
+  vip: boolean;
+  starts?: number;
 }
 
 interface ListingDialogProps {
@@ -335,6 +341,8 @@ export function ListingDialog({
       allows_families_only: false,
       features: [],
       categories: [],
+      vip: false,
+      starts: null,
     },
   });
   // imageRemove
@@ -1137,6 +1145,57 @@ export function ListingDialog({
                     <Input {...field} />
                   </FormControl>
                   <FormDescription>عنوان إضافي للعقار</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="vip"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">
+                      إعلان مميز (VIP)
+                    </FormLabel>
+                    <FormDescription>
+                      هل تريد جعل هذا الإعلان مميزاً؟
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="starts"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>تقييم العقار</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر التقييم" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">⭐ 1 نجمة</SelectItem>
+                        <SelectItem value="2">⭐⭐ 2 نجمة</SelectItem>
+                        <SelectItem value="3">⭐⭐⭐ 3 نجوم</SelectItem>
+                        <SelectItem value="4">⭐⭐⭐⭐ 4 نجوم</SelectItem>
+                        <SelectItem value="5">⭐⭐⭐⭐⭐ 5 نجوم</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormDescription>
+                    اختر تقييم العقار من 1 إلى 5 نجوم
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

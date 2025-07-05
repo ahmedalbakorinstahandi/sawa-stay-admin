@@ -89,6 +89,8 @@ interface Listing {
   bathrooms_count: number;
   price_weekend: number;
   booking_capacity: number;
+  starts: number | undefined; // 0-5 stars
+  vip: boolean;
   is_contains_cameras: boolean;
   camera_locations?: {
     ar?: string;
@@ -182,6 +184,8 @@ interface Category {
 
 // مخطط التحقق من البيانات
 const listingSchema = z.object({
+  vip: z.boolean().default(false),
+  starts: z.number().min(0).max(5).optional(),
   title: z.object({
     ar: z.string().min(5, { message: "العنوان يجب أن يكون 5 أحرف على الأقل" }),
     en: z.string().optional(),
@@ -211,6 +215,7 @@ const listingSchema = z.object({
     .min(0.5, { message: "يجب أن يكون عدد الحمامات 0.5 على الأقل" }),
   booking_capacity: z.number().min(1),
   is_contains_cameras: z.boolean(),
+
   camera_locations: z
     .object({
       ar: z.string().optional(),
@@ -222,6 +227,7 @@ const listingSchema = z.object({
   allows_families_only: z.boolean(),
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
+  
   max_booking_days: z.number().min(1),
   check_in_time: z.string().optional(),
   check_out_time: z.string().optional(),
@@ -268,6 +274,9 @@ export default function EditListingPage() {
     resolver: zodResolver(listingSchema),
     defaultValues: {
       title: { ar: "", en: "" },
+      // تعيين القيم الافتراضية لبقية الحقول
+      starts: 0, // 0-5 stars
+      vip: false,
       description: { ar: "", en: "" },
       house_type_id: 0,
       property_type: "Apartment",
@@ -1372,7 +1381,7 @@ export default function EditListingPage() {
                     </FormItem>
                   )}
                 />
-                
+
               </div>
 
             </CardContent>
@@ -1483,6 +1492,71 @@ export default function EditListingPage() {
                         <Input {...field} />
                       </FormControl>
                       <FormDescription>عنوان إضافي للعقار</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="vip"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between space-y-0">
+                      <div>
+                        <FormLabel className="flex items-center gap-2 cursor-pointer">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-yellow-500"
+                          >
+                            <polygon points="12,2 15,8 22,9 17,14 18,21 12,18 6,21 7,14 2,9 9,8" />
+                          </svg>
+                          إعلان VIP
+                        </FormLabel>
+                        <p className="text-xs text-gray-500 mx-7">
+                          هل هذا إعلان مميز؟
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="starts"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>تقييم النجوم</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(value ? Number(value) : undefined)}
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر تقييم النجوم" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="0">بدون تقييم</SelectItem>
+                          <SelectItem value="1">⭐ (1 نجمة)</SelectItem>
+                          <SelectItem value="2">⭐⭐ (2 نجمة)</SelectItem>
+                          <SelectItem value="3">⭐⭐⭐ (3 نجوم)</SelectItem>
+                          <SelectItem value="4">⭐⭐⭐⭐ (4 نجوم)</SelectItem>
+                          <SelectItem value="5">⭐⭐⭐⭐⭐ (5 نجوم)</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
