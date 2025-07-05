@@ -76,6 +76,10 @@ import { api } from "@/lib/api";
 import { ro } from "date-fns/locale";
 
 export default function ListingsPage() {
+  const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [activeTab, setActiveTab] = useState("listings");
   const [listings, setListings] = useState([]);
   const [categories, setCategories] = useState<
@@ -83,9 +87,84 @@ export default function ListingsPage() {
   >([]);
   const [features, setFeatures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");  const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Update URL when debounced search term changes
+  useEffect(() => {
+    updateFiltersInURL({ search: debouncedSearchTerm });
+  }, [debouncedSearchTerm]);
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    const status = searchParams.get("status") || "all";
+    const propertyType = searchParams.get("property_type") || "all";
+    const category = searchParams.get("house_type_id") || "all";
+    
+    setSearchTerm(search);
+    setDebouncedSearchTerm(search);
+    setStatusFilter(status);
+    setPropertyTypeFilter(propertyType);
+    setCategoryFilter(category);
+  }, [searchParams]);
+
+  // Update URL when filters change
+  const updateFiltersInURL = (filters: {
+    search?: string;
+    status?: string;
+    propertyType?: string;
+    category?: string;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (filters.search !== undefined) {
+      if (filters.search) {
+        params.set("search", filters.search);
+      } else {
+        params.delete("search");
+      }
+    }
+    
+    if (filters.status !== undefined) {
+      if (filters.status !== "all") {
+        params.set("status", filters.status);
+      } else {
+        params.delete("status");
+      }
+    }
+    
+    if (filters.propertyType !== undefined) {
+      if (filters.propertyType !== "all") {
+        params.set("property_type", filters.propertyType);
+      } else {
+        params.delete("property_type");
+      }
+    }
+    
+    if (filters.category !== undefined) {
+      if (filters.category !== "all") {
+        params.set("house_type_id", filters.category);
+      } else {
+        params.delete("house_type_id");
+      }
+    }
+    
+    // Reset to page 1 when filters change
+    params.set("page", "1");
+    router.push(`?${params.toString()}`, { scroll: false });
+  };  const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
   const [isListingDeleteDialogOpen, setIsListingDeleteDialogOpen] =
     useState(false);
   const [isListingReorderDialogOpen, setIsListingReorderDialogOpen] =
@@ -102,15 +181,36 @@ export default function ListingsPage() {
   const [perPage, setPerPage] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const { toast } = useToast();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Initialize current page from URL or default to 1
+  // Initialize current page from URL or localStorage fallback
   const [currentPage, setCurrentPage] = useState(() => {
     const pageParam = searchParams.get("page");
-    return pageParam ? parseInt(pageParam, 10) : 1;
+    if (pageParam) {
+      return parseInt(pageParam, 10);
+    }
+    // Fallback to localStorage for mobile devices
+    if (typeof window !== "undefined") {
+      const savedPage = localStorage.getItem("listings-current-page");
+      return savedPage ? parseInt(savedPage, 10) : 1;
+    }
+    return 1;
   });
+
+  // Sync URL params with component state on mount and URL changes
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    if (newPage !== currentPage) {
+      setCurrentPage(newPage);
+    }
+  }, [searchParams]);
+
+  // Save current page to localStorage for mobile fallback
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("listings-current-page", currentPage.toString());
+    }
+  }, [currentPage]);
 
   // Update URL when page changes
   const updatePageInURL = (page: number) => {
@@ -125,6 +225,25 @@ export default function ListingsPage() {
     updatePageInURL(page);
   };
 
+  // Handle page visibility change to ensure state is preserved on mobile
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-sync state when page becomes visible (useful for mobile)
+        const pageParam = searchParams.get("page");
+        if (pageParam) {
+          const newPage = parseInt(pageParam, 10);
+          if (newPage !== currentPage) {
+            setCurrentPage(newPage);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentPage, searchParams]);
+
   // Fetch listings
   useEffect(() => {
     fetchListings();
@@ -135,7 +254,7 @@ export default function ListingsPage() {
     propertyTypeFilter,
     categoryFilter,
     perPage,
-    searchTerm,
+    debouncedSearchTerm,
   ]);
   // Fetch categories and features when the tab changes
 
@@ -161,8 +280,8 @@ export default function ListingsPage() {
       params.append("page", currentPage.toString());
       params.append("limit", perPage.toString());
 
-      if (searchTerm) {
-        params.append("search", searchTerm);
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
       }
 
       if (statusFilter !== "all") {
@@ -803,7 +922,7 @@ export default function ListingsPage() {
         <h2 className="text-3xl font-bold tracking-tight">الإعلانات</h2>
         <div className="flex gap-2">
           {activeTab === "listings" && (
-            <Button onClick={() => router.push("/listings/add")}>
+            <Button onClick={() => router.push(`/listings/add?returnPage=${currentPage}`)}>
               <Plus className="ml-2 h-4 w-4" /> إضافة إعلان
             </Button>
           )}
@@ -872,7 +991,10 @@ export default function ListingsPage() {
                       className="pr-9"
                     />
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={statusFilter} onValueChange={(value) => {
+                    setStatusFilter(value);
+                    updateFiltersInURL({ status: value });
+                  }}>
                     <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="الحالة" />
                     </SelectTrigger>
@@ -887,7 +1009,10 @@ export default function ListingsPage() {
                   </Select>
                   <Select
                     value={propertyTypeFilter}
-                    onValueChange={setPropertyTypeFilter}
+                    onValueChange={(value) => {
+                      setPropertyTypeFilter(value);
+                      updateFiltersInURL({ propertyType: value });
+                    }}
                   >
                     <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="نوع العقار" />
@@ -901,7 +1026,10 @@ export default function ListingsPage() {
                   </Select>
                   <Select
                     value={categoryFilter}
-                    onValueChange={setCategoryFilter}
+                    onValueChange={(value) => {
+                      setCategoryFilter(value);
+                      updateFiltersInURL({ category: value });
+                    }}
                   >
                     <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="التصنيف" />
@@ -1013,7 +1141,7 @@ export default function ListingsPage() {
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     onClick={() =>
-                                      router.push(`/listings/${listing.id}`)
+                                      router.push(`/listings/${listing.id}?returnPage=${currentPage}`)
                                     }
                                   >
                                     <Eye className="ml-2 h-4 w-4" />
@@ -1023,7 +1151,7 @@ export default function ListingsPage() {
                                   <DropdownMenuItem
                                     onClick={() =>
                                       router.push(
-                                        `/listings/${listing.id}/rules`
+                                        `/listings/${listing.id}/rules?returnPage=${currentPage}`
                                       )
                                     }
                                   >
@@ -1036,7 +1164,7 @@ export default function ListingsPage() {
                                   <DropdownMenuItem
                                     onClick={() =>
                                       router.push(
-                                        `/listings/${listing.id}/calendar`
+                                        `/listings/${listing.id}/calendar?returnPage=${currentPage}`
                                       )
                                     }
                                   >
@@ -1045,7 +1173,7 @@ export default function ListingsPage() {
                                   </DropdownMenuItem>                                  <DropdownMenuItem
                                     onClick={() =>
                                       router.push(
-                                        `/listings/${listing.id}/edit`
+                                        `/listings/${listing.id}/edit?returnPage=${currentPage}`
                                       )
                                     }
                                   >
