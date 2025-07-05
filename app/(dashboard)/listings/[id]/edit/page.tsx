@@ -89,7 +89,7 @@ interface Listing {
   bathrooms_count: number;
   price_weekend: number;
   booking_capacity: number;
-  starts: number | undefined; // 0-5 stars
+  starts: number; // 0-5 stars
   vip: boolean;
   is_contains_cameras: boolean;
   camera_locations?: {
@@ -184,8 +184,6 @@ interface Category {
 
 // مخطط التحقق من البيانات
 const listingSchema = z.object({
-  vip: z.boolean().default(false),
-  starts: z.number().min(0).max(5).optional(),
   title: z.object({
     ar: z.string().min(5, { message: "العنوان يجب أن يكون 5 أحرف على الأقل" }),
     en: z.string().optional(),
@@ -215,7 +213,6 @@ const listingSchema = z.object({
     .min(0.5, { message: "يجب أن يكون عدد الحمامات 0.5 على الأقل" }),
   booking_capacity: z.number().min(1),
   is_contains_cameras: z.boolean(),
-
   camera_locations: z
     .object({
       ar: z.string().optional(),
@@ -227,13 +224,14 @@ const listingSchema = z.object({
   allows_families_only: z.boolean(),
   floor_number: z.number().min(0),
   min_booking_days: z.number().min(1),
-  
   max_booking_days: z.number().min(1),
   check_in_time: z.string().optional(),
   check_out_time: z.string().optional(),
   allow_pets: z.boolean({
     required_error: "لا يمكن تخطي السماح بالحيوانات الأليفة",
   }),
+  vip: z.boolean().default(false),
+  starts: z.number().min(0).max(5).optional(),
   features: z.array(z.number()).optional(),
   categories: z.array(z.number()).optional(),
   location: z
@@ -245,6 +243,9 @@ const listingSchema = z.object({
     })
     .optional(),
 });
+
+// Define form type explicitly
+type ListingFormType = z.infer<typeof listingSchema>;
 
 // Using the SortableItem component imported from @/components/listings/sortable-item
 
@@ -270,13 +271,10 @@ export default function EditListingPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
 
   // نموذج البيانات
-  const form = useForm<z.infer<typeof listingSchema>>({
+  const form = useForm({
     resolver: zodResolver(listingSchema),
     defaultValues: {
       title: { ar: "", en: "" },
-      // تعيين القيم الافتراضية لبقية الحقول
-      starts: 0, // 0-5 stars
-      vip: false,
       description: { ar: "", en: "" },
       house_type_id: 0,
       property_type: "Apartment",
@@ -299,6 +297,8 @@ export default function EditListingPage() {
       check_in_time: "14:00",
       check_out_time: "12:00",
       allow_pets: false,
+      vip: false,
+      starts: 0, // 0-5 stars
       features: [],
       categories: [],
       location: {
@@ -357,6 +357,8 @@ export default function EditListingPage() {
             check_in_time: response.data.data.check_in_time || "14:00",
             check_out_time: response.data.data.check_out_time || "12:00",
             allow_pets: response.data.data.allow_pets || false,
+            vip: response.data.data.vip || false,
+            starts: response.data.data.starts || 0,
             features:
               response.data.data.features?.map((feature: any) => feature.id) ||
               [],

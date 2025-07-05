@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +28,54 @@ export default function NotificationsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
+  const router = useRouter()
+
+  // وظيفة التعامل مع النقر على الإشعار
+  const handleNotificationClick = async (notification: Notification) => {
+    // تعيين الإشعار كمقروء إذا لم يكن مقروءاً
+    if (!isNotificationRead(notification)) {
+      await markAsRead(notification.id)
+    }
+
+    // تحديد مسار إعادة التوجيه بناءً على نوع الإشعار
+    const notificationType = getNotificationType(notification.notificationable_type)
+    let redirectPath = null
+
+    switch (notificationType) {
+      case  "general":
+        redirectPath = "/"
+        break
+      case "booking":
+        if (notification.notificationable_id) {
+          redirectPath = `/bookings`
+        }
+        break
+      case "listing":
+        if (notification.notificationable_id) {
+          redirectPath = `/listings`
+        }
+        break
+      case "user_verification":
+        redirectPath = "/verification"
+        break
+      case "custom":
+        redirectPath = "/"
+        break
+      case "user":
+        if (notification.notificationable_id) {
+          redirectPath = `/users/${notification.notificationable_id}`
+        }
+        break
+      default:
+        // للأنواع الأخرى أو null، لا نعيد التوجيه
+        break
+    }
+
+    // إعادة التوجيه إذا كان هناك مسار
+    if (redirectPath) {
+      router.push(redirectPath)
+    }
+  }
   // جلب الإشعارات من الباك إند
   const fetchNotifications = async (page = 1, showLoader = true) => {
     if (showLoader) setLoading(true)
@@ -299,7 +348,7 @@ export default function NotificationsPage() {
                 <TabsTrigger value="all" className="relative">
                   الكل
                   {notifications.length > 0 && (
-                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs">
+                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs z-10 flex items-center justify-center">
                       {notifications.length}
                     </Badge>
                   )}
@@ -307,7 +356,7 @@ export default function NotificationsPage() {
                 <TabsTrigger value="unread" className="relative">
                   غير مقروءة
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs">
+                    <Badge className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 text-xs  z-10 flex items-center justify-center">
                       {unreadCount}
                     </Badge>
                   )}
@@ -354,7 +403,10 @@ export default function NotificationsPage() {
                             >
                               <Bell className="h-5 w-5" />
                             </div>
-                            <div className="flex-1">
+                            <div 
+                              className="flex-1 cursor-pointer hover:bg-muted/30 rounded-md p-2 -m-2 transition-colors"
+                              onClick={() => handleNotificationClick(notification)}
+                            >
                               <div className="flex items-center gap-2">
                                 <h3 className="font-semibold">{notification.title}</h3>
                                 {!isRead && (
@@ -396,7 +448,10 @@ export default function NotificationsPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => markAsRead(notification.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    markAsRead(notification.id)
+                                  }}
                                   title="تعيين كمقروء"
                                 >
                                   <CheckCircle className="h-4 w-4" />
@@ -405,7 +460,10 @@ export default function NotificationsPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => deleteNotification(notification.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  deleteNotification(notification.id)
+                                }}
                                 title="حذف"
                               >
                                 <Trash2 className="h-4 w-4" />

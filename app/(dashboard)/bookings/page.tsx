@@ -718,7 +718,8 @@ export default function BookingsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
-                            <DropdownMenuSeparator />                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
                               <Eye className="ml-2 h-4 w-4" />
                               عرض التفاصيل
                             </DropdownMenuItem>
@@ -726,35 +727,42 @@ export default function BookingsPage() {
                               <Edit className="ml-2 h-4 w-4" />
                               تعديل
                             </DropdownMenuItem>
-                            {(booking.status === "pending") && (
-                              <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
-                                <CheckCircle className="ml-2 h-4 w-4" />
-                                تأكيد الدفع
-                              </DropdownMenuItem>
-                            )}
-                            {booking.status === "accepted" && (
-                              <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
-                                <CheckCircle className="ml-2 h-4 w-4" />
-                                تأكيد الحجز
-                              </DropdownMenuItem>
-                            )}
-                            {(booking.status === "pending" ||
-                              // booking.status === "waiting_payment" ||
-                              booking.status === "accepted") && (
+                            {booking.status === "pending" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
+                                  <CheckCircle className="ml-2 h-4 w-4" />
+                                  قبول
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
                                   <XCircle className="ml-2 h-4 w-4" />
                                   رفض
                                 </DropdownMenuItem>
-                              )}
-                            {(booking.status === "pending" ||
-                              // booking.status === "waiting_payment" ||
-                              booking.status === "accepted" ||
-                              booking.status === "confirmed") && (
+                              </>
+                            )}
+                            {booking.status === "accepted" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
+                                  <CheckCircle className="ml-2 h-4 w-4" />
+                                  تأكيد
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
                                   <XCircle className="ml-2 h-4 w-4" />
                                   إلغاء
                                 </DropdownMenuItem>
-                              )}
+                              </>
+                            )}
+                            {booking.status === "confirmed" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "completed")}>
+                                  <CheckCircle className="ml-2 h-4 w-4" />
+                                  إكمال
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
+                                  <XCircle className="ml-2 h-4 w-4" />
+                                  إلغاء
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"

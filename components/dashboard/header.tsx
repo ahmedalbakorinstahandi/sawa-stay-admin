@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,10 +18,10 @@ import { Badge } from "@/components/ui/badge";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { notificationsAPI } from "@/lib/api";
-import { 
-  Notification, 
-  isNotificationRead, 
-  getNotificationType 
+import {
+  Notification,
+  isNotificationRead,
+  getNotificationType
 } from "@/types/notification";
 import Link from "next/link";
 
@@ -34,9 +35,59 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const isMobile = useMobile();
   const [mounted, setMounted] = useState(false);
   const auth = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+  // وظيفة التعامل مع النقر على الإشعار
+  const handleNotificationClick = async (notification: Notification) => {
+    // تعيين الإشعار كمقروء إذا لم يكن مقروءاً
+    if (!isNotificationRead(notification)) {
+      await markAsRead(notification.id);
+    }
+
+    // تحديد مسار إعادة التوجيه بناءً على نوع الإشعار
+    const notificationType = getNotificationType(notification.notificationable_type);
+    let redirectPath = null;
+    console.log(notificationType, "notificationType");
+
+
+    switch (notificationType) {
+      case "general":
+        redirectPath = "/";
+        break;
+      case "booking":
+        if (notification.notificationable_id) {
+          redirectPath = `/bookings`;
+        }
+        break;
+      case "listing":
+        if (notification.notificationable_id) {
+          redirectPath = `/listings`;
+        }
+        break;
+      case "user_verification":
+        redirectPath = "/verification";
+        break;
+      case "custom":
+        redirectPath = "/";
+        break;
+      case "user":
+        if (notification.notificationable_id) {
+          redirectPath = `/users/${notification.notificationable_id}`;
+        }
+        break;
+      default:
+        // للأنواع الأخرى أو null، لا نعيد التوجيه
+        break;
+    }
+
+    // إعادة التوجيه إذا كان هناك مسار
+    if (redirectPath) {
+      router.push(redirectPath);
+    }
+  };
 
   // جلب الإشعارات من الباك إند
   const fetchNotifications = async () => {
@@ -108,9 +159,9 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
       const response = await notificationsAPI.markAllAsRead();
       if (response.success) {
         const now = new Date().toISOString();
-        setNotifications(notifications.map((notification) => ({ 
-          ...notification, 
-          read_at: notification.read_at || now 
+        setNotifications(notifications.map((notification) => ({
+          ...notification,
+          read_at: notification.read_at || now
         })));
         setUnreadCount(0);
       }
@@ -157,7 +208,7 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         return "👤";
       case "report":
         return "📊";
-      default:        return "📢";
+      default: return "📢";
     }
   };
 
@@ -166,16 +217,16 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
     const now = new Date();
     const date = new Date(dateString);
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return "الآن";
     if (diffInMinutes < 60) return `منذ ${diffInMinutes} دقيقة`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `منذ ${diffInHours} ساعة`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `منذ ${diffInDays} يوم`;
-    
+
     return date.toLocaleDateString('ar-SY');
   };
 
@@ -196,9 +247,8 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-4 lg:h-[60px] theme-transition ${
-        !isMobile && sidebarOpen ? "lg:pr-4" : "lg:pr-4"
-      }`}
+      className={`sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-4 lg:h-[60px] theme-transition ${!isMobile && sidebarOpen ? "lg:pr-4" : "lg:pr-4"
+        }`}
     >
       <Button
         variant="ghost"
@@ -245,32 +295,32 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">            <div className="flex items-center justify-between p-4 bg-primary/5">
-              <div className="flex items-center gap-2">
-                <DropdownMenuLabel className="p-0">الإشعارات</DropdownMenuLabel>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fetchNotifications();
-                  }}
-                  disabled={loadingNotifications}
-                >
-                  <RefreshCw className={`h-3 w-3 ${loadingNotifications ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-              {unreadCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-0 text-xs font-normal text-primary hover:text-primary/80 hover:bg-transparent"
-                  onClick={markAllAsRead}
-                >
-                  تعيين الكل كمقروء
-                </Button>
-              )}
-            </div><DropdownMenuSeparator className="m-0" />
+            <div className="flex items-center gap-2">
+              <DropdownMenuLabel className="p-0">الإشعارات</DropdownMenuLabel>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fetchNotifications();
+                }}
+                disabled={loadingNotifications}
+              >
+                <RefreshCw className={`h-3 w-3 ${loadingNotifications ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-xs font-normal text-primary hover:text-primary/80 hover:bg-transparent"
+                onClick={markAllAsRead}
+              >
+                تعيين الكل كمقروء
+              </Button>
+            )}
+          </div><DropdownMenuSeparator className="m-0" />
             {loadingNotifications ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 <div className="mb-2 text-xl">⏳</div>
@@ -285,14 +335,13 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                 {notifications.map((notification) => {
                   const isRead = isNotificationRead(notification);
                   const notificationType = getNotificationType(notification.notificationable_type);
-                  
+
                   return (
                     <div
                       key={notification.id}
-                      className={`flex cursor-pointer flex-col items-start p-4 hover:bg-muted/50 transition-colors ${
-                        !isRead ? "bg-primary/5" : ""
-                      }`}
-                      onClick={() => markAsRead(notification.id)}
+                      className={`flex cursor-pointer flex-col items-start p-4 hover:bg-muted/50 transition-colors ${!isRead ? "bg-primary/5" : ""
+                        }`}
+                      onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex w-full items-start justify-between">
                         <div className="font-medium">{notification.title}</div>
@@ -354,9 +403,8 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
               </div>
               <div className="flex flex-col space-y-0.5">
                 <p className="text-sm font-medium">
-                  {`${auth?.user?.first_name || ""} ${
-                    auth?.user?.last_name || ""
-                  }` ||
+                  {`${auth?.user?.first_name || ""} ${auth?.user?.last_name || ""
+                    }` ||
                     auth?.user?.name ||
                     "المستخدم"}
                 </p>

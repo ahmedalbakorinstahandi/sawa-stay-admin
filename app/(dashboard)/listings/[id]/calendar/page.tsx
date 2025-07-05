@@ -54,21 +54,29 @@ export default function ListingCalendarPage() {
       try {
         setIsLoading(true);
         const response = await api.get(`/admin/listings/${listingId}`);
-        console.log(response);
+        console.log("Full Response:", response);
 
         if (response.data.success) {
-          setListing(response.data);
-
+          const listingData = response.data.data;
+          setListing(listingData);
+          console.log("Listing Data:", listingData);
+          
           // تحويل التواريخ المتاحة إلى كائنات Date
-          if (
-            response.data.available_dates &&
-            response.data.available_dates.length > 0
-          ) {
-            const dates = response.data.available_dates.map((dateStr: any) =>
-              parseISO(dateStr.available_date)
+          // استخدام available_dates_pro التي تحتوي على التواريخ بصيغة YYYY-MM-DD
+          if (listingData.available_dates_pro && listingData.available_dates_pro.length > 0) {
+            console.log("Raw Available Dates:", listingData.available_dates_pro);
+            
+            const dates = listingData.available_dates_pro.map((dateStr: string) =>
+              parseISO(dateStr)
             );
+            console.log("Parsed Available Dates:", dates);
+            
             setAvailableDates(dates);
             setSelectedDates(dates);
+          } else {
+            console.log("No available dates found");
+            setAvailableDates([]);
+            setSelectedDates([]);
           }
         } else {
           toast.error("فشل في جلب بيانات العقار");
@@ -84,7 +92,7 @@ export default function ListingCalendarPage() {
     };
 
     fetchListing();
-  }, []);
+  }, [listingId, router]);
 
   // التعامل مع النقر على تاريخ
   const handleDateClick = (date: Date) => {

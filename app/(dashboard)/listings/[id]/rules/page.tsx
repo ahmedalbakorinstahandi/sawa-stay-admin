@@ -337,7 +337,7 @@ export default function ListingRulesPage() {
                       )}
                     />
 
-                    <FormField
+                    {/* <FormField
                       control={form.control}
                       name="allows_parties"
                       render={({ field }) => (
@@ -380,7 +380,7 @@ export default function ListingRulesPage() {
                           </FormControl>
                         </FormItem>
                       )}
-                    />
+                    /> */}
 
                     <FormField
                       control={form.control}
