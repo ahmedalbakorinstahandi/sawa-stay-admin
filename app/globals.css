@@ -49,41 +49,41 @@
   }
 
   .dark {
-    --background: 345 76% 4%;
-    --foreground: 345 100% 95%;
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 345 76% 6%;
-    --card-foreground: 345 100% 95%;
+    --card: 222 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 345 76% 6%;
-    --popover-foreground: 345 100% 95%;
+    --popover: 222 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
     --primary: 351 93% 58%;
-    --primary-foreground: 345 100% 97%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 345 30% 15%;
-    --secondary-foreground: 345 100% 98%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 345 30% 15%;
-    --muted-foreground: 345 30% 65%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 229 92% 73%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
+    --destructive-foreground: 210 40% 98%;
 
-    --success: 180 65% 68%;
-    --success-foreground: 0 0% 98%;
+    --success: 158 64% 52%;
+    --success-foreground: 210 40% 98%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 98%;
+    --warning-foreground: 210 40% 98%;
 
-    --info: 229 92% 73%;
-    --info-foreground: 0 0% 98%;
+    --info: 217 91% 60%;
+    --info-foreground: 210 40% 98%;
 
-    --border: 345 30% 15%;
-    --input: 345 30% 15%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
     --ring: 351 93% 58%;
   }
 }
@@ -295,10 +295,11 @@
 .dark .gradient-card {
   background: linear-gradient(
     135deg,
-    rgba(0, 0, 0, 0.2) 0%,
-    rgba(0, 0, 0, 0.3) 100%
+    rgba(30, 41, 59, 0.4) 0%,
+    rgba(51, 65, 85, 0.2) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 /* Animations */
@@ -356,8 +357,10 @@
 }
 
 .dark .glass-effect {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(30, 41, 59, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 /* Neon Effects */
@@ -393,10 +396,12 @@
 }
 
 .dark .bg-pattern {
+  background-color: var(--background);
   background-image: radial-gradient(
-    rgba(239, 61, 93, 0.15) 1px,
+    rgba(148, 163, 184, 0.1) 1px,
     transparent 1px
   );
+  background-size: 20px 20px;
 }
 
 /* Card Hover Effects */
@@ -411,8 +416,10 @@
 }
 
 .dark .card-hover:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
-    0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(148, 163, 184, 0.1);
 }
 
 /* Gradient Text */
@@ -425,7 +432,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
 }
 
 /* Vibrant Scrollbar */
@@ -445,6 +451,49 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 0.8);
+}
+
+/* Dark mode specific scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(222, 84%, 4.9%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(217, 32%, 17%);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(217, 32%, 25%);
+}
+
+/* Dark mode text selection */
+.dark ::selection {
+  background: hsl(351, 93%, 58%, 0.3);
+  color: hsl(210, 40%, 98%);
+}
+
+/* Dark mode focus styles */
+.dark *:focus-visible {
+  outline: 2px solid hsl(351, 93%, 58%);
+  outline-offset: 2px;
+}
+
+/* Dark mode input improvements */
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: hsl(351, 93%, 58%);
+  box-shadow: 0 0 0 2px hsl(351, 93%, 58%, 0.2);
+}
+
+/* Dark mode button improvements */
+.dark .bg-primary {
+  background: linear-gradient(135deg, hsl(351, 93%, 58%) 0%, hsl(351, 93%, 48%) 100%);
+}
+
+.dark .bg-primary:hover {
+  background: linear-gradient(135deg, hsl(351, 93%, 48%) 0%, hsl(351, 93%, 38%) 100%);
 }
 
 /* Theme Transition */

@@ -210,28 +210,28 @@ export default function BookingsPage() {
     switch (status) {
       case "confirmed":
       case "accepted":
-        return (<Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
+        return (<Badge variant="outline" className="flex items-center gap-1 border-success text-success">
           <CheckCircle className="h-3 w-3" />
           تم الدفع
         </Badge>
         )
       case "paid":
         return (
-          <Badge variant="default" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1 bg-success text-success-foreground">
             <CheckCircle className="h-3 w-3" />
             مدفوع
           </Badge>
         )
       case "pending":
       case "waiting_payment":
-        return (<Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
+        return (<Badge variant="outline" className="flex items-center gap-1 border-warning text-warning">
           <Calendar className="h-3 w-3" />
           بانتظار الدفع
         </Badge>
         )
       case "completed":
         return (
-          <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
+          <Badge variant="outline" className="flex items-center gap-1 border-success text-success">
             <CheckCircle className="h-3 w-3" />
             مكتمل
           </Badge>
@@ -434,25 +434,25 @@ export default function BookingsPage() {
   }
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-lg shadow-sm">
+      <div className="flex items-center justify-between mb-6 bg-card p-4 rounded-lg border shadow-sm">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">الحجوزات</h2>
+          <h2 className="text-3xl font-bold tracking-tight gradient-text">الحجوزات</h2>
           <p className="text-sm text-muted-foreground mt-1">إدارة جميع حجوزات المنصة</p>
         </div>
-        <Button onClick={handleAddBooking} className="bg-gradient-to-r from-blue-600 to-blue-800 hover:opacity-90 transition-all">
+        <Button onClick={handleAddBooking} className="bg-primary hover:bg-primary/90 transition-all">
           <Plus className="ml-2 h-4 w-4" /> إضافة حجز
         </Button>
       </div>
 
       {stats && (
         <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-7">
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-primary h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">إجمالي الحجوزات</CardTitle>
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <Calendar className="h-4 w-4 text-blue-600" />
+                <div className="p-2 bg-primary/10 rounded-full">
+                  <Calendar className="h-4 w-4 text-primary" />
                 </div>
               </div>
             </CardHeader>
@@ -461,13 +461,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">إجمالي الحجوزات في النظام</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-warning h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">بانتظار الدفع</CardTitle>
-                <div className="p-2 bg-yellow-100 rounded-full">
-                  <Calendar className="h-4 w-4 text-yellow-600" />
+                <div className="p-2 bg-warning/10 rounded-full">
+                  <Calendar className="h-4 w-4 text-warning" />
                 </div>
               </div>
             </CardHeader>
@@ -476,13 +476,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">حجوزات تنتظر الدفع</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-blue-400 to-blue-500 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-info h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">مقبولة</CardTitle>
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                <div className="p-2 bg-info/10 rounded-full">
+                  <CheckCircle className="h-4 w-4 text-info" />
                 </div>
               </div>
             </CardHeader>
@@ -491,13 +491,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">حجوزات تم قبولها</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-success h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">تم الدفعة</CardTitle>
-                <div className="p-2 bg-green-100 rounded-full">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <div className="p-2 bg-success/10 rounded-full">
+                  <CheckCircle className="h-4 w-4 text-success" />
                 </div>
               </div>
             </CardHeader>
@@ -506,13 +506,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">حجوزات تم تأكيدها</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-success h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">مكتملة</CardTitle>
-                <div className="p-2 bg-emerald-100 rounded-full">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                <div className="p-2 bg-success/10 rounded-full">
+                  <CheckCircle className="h-4 w-4 text-success" />
                 </div>
               </div>
             </CardHeader>
@@ -521,13 +521,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">حجوزات تم إكمالها</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-red-500 to-red-600 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-destructive h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">ملغاة</CardTitle>
-                <div className="p-2 bg-red-100 rounded-full">
-                  <XCircle className="h-4 w-4 text-red-600" />
+                <div className="p-2 bg-destructive/10 rounded-full">
+                  <XCircle className="h-4 w-4 text-destructive" />
                 </div>
               </div>
             </CardHeader>
@@ -536,13 +536,13 @@ export default function BookingsPage() {
               <p className="text-xs text-muted-foreground mt-1">حجوزات تم إلغاؤها</p>
             </CardContent>
           </Card>
-          <Card className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 h-1"></div>
+          <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
+            <div className="bg-warning h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">مرفوضة</CardTitle>
-                <div className="p-2 bg-orange-100 rounded-full">
-                  <XCircle className="h-4 w-4 text-orange-600" />
+                <div className="p-2 bg-warning/10 rounded-full">
+                  <XCircle className="h-4 w-4 text-warning" />
                 </div>
               </div>
             </CardHeader>
@@ -552,40 +552,40 @@ export default function BookingsPage() {
             </CardContent>
           </Card>
         </div>
-      )}      <Card className="border-0 shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-1"></div>
-        <CardHeader className="bg-gray-50">
+      )}      <Card className="border shadow-md overflow-hidden">
+        <div className="bg-primary h-1"></div>
+        <CardHeader className="bg-muted/50">
           <div className="flex justify-between items-center">
             <CardTitle className="text-lg font-semibold">إدارة الحجوزات</CardTitle>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <Calendar className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Calendar className="h-5 w-5 text-primary" />
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="flex flex-col space-y-4">            <div className="flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0 md:space-x-reverse p-4 bg-gray-50 rounded-lg border border-gray-100 mb-2">
+          <div className="flex flex-col space-y-4">            <div className="flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0 md:space-x-reverse p-4 bg-muted/50 rounded-lg border mb-2">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-3 h-4 w-4 text-blue-600" />
+              <Search className="absolute right-3 top-3 h-4 w-4 text-primary" />
               <Input
                 placeholder="بحث عن حجز..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-9 border-gray-200 focus-visible:ring-blue-500"
+                className="pr-9 focus-visible:ring-primary"
               />
             </div>
             <Select value={statusFilter} onValueChange={(value) => {
               setStatusFilter(value)
               updateFiltersInURL(value)
             }}>
-              <SelectTrigger className="w-full md:w-[180px] border-gray-200 focus:ring-blue-500">
+              <SelectTrigger className="w-full md:w-[180px] focus:ring-primary">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-blue-500' :
-                    statusFilter === 'pending' ? 'bg-yellow-500' :
-                      statusFilter === 'accepted' ? 'bg-blue-500' :
-                        statusFilter === 'confirmed' ? 'bg-green-500' :
-                          statusFilter === 'completed' ? 'bg-emerald-500' :
-                            statusFilter === 'cancelled' ? 'bg-red-500' :
-                              'bg-orange-500'
+                  <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-primary' :
+                    statusFilter === 'pending' ? 'bg-warning' :
+                      statusFilter === 'accepted' ? 'bg-info' :
+                        statusFilter === 'confirmed' ? 'bg-success' :
+                          statusFilter === 'completed' ? 'bg-success' :
+                            statusFilter === 'cancelled' ? 'bg-destructive' :
+                              'bg-warning'
                     }`}></div>
                   <SelectValue placeholder="الحالة" />
                 </div>
@@ -593,43 +593,43 @@ export default function BookingsPage() {
               <SelectContent>
                 <SelectItem value="all">جميع الحالات</SelectItem>
                 <SelectItem value="pending" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-warning"></div>
                   بانتظار الدفع
                 </SelectItem>
                 <SelectItem value="accepted" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-info"></div>
                   مقبول
                 </SelectItem>
                 <SelectItem value="confirmed" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-success"></div>
                   تم الدفع
                 </SelectItem>
                 <SelectItem value="completed" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-success"></div>
                   مكتمل
                 </SelectItem>
                 <SelectItem value="cancelled" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-destructive"></div>
                   ملغي
                 </SelectItem>
                 <SelectItem value="rejected" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-warning"></div>
                   مرفوض
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>            <div className="rounded-lg border overflow-hidden shadow-sm">
               <Table>
-                <TableHeader className="bg-gray-50 border-b">
+                <TableHeader className="bg-muted/50 border-b">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="font-bold text-gray-700 text-xs">رقم الحجز</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">الإعلان</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">الضيف</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">المضيف</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">التاريخ</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">المبلغ</TableHead>
-                    <TableHead className="font-bold text-gray-700 text-xs">الحالة</TableHead>
-                    <TableHead className="text-left font-bold text-gray-700 text-xs">الإجراءات</TableHead>
+                    <TableHead className="font-bold text-xs">رقم الحجز</TableHead>
+                    <TableHead className="font-bold text-xs">الإعلان</TableHead>
+                    <TableHead className="font-bold text-xs">الضيف</TableHead>
+                    <TableHead className="font-bold text-xs">المضيف</TableHead>
+                    <TableHead className="font-bold text-xs">التاريخ</TableHead>
+                    <TableHead className="font-bold text-xs">المبلغ</TableHead>
+                    <TableHead className="font-bold text-xs">الحالة</TableHead>
+                    <TableHead className="text-left font-bold text-xs">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -648,12 +648,12 @@ export default function BookingsPage() {
                   ) : (filteredBookings.map((booking) => (
                     <TableRow
                       key={booking.id}
-                      className="hover:bg-gray-50/60 transition-colors border-b border-gray-100 hover:shadow-sm"
+                      className="hover:bg-muted/50 transition-colors border-b hover:shadow-sm"
                     >
-                      <TableCell className="font-medium text-blue-600">#{booking.id}</TableCell>
+                      <TableCell className="font-medium text-primary">#{booking.id}</TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          <div className="w-2 h-2 rounded-full bg-primary"></div>
                           <span>{booking.listing?.title?.ar || `إعلان #${booking.listing_id}`}</span>
                         </div>
                       </TableCell>
@@ -664,7 +664,7 @@ export default function BookingsPage() {
                               <img src={booking.guest.avatar_url} alt="الضيف" className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                               <span className="text-xs">{booking.guest?.first_name?.charAt(0) || '?'}</span>
                             </div>
                           )}
@@ -682,7 +682,7 @@ export default function BookingsPage() {
                               <img src={booking.host.avatar_url} alt="المضيف" className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                               <span className="text-xs">{booking.host?.first_name?.charAt(0) || '?'}</span>
                             </div>
                           )}
@@ -697,9 +697,9 @@ export default function BookingsPage() {
                         <div className="flex flex-col text-nowrap">
                           <span className="font-medium">{new Date(booking.start_date).toLocaleDateString("ar-SY")}</span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <div className="w-4 h-[1px] bg-gray-300"></div>
+                            <div className="w-4 h-[1px] bg-border"></div>
                             إلى
-                            <div className="w-4 h-[1px] bg-gray-300"></div>
+                            <div className="w-4 h-[1px] bg-border"></div>
                           </span>
                           <span className="font-medium">{new Date(booking.end_date).toLocaleDateString("ar-SY")}</span>
                         </div>
@@ -780,10 +780,10 @@ export default function BookingsPage() {
                 </TableBody>
               </Table>
             </div>            <Pagination className="mt-6">
-              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4 bg-gray-50 p-4 rounded-lg">
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4 bg-muted/50 p-4 rounded-lg">
                 <span className="text-sm text-muted-foreground flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  إجمالي <span className="font-bold text-blue-600">{totalCount}</span> الحجوزات
+                  <div className="w-3 h-3 rounded-full bg-primary"></div>
+                  إجمالي <span className="font-bold text-primary">{totalCount}</span> الحجوزات
                 </span>                <Select
                   value={perPage.toString()}
                   onValueChange={(value) => {
@@ -791,7 +791,7 @@ export default function BookingsPage() {
                     handlePageChange(1); // إعادة تعيين الصفحة إلى الأولى عند تغيير عدد العناصر في الصفحة
                   }}
                 >
-                  <SelectTrigger className="w-[150px] border-gray-200 focus:ring-blue-500">
+                  <SelectTrigger className="w-[150px] focus:ring-primary">
                     <SelectValue placeholder={`${perPage} لكل صفحة`} />
                   </SelectTrigger>
                   <SelectContent>
@@ -806,23 +806,22 @@ export default function BookingsPage() {
                   <PaginationPrevious
                     onClick={() => page > 1 && handlePageChange(page - 1)}
                     className={`${page <= 1 ? "pointer-events-none opacity-50" : ""
-                      } sm:hidden border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                      } sm:hidden cursor-pointer border bg-card shadow-sm hover:bg-muted transition-colors`}
                     aria-label="الصفحة السابقة"
                   />
                   <PaginationPrevious
                     onClick={() => page > 1 && handlePageChange(page - 1)}
                     className={`${page <= 1 ? "pointer-events-none opacity-50" : ""
-                      } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                      } hidden sm:flex cursor-pointer border bg-card shadow-sm hover:bg-muted transition-colors`}
                   />
                 </PaginationItem>{/* First page */}                {totalPages > 0 && (
-                  <PaginationItem>
-                    <PaginationLink
-                      onClick={() => handlePageChange(1)}
-                      isActive={page === 1}
-                      className={`cursor-pointer ${page === 1 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'}`}
-                    >
-                      1
-                    </PaginationLink>
+                  <PaginationItem>                      <PaginationLink
+                        onClick={() => handlePageChange(1)}
+                        isActive={page === 1}
+                        className={`cursor-pointer ${page === 1 ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card border shadow-sm hover:bg-muted transition-colors'}`}
+                      >
+                        1
+                      </PaginationLink>
                   </PaginationItem>
                 )}
 
@@ -843,7 +842,7 @@ export default function BookingsPage() {
                       <PaginationLink
                         onClick={() => handlePageChange(pageNum)}
                         isActive={page === pageNum}
-                        className={`cursor-pointer ${page === pageNum ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'}`}
+                        className={`cursor-pointer ${page === pageNum ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card border shadow-sm hover:bg-muted transition-colors'}`}
                       >
                         {pageNum}
                       </PaginationLink>
@@ -863,7 +862,7 @@ export default function BookingsPage() {
                     <PaginationLink
                       onClick={() => handlePageChange(totalPages)}
                       isActive={page === totalPages}
-                      className={`cursor-pointer ${page === totalPages ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'}`}
+                      className={`cursor-pointer ${page === totalPages ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card border shadow-sm hover:bg-muted transition-colors'}`}
                     >
                       {totalPages}
                     </PaginationLink>
@@ -872,13 +871,13 @@ export default function BookingsPage() {
                   <PaginationNext
                     onClick={() => page < totalPages && handlePageChange(page + 1)}
                     className={`${page >= totalPages ? "pointer-events-none opacity-50" : ""
-                      } sm:hidden cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                      } sm:hidden cursor-pointer border bg-card shadow-sm hover:bg-muted transition-colors`}
                     aria-label="الصفحة التالية"
                   />
                   <PaginationNext
                     onClick={() => page < totalPages && handlePageChange(page + 1)}
                     className={`${page >= totalPages ? "pointer-events-none opacity-50" : ""
-                      } hidden sm:flex cursor-pointer border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors`}
+                      } hidden sm:flex cursor-pointer border bg-card shadow-sm hover:bg-muted transition-colors`}
                   />
                 </PaginationItem>
               </PaginationContent>
