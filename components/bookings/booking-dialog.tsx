@@ -228,12 +228,35 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="pending">بانتظار الدفع</SelectItem>
-                          <SelectItem value="accepted">مقبول</SelectItem>
-                          <SelectItem value="confirmed">مؤكد</SelectItem>
-                          <SelectItem value="completed">مكتمل</SelectItem>
-                          <SelectItem value="cancelled">ملغي</SelectItem>
-                          <SelectItem value="rejected">مرفوض</SelectItem>
+                          {/* عرض الحالة الحالية */}
+                          <SelectItem value={booking.status}>
+                            {booking.status === "pending" && "بانتظار الدفع (الحالة الحالية)"}
+                            {booking.status === "accepted" && "مقبول (الحالة الحالية)"}
+                            {booking.status === "confirmed" && "مؤكد (الحالة الحالية)"}
+                            {booking.status === "completed" && "مكتمل (الحالة الحالية)"}
+                            {booking.status === "cancelled" && "ملغي (الحالة الحالية)"}
+                            {booking.status === "rejected" && "مرفوض (الحالة الحالية)"}
+                          </SelectItem>
+                          
+                          {/* عرض الحالات المتاحة للتحديث */}
+                          {booking.status === "pending" && (
+                            <>
+                              <SelectItem value="accepted">تم الدفع</SelectItem>
+                              <SelectItem value="rejected">مرفوض</SelectItem>
+                            </>
+                          )}
+                          {booking.status === "accepted" && (
+                            <>
+                              <SelectItem value="confirmed">مؤكد</SelectItem>
+                              <SelectItem value="cancelled">ملغي</SelectItem>
+                            </>
+                          )}
+                          {booking.status === "confirmed" && (
+                            <>
+                              <SelectItem value="completed">مكتمل</SelectItem>
+                              <SelectItem value="cancelled">ملغي</SelectItem>
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
