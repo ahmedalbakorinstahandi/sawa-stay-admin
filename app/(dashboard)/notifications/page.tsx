@@ -39,7 +39,7 @@ export default function NotificationsPage() {
     }
 
     // تحديد مسار إعادة التوجيه بناءً على نوع الإشعار
-    const notificationType = getNotificationType(notification.notificationable_type)
+    const notificationType = (notification.notificationable_type)
     let redirectPath = null
 
     switch (notificationType) {
@@ -48,12 +48,12 @@ export default function NotificationsPage() {
         break
       case "booking":
         if (notification.notificationable_id) {
-          redirectPath = `/bookings`
+          redirectPath = `/bookings/${notification.notificationable_id}`
         }
         break
       case "listing":
         if (notification.notificationable_id) {
-          redirectPath = `/listings`
+          redirectPath = `/listings/${notification.notificationable_id}`
         }
         break
       case "user_verification":

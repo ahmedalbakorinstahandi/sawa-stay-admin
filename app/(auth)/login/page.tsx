@@ -45,7 +45,7 @@ export default function LoginPage() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ phone?: string; password?: string }>(
     {}
-  );  const router = useRouter();
+  ); const router = useRouter();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
   const { fcmToken, isSupported, requestNotificationPermission } = useFirebase();
@@ -127,9 +127,16 @@ export default function LoginPage() {
         });
 
         // تأخير قصير قبل التوجيه للتأكد من حفظ التوكن في الكوكيز
-        setTimeout(() => {
+        // Check if we can use the Navigator API
+        if (typeof window !== 'undefined' && window.navigator) {
+          // Use requestAnimationFrame to ensure the toast is visible before navigation
+          requestAnimationFrame(() => {
+            window.location.href = "/dashboard";
+          });
+        } else {
           router.push("/dashboard");
-        }, 300);
+        }
+
       } else {
         // التعامل مع أخطاء الاستجابة بشكل صحيح
         toast({
@@ -289,7 +296,7 @@ export default function LoginPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {fcmToken 
+                    {fcmToken
                       ? "ستصلك إشعارات عن الحجوزات والتحديثات المهمة"
                       : "اسمح بالإشعارات لتلقي تحديثات فورية عن الحجوزات"
                     }

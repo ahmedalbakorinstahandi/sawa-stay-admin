@@ -48,7 +48,9 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
     }
 
     // تحديد مسار إعادة التوجيه بناءً على نوع الإشعار
-    const notificationType = getNotificationType(notification.notificationable_type);
+    console.log(notification, "notification");
+
+    const notificationType = (notification.notificationable_type);
     let redirectPath = null;
     console.log(notificationType, "notificationType");
 
@@ -59,12 +61,12 @@ export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         break;
       case "booking":
         if (notification.notificationable_id) {
-          redirectPath = `/bookings`;
+          redirectPath = `/bookings/${notification.notificationable_id}`;
         }
         break;
       case "listing":
         if (notification.notificationable_id) {
-          redirectPath = `/listings`;
+          redirectPath = `/listings/${notification.notificationable_id}`;
         }
         break;
       case "user_verification":
