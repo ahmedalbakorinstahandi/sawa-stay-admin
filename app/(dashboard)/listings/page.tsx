@@ -106,7 +106,10 @@ export default function ListingsPage() {
 
   // Update URL when debounced search term changes
   useEffect(() => {
-    updateFiltersInURL({ search: debouncedSearchTerm });
+    // Only reset page if search term is different from current URL
+    const currentSearch = searchParams.get("search") || "";
+    const shouldResetPage = currentSearch !== debouncedSearchTerm;
+    updateFiltersInURL({ search: debouncedSearchTerm }, shouldResetPage);
   }, [debouncedSearchTerm]);
 
   // Initialize filters from URL params
@@ -125,6 +128,29 @@ export default function ListingsPage() {
     setCategoryFilter(category);
     setVipFilter(vip);
     setStarsFilter(stars);
+
+    // Try to restore page from localStorage if no page in URL
+    const pageParam = searchParams.get("page");
+    if (!pageParam && typeof window !== "undefined") {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      if (status !== "all") params.set("status", status);
+      if (propertyType !== "all") params.set("property_type", propertyType);
+      if (category !== "all") params.set("house_type_id", category);
+      if (vip !== "all") params.set("vip", vip);
+      if (stars !== "all") params.set("stars", stars);
+      const cacheKey = `listings-page-${params.toString()}`;
+      const savedPage = localStorage.getItem(cacheKey);
+      if (savedPage) {
+        const restoredPage = parseInt(savedPage, 10);
+        if (restoredPage > 1) {
+          // Update URL with restored page
+          const urlParams = new URLSearchParams(searchParams.toString());
+          urlParams.set("page", restoredPage.toString());
+          router.replace(`?${urlParams.toString()}`, { scroll: false });
+        }
+      }
+    }
   }, [searchParams]);
 
   // Update URL when filters change
@@ -135,7 +161,7 @@ export default function ListingsPage() {
     category?: string;
     vip?: string;
     stars?: string;
-  }) => {
+  }, resetPage = true) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (filters.search !== undefined) {
@@ -186,8 +212,10 @@ export default function ListingsPage() {
       }
     }
 
-    // Reset to page 1 when filters change
-    params.set("page", "1");
+    // Reset to page 1 when filters change (only if resetPage is true)
+    if (resetPage) {
+      params.set("page", "1");
+    }
     router.push(`?${params.toString()}`, { scroll: false });
   }; const [isListingDialogOpen, setIsListingDialogOpen] = useState(false);
   const [isListingDeleteDialogOpen, setIsListingDeleteDialogOpen] =
@@ -207,16 +235,23 @@ export default function ListingsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Helper function to generate a unique key for localStorage based on filters
+  const getFilterCacheKey = () => {
+    const params = new URLSearchParams();
+    if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (propertyTypeFilter !== "all") params.set("property_type", propertyTypeFilter);
+    if (categoryFilter !== "all") params.set("house_type_id", categoryFilter);
+    if (vipFilter !== "all") params.set("vip", vipFilter);
+    if (starsFilter !== "all") params.set("stars", starsFilter);
+    return `listings-page-${params.toString()}`;
+  };
+
   // Initialize current page from URL or localStorage fallback
   const [currentPage, setCurrentPage] = useState(() => {
     const pageParam = searchParams.get("page");
     if (pageParam) {
       return parseInt(pageParam, 10);
-    }
-    // Fallback to localStorage for mobile devices
-    if (typeof window !== "undefined") {
-      const savedPage = localStorage.getItem("listings-current-page");
-      return savedPage ? parseInt(savedPage, 10) : 1;
     }
     return 1;
   });
@@ -230,12 +265,13 @@ export default function ListingsPage() {
     }
   }, [searchParams]);
 
-  // Save current page to localStorage for mobile fallback
+  // Save current page to localStorage for mobile fallback with filter context
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("listings-current-page", currentPage.toString());
+    if (typeof window !== "undefined" && currentPage > 1) {
+      const cacheKey = getFilterCacheKey();
+      localStorage.setItem(cacheKey, currentPage.toString());
     }
-  }, [currentPage]);
+  }, [currentPage, debouncedSearchTerm, statusFilter, propertyTypeFilter, categoryFilter, vipFilter, starsFilter]);
 
   // Update URL when page changes
   const updatePageInURL = (page: number) => {
@@ -261,13 +297,23 @@ export default function ListingsPage() {
           if (newPage !== currentPage) {
             setCurrentPage(newPage);
           }
+        } else if (typeof window !== "undefined") {
+          // Try to restore from localStorage if no page in URL
+          const cacheKey = getFilterCacheKey();
+          const savedPage = localStorage.getItem(cacheKey);
+          if (savedPage) {
+            const restoredPage = parseInt(savedPage, 10);
+            if (restoredPage !== currentPage && restoredPage > 1) {
+              handlePageChange(restoredPage);
+            }
+          }
         }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentPage, searchParams]);
+  }, [currentPage, searchParams, debouncedSearchTerm, statusFilter, propertyTypeFilter, categoryFilter, vipFilter, starsFilter]);
 
   // Fetch listings
   useEffect(() => {
