@@ -104,9 +104,7 @@ export function NotificationTester() {
               {fcmToken.substring(0, 50)}...
             </p>
           )}
-        </div>
-
-        <Button 
+        </div>        <Button
           onClick={sendTestNotification}
           disabled={isLoading || !fcmToken}
           className="w-full"
@@ -123,6 +121,64 @@ export function NotificationTester() {
             </div>
           )}
         </Button>
+        
+        {/* Local Toast Test */}
+        <Button
+          onClick={() => {
+            toast({
+              title: "إشعار تجريبي محلي",
+              description: "هذا مثال على كيفية ظهور الإشعارات كـ Toast داخل الموقع عندما يكون مفتوحاً",
+              duration: 6000,
+            });
+          }}
+          variant="outline"
+          className="w-full"
+        >
+          <div className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            اختبار Toast محلي
+          </div>
+        </Button>
+        
+        {/* Browser Notification Test */}
+        <Button
+          onClick={() => {
+            if (Notification.permission === 'granted') {
+              new Notification('إشعار تجريبي للمتصفح', {
+                body: 'هذا مثال على إشعار المتصفح الذي يظهر عندما يكون الموقع مغلق أو في الخلفية',
+                icon: '/logo.png',
+                tag: 'test-browser-notification'
+              });
+              toast({
+                title: "تم إرسال إشعار المتصفح",
+                description: "تم إرسال إشعار المتصفح بنجاح",
+              });
+            } else {
+              toast({
+                title: "خطأ",
+                description: "لم يتم السماح بإشعارات المتصفح",
+                variant: "destructive"
+              });
+            }
+          }}
+          variant="outline"
+          className="w-full"
+          disabled={Notification.permission !== 'granted'}
+        >
+          <div className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            اختبار إشعار المتصفح
+          </div>
+        </Button>
+        
+        <div className="text-xs text-muted-foreground bg-muted p-3 rounded">
+          <strong>كيف يعمل النظام الجديد:</strong>
+          <ul className="mt-1 space-y-1">
+            <li>• عندما يكون الموقع مفتوح ومرئي: إشعارات Toast داخل الموقع فقط</li>
+            <li>• عندما يكون الموقع مغلق أو في الخلفية: إشعارات المتصفح العادية</li>
+            <li>• لا تظهر إشعارات مكررة</li>
+          </ul>
+        </div>
       </CardContent>
     </Card>
   );

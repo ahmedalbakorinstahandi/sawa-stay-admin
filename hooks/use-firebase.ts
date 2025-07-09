@@ -58,10 +58,11 @@ export const useFirebase = () => {
                     console.log('Received foreground message:', payload);
 
                     // Show toast notification for foreground messages
+                    // The onMessageListener already checks if page is visible
                     toast({
                         title: payload.notification?.title || 'إشعار جديد',
                         description: payload.notification?.body || '',
-                        duration: 5000, // Show for 5 seconds
+                        duration: 6000, // Show for 6 seconds for better visibility
                     });
                 })
                 .catch((err) => console.log('Failed to receive message:', err));

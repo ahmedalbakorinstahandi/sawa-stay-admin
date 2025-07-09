@@ -133,7 +133,14 @@ export const onMessageListener = () => {
     
     onMessage(messaging, (payload) => {
       console.log('Message received in foreground:', payload);
-      resolve(payload);
+      
+      // Only resolve if the page is visible
+      // This prevents duplicate notifications when page is not visible
+      if (document.visibilityState === 'visible') {
+        resolve(payload);
+      } else {
+        console.log('Page not visible, ignoring foreground message (background handler will take care of it)');
+      }
     });
   });
 };

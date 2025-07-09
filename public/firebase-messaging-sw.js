@@ -47,20 +47,37 @@ messaging.onBackgroundMessage((payload) => {
     ]
   };
 
-  // Send message to main thread if app is open
-  self.clients.matchAll({
+  // Check if any client window is visible and focused
+  return self.clients.matchAll({
     type: 'window',
     includeUncontrolled: true
   }).then(clients => {
+    let hasVisibleClient = false;
+    let hasAnyClient = clients.length > 0;
+    
     clients.forEach(client => {
+      // Send message to all clients
       client.postMessage({
         type: 'NOTIFICATION_RECEIVED',
         payload: payload
       });
+      
+      // Check if any client is visible (don't require focus, just visibility)
+      if (client.visibilityState === 'visible') {
+        hasVisibleClient = true;
+      }
     });
-  });
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+    // Only show browser notification if no client is visible OR no client exists
+    if (!hasVisibleClient || !hasAnyClient) {
+      console.log('[firebase-messaging-sw.js] No visible client found, showing browser notification');
+      return self.registration.showNotification(notificationTitle, notificationOptions);
+    } else {
+      console.log('[firebase-messaging-sw.js] App is visible, notification will be shown as toast');
+      // Don't show browser notification, let the app handle it as toast
+      return Promise.resolve();
+    }
+  });
 });
 
 // Handle notification click
