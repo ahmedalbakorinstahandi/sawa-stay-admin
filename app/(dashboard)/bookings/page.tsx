@@ -208,27 +208,33 @@ export default function BookingsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "confirmed":
-      case "accepted":
-        return (<Badge variant="outline" className="flex items-center gap-1 border-success text-success">
-          <CheckCircle className="h-3 w-3" />
-          تم تأكيد الإتاحية
-
-        </Badge>
-        )
-      case "paid":
+      case "pending":
         return (
-          <Badge variant="default" className="flex items-center gap-1 bg-success text-success-foreground">
-            <CheckCircle className="h-3 w-3" />
-            مدفوع
+          <Badge variant="outline" className="flex items-center gap-1 border-warning text-warning">
+            <Calendar className="h-3 w-3" />
+            قيد الانتظار
           </Badge>
         )
-      case "pending":
-      case "waiting_payment":
-        return (<Badge variant="outline" className="flex items-center gap-1 border-warning text-warning">
-          <Calendar className="h-3 w-3" />
-          بانتظار الدفع
-        </Badge>
+      case "accepted":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-info text-لقثث">
+            <Calendar className="h-3 w-3" />
+            انتظار الدفع
+          </Badge>
+        )
+      // case "accepted":
+      //   return (
+      //     <Badge variant="outline" className="flex items-center gap-1 border-info text-info">
+      //       <CheckCircle className="h-3 w-3" />
+      //       تأكيد الإتاحية
+      //     </Badge>
+      //   )
+      case "confirmed":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-success text-success">
+            <CheckCircle className="h-3 w-3" />
+            مؤكد
+          </Badge>
         )
       case "completed":
         return (
@@ -241,7 +247,7 @@ export default function BookingsPage() {
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <XCircle className="h-3 w-3" />
-            ملغي
+            ملغى
           </Badge>
         )
       case "rejected":
@@ -389,12 +395,14 @@ export default function BookingsPage() {
       if (response.success) {
         let statusText = ""
         switch (newStatus) {
-          case "confirmed":
           case "accepted":
             statusText = "تأكيد الإتاحية"
             break
-          case "paid":
-            statusText = "تأكيد دفع"
+          case "confirmed":
+            statusText = "تأكيد الدفع"
+            break
+          case "completed":
+            statusText = "إكمال"
             break
           case "cancelled":
             statusText = "إلغاء"
@@ -466,7 +474,7 @@ export default function BookingsPage() {
             <div className="bg-warning h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-medium">بانتظار الدفع</CardTitle>
+                <CardTitle className="text-sm font-medium">قيد الانتظار</CardTitle>
                 <div className="p-2 bg-warning/10 rounded-full">
                   <Calendar className="h-4 w-4 text-warning" />
                 </div>
@@ -474,14 +482,14 @@ export default function BookingsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.pending_count}</div>
-              <p className="text-xs text-muted-foreground mt-1">حجوزات تنتظر الدفع</p>
+              <p className="text-xs text-muted-foreground mt-1">حجوزات قيد الانتظار</p>
             </CardContent>
           </Card>
           <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
             <div className="bg-info h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-medium">مقبولة</CardTitle>
+                <CardTitle className="text-sm font-medium">تأكيد الإتاحية</CardTitle>
                 <div className="p-2 bg-info/10 rounded-full">
                   <CheckCircle className="h-4 w-4 text-info" />
                 </div>
@@ -489,14 +497,14 @@ export default function BookingsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.accepted_count}</div>
-              <p className="text-xs text-muted-foreground mt-1">حجوزات تم قبولها</p>
+              <p className="text-xs text-muted-foreground mt-1">حجوزات تم تأكيد إتاحتها</p>
             </CardContent>
           </Card>
           <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
             <div className="bg-success h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-medium">تم الدفعة</CardTitle>
+                <CardTitle className="text-sm font-medium">مؤكد</CardTitle>
                 <div className="p-2 bg-success/10 rounded-full">
                   <CheckCircle className="h-4 w-4 text-success" />
                 </div>
@@ -504,7 +512,7 @@ export default function BookingsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.confirmed_count}</div>
-              <p className="text-xs text-muted-foreground mt-1">حجوزات تم تأكيدها</p>
+              <p className="text-xs text-muted-foreground mt-1">حجوزات مؤكدة</p>
             </CardContent>
           </Card>
           <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
@@ -538,12 +546,12 @@ export default function BookingsPage() {
             </CardContent>
           </Card>
           <Card className="overflow-hidden border shadow-md transition-all hover:shadow-lg card-hover">
-            <div className="bg-warning h-1"></div>
+            <div className="bg-destructive h-1"></div>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">مرفوضة</CardTitle>
-                <div className="p-2 bg-warning/10 rounded-full">
-                  <XCircle className="h-4 w-4 text-warning" />
+                <div className="p-2 bg-destructive/10 rounded-full">
+                  <XCircle className="h-4 w-4 text-destructive" />
                 </div>
               </div>
             </CardHeader>
@@ -582,11 +590,13 @@ export default function BookingsPage() {
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${statusFilter === 'all' ? 'bg-primary' :
                     statusFilter === 'pending' ? 'bg-warning' :
-                      statusFilter === 'accepted' ? 'bg-info' :
-                        statusFilter === 'confirmed' ? 'bg-success' :
-                          statusFilter === 'completed' ? 'bg-success' :
-                            statusFilter === 'cancelled' ? 'bg-destructive' :
-                              'bg-warning'
+                      statusFilter === 'waiting_payment' ? 'bg-warning' :
+                        statusFilter === 'accepted' ? 'bg-info' :
+                          statusFilter === 'confirmed' ? 'bg-success' :
+                            statusFilter === 'completed' ? 'bg-success' :
+                              statusFilter === 'cancelled' ? 'bg-destructive' :
+                                statusFilter === 'rejected' ? 'bg-destructive' :
+                                  'bg-muted'
                     }`}></div>
                   <SelectValue placeholder="الحالة" />
                 </div>
@@ -595,7 +605,11 @@ export default function BookingsPage() {
                 <SelectItem value="all">جميع الحالات</SelectItem>
                 <SelectItem value="pending" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-warning"></div>
-                  بانتظار الدفع
+                  قيد الانتظار
+                </SelectItem>
+                <SelectItem value="waiting_payment" className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-warning"></div>
+                  انتظار الدفع
                 </SelectItem>
                 <SelectItem value="accepted" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-info"></div>
@@ -603,7 +617,7 @@ export default function BookingsPage() {
                 </SelectItem>
                 <SelectItem value="confirmed" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success"></div>
-                  تم الدفع
+                  مؤكد
                 </SelectItem>
                 <SelectItem value="completed" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success"></div>
@@ -611,10 +625,10 @@ export default function BookingsPage() {
                 </SelectItem>
                 <SelectItem value="cancelled" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-destructive"></div>
-                  ملغي
+                  ملغى
                 </SelectItem>
                 <SelectItem value="rejected" className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-warning"></div>
+                  <div className="w-2 h-2 rounded-full bg-destructive"></div>
                   مرفوض
                 </SelectItem>
               </SelectContent>
@@ -738,7 +752,6 @@ export default function BookingsPage() {
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
                                   تأكيد الإتاحية
-
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
                                   <XCircle className="ml-2 h-4 w-4" />
@@ -746,11 +759,23 @@ export default function BookingsPage() {
                                 </DropdownMenuItem>
                               </>
                             )}
+                            {booking.status === "waiting_payment" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
+                                  <CheckCircle className="ml-2 h-4 w-4" />
+                                  تأكيد الدفع
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
+                                  <XCircle className="ml-2 h-4 w-4" />
+                                  إلغاء
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             {booking.status === "accepted" && (
                               <>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "confirmed")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
-                                  تأكيد
+                                  تأكيد الدفع
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "cancelled")}>
                                   <XCircle className="ml-2 h-4 w-4" />

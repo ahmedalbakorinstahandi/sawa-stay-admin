@@ -199,27 +199,32 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case "confirmed":
-            case "accepted":
-                return (
-                    <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
-                        <CheckCircle className="h-3 w-3" />
-                        تأكيد الإتاحية
-                    </Badge>
-                )
-            case "paid":
-                return (
-                    <Badge variant="default" className="flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        مدفوع
-                    </Badge>
-                )
             case "pending":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
+                        <Calendar className="h-3 w-3" />
+                        قيد الانتظار
+                    </Badge>
+                )
             case "waiting_payment":
                 return (
                     <Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
                         <Calendar className="h-3 w-3" />
-                        بانتظار الدفع
+                        انتظار الدفع
+                    </Badge>
+                )
+            case "accepted":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-blue-500 text-blue-500">
+                        <CheckCircle className="h-3 w-3" />
+                        تأكيد الإتاحية
+                    </Badge>
+                )
+            case "confirmed":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
+                        <CheckCircle className="h-3 w-3" />
+                        مؤكد
                     </Badge>
                 )
             case "completed":
@@ -233,7 +238,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                 return (
                     <Badge variant="destructive" className="flex items-center gap-1">
                         <XCircle className="h-3 w-3" />
-                        ملغي
+                        ملغى
                     </Badge>
                 )
             case "rejected":
@@ -706,7 +711,17 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                     className="gap-2"
                                 >
                                     <CheckCircle className="h-4 w-4" />
-                                    تأكيد الحجز
+                                    تأكيد الدفع
+                                </Button>
+                            )}
+                            {booking.status === "confirmed" && (
+                                <Button
+                                    variant="default"
+                                    onClick={() => handleStatusChange("completed")}
+                                    className="gap-2"
+                                >
+                                    <CheckCircle className="h-4 w-4" />
+                                    إكمال
                                 </Button>
                             )}
                             {(booking.status === "pending" ||

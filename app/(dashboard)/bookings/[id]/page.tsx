@@ -37,6 +37,8 @@ type Booking = {
     status: string
     currency: string
     price: number
+    final_total_price?: number
+    final_price_for_host?: number
     commission: number
     service_fees: number
     message: string | null
@@ -95,6 +97,13 @@ type Booking = {
         attached: string | null
         attached_url: string | null
         created_at: string
+    }>
+    prices?: Array<{
+        id: number
+        booking_id: number
+        price: number
+        type: string
+        date: string
     }>
 }
 
@@ -204,29 +213,32 @@ export default function BookingDetails() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case "confirmed":
-            case "accepted":
-                return (
-                    <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
-                        <CheckCircle className="h-3 w-3" />
-                        تأكيد الإتاحية
-
-
-                    </Badge>
-                )
-            case "paid":
-                return (
-                    <Badge variant="default" className="flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        مدفوع
-                    </Badge>
-                )
             case "pending":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
+                        <Calendar className="h-3 w-3" />
+                        قيد الانتظار
+                    </Badge>
+                )
             case "waiting_payment":
                 return (
                     <Badge variant="outline" className="flex items-center gap-1 border-yellow-500 text-yellow-500">
                         <Calendar className="h-3 w-3" />
-                        بانتظار الدفع
+                        انتظار الدفع
+                    </Badge>
+                )
+            case "accepted":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-blue-500 text-blue-500">
+                        <CheckCircle className="h-3 w-3" />
+                        تأكيد الإتاحية
+                    </Badge>
+                )
+            case "confirmed":
+                return (
+                    <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
+                        <CheckCircle className="h-3 w-3" />
+                        مؤكد
                     </Badge>
                 )
             case "completed":
@@ -240,7 +252,7 @@ export default function BookingDetails() {
                 return (
                     <Badge variant="destructive" className="flex items-center gap-1">
                         <XCircle className="h-3 w-3" />
-                        ملغي
+                        ملغى
                     </Badge>
                 )
             case "rejected":
@@ -385,14 +397,14 @@ export default function BookingDetails() {
                                                     <div>
                                                         <div className="text-xs text-muted-foreground">من</div>
                                                         <div className="flex items-center font-medium">
-                                                            <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                            <Calendar className="ml-2 h-4 w-4 text-muted-foreground" />
                                                             {new Date(bookingDetails.start_date).toLocaleDateString("ar-SY")}
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <div className="text-xs text-muted-foreground">إلى</div>
                                                         <div className="flex items-center font-medium">
-                                                            <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                            <Calendar className="ml-2 h-4 w-4 text-muted-foreground" />
                                                             {new Date(bookingDetails.end_date).toLocaleDateString("ar-SY")}
                                                         </div>
                                                     </div>
@@ -407,7 +419,7 @@ export default function BookingDetails() {
                                             <CardContent>
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center">
-                                                        <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                        <Users className="ml-2 h-4 w-4 text-muted-foreground" />
                                                         <div>
                                                             <span className="font-medium">{bookingDetails.adults_count} بالغين</span>
                                                             {bookingDetails.children_count > 0 && (
@@ -430,34 +442,108 @@ export default function BookingDetails() {
                                     </div>
 
                                     {/* التفاصيل المالية */}
-                                    <h3 className="text-lg font-semibold">التفاصيل المالية</h3>
+                                    <h3 className="text-lg font-semibold">ملخص السعر</h3>
                                     <Card>
                                         <CardContent className="pt-6">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span>السعر الأساسي</span>
-                                                    <span>
-                                                        {bookingDetails.total_price} {bookingDetails.currency}
-                                                    </span>
-                                                </div>
+                                            <div className="space-y-3">
+                                                {/* عرض تفاصيل الأسعار من prices array */}
+                                                {bookingDetails.prices && bookingDetails.prices.length > 0 ? (
+                                                    <>
+                                                        {/* تجميع الأسعار حسب النوع */}
+                                                        {(() => {
+                                                            const normalPrices = bookingDetails.prices.filter((p: any) => p.type === 'normal');
+                                                            const weekendPrices = bookingDetails.prices.filter((p: any) => p.type === 'weekend');
+                                                            
+                                                            return (
+                                                                <>
+                                                                    {normalPrices.length > 0 && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span>ليالي عادية ({normalPrices.length})</span>
+                                                                            <span>
+                                                                                ${normalPrices[0].price} × {normalPrices.length}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {weekendPrices.length > 0 && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span>ليالي نهاية الأسبوع ({weekendPrices.length})</span>
+                                                                            <span>
+                                                                                ${weekendPrices[0].price} × {weekendPrices.length}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                        
+                                                        <div className="flex items-center justify-between font-medium">
+                                                            <span>المجموع قبل الرسوم</span>
+                                                            <span>
+                                                                {bookingDetails.currency} {bookingDetails.total_price}
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex items-center justify-between">
+                                                        <span>السعر الأساسي</span>
+                                                        <span>
+                                                            {bookingDetails.currency} {bookingDetails.total_price}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                
                                                 <div className="flex items-center justify-between">
                                                     <span>رسوم الخدمة</span>
                                                     <span>
-                                                        {bookingDetails.service_fees} {bookingDetails.currency}
+                                                        {bookingDetails.currency} {bookingDetails.service_fees}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span>العمولة</span>
-                                                    <span>
-                                                        {bookingDetails.commission} {bookingDetails.currency}
-                                                    </span>
-                                                </div>
+                                                
                                                 <Separator className="my-2" />
-                                                <div className="flex items-center justify-between font-bold">
-                                                    <span>المجموع</span>
-                                                    <span>
-                                                        {bookingDetails.total_price + bookingDetails.service_fees + bookingDetails.commission} {bookingDetails.currency}
+                                                
+                                                <div className="flex items-center justify-between font-bold text-lg">
+                                                    <span>المجموع الكلي</span>
+                                                    <span className="text-green-600">
+                                                        {bookingDetails.currency} {bookingDetails.final_total_price || (bookingDetails.total_price + bookingDetails.service_fees)}
                                                     </span>
+                                                </div>
+
+                                                {/* معلومات إضافية للمضيف */}
+                                                {bookingDetails.final_price_for_host && (
+                                                    <>
+                                                        <Separator className="my-2" />
+                                                        <div className="bg-muted/50 p-3 rounded-lg">
+                                                            <div className="text-sm font-medium mb-2">تفاصيل المضيف:</div>
+                                                            <div className="flex items-center justify-between text-sm">
+                                                                <span>المبلغ المستحق للمضيف</span>
+                                                                <span>
+                                                                    {bookingDetails.currency} {bookingDetails.final_price_for_host}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-sm mt-1">
+                                                                <span>العمولة ({bookingDetails.commission}%)</span>
+                                                                <span>
+                                                                    {bookingDetails.currency} {Math.round(bookingDetails.total_price * bookingDetails.commission / 100)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                
+                                                {/* تاريخ الحجز */}
+                                                <div className="mt-4 pt-2 border-t border-dashed">
+                                                    <div className="flex items-center justify-center text-sm text-muted-foreground">
+                                                        <Calendar className="h-4 w-4 ml-1" />
+                                                        تاريخ الحجز: {new Date(bookingDetails.start_date).toLocaleDateString("ar-SY", {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric"
+                                                        })} - {new Date(bookingDetails.end_date).toLocaleDateString("ar-SY", {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric"
+                                                        })}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -680,13 +766,14 @@ export default function BookingDetails() {
                                                                     <Badge variant="outline" className="border-red-500 text-red-500">
                                                                         صادر
                                                                     </Badge>
-                                                                )}
-                                                                <Badge variant={transaction.status === "confirmed" ? "default" : "outline"}>
-                                                                    {transaction.status === "confirmed" ? "مؤكد" :
-                                                                        transaction.status === "pending" ? "قيد الانتظار" :
-                                                                            transaction.status === "rejected" ? "مرفوض" :
-                                                                                transaction.status}
-                                                                </Badge>
+                                                                )}                                                <Badge variant={transaction.status === "confirmed" ? "default" : "outline"}>
+                                                    {transaction.status === "confirmed" ? "مؤكد" :
+                                                        transaction.status === "pending" ? "قيد الانتظار" :
+                                                            transaction.status === "waiting_payment" ? "انتظار الدفع" :
+                                                                transaction.status === "rejected" ? "مرفوض" :
+                                                                    transaction.status === "cancelled" ? "ملغى" :
+                                                                        transaction.status}
+                                                </Badge>
                                                             </div>
                                                             <div className="font-bold">
                                                                 {transaction.amount} {bookingDetails.currency}
@@ -739,20 +826,32 @@ export default function BookingDetails() {
                                         variant="default"
                                         onClick={() => handleStatusChange("accepted")}
                                         className="gap-2"
+                                        disabled={isSubmitting}
                                     >
                                         <CheckCircle className="h-4 w-4" />
                                         تأكيد الإتاحية
-
                                     </Button>
                                 )}
-                                {bookingDetails && bookingDetails.status === "accepted" && (
+                                {bookingDetails && (bookingDetails.status === "accepted" || bookingDetails.status === "waiting_payment") && (
                                     <Button
                                         variant="default"
                                         onClick={() => handleStatusChange("confirmed")}
                                         className="gap-2"
+                                        disabled={isSubmitting}
                                     >
                                         <CheckCircle className="h-4 w-4" />
-                                        تأكيد الحجز
+                                        تأكيد الدفع
+                                    </Button>
+                                )}
+                                {bookingDetails && bookingDetails.status === "confirmed" && (
+                                    <Button
+                                        variant="default"
+                                        onClick={() => handleStatusChange("completed")}
+                                        className="gap-2"
+                                        disabled={isSubmitting}
+                                    >
+                                        <CheckCircle className="h-4 w-4" />
+                                        إكمال
                                     </Button>
                                 )}
                                 {bookingDetails && (bookingDetails.status === "pending" ||
@@ -762,6 +861,7 @@ export default function BookingDetails() {
                                             variant="outline"
                                             onClick={() => handleStatusChange("rejected")}
                                             className="gap-2"
+                                            disabled={isSubmitting}
                                         >
                                             <XCircle className="h-4 w-4" />
                                             رفض
@@ -775,6 +875,7 @@ export default function BookingDetails() {
                                             variant="outline"
                                             onClick={() => handleStatusChange("cancelled")}
                                             className="gap-2"
+                                            disabled={isSubmitting}
                                         >
                                             <XCircle className="h-4 w-4" />
                                             إلغاء

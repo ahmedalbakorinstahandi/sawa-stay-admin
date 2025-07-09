@@ -36,7 +36,7 @@ const bookingFormSchema = z.object({
   children_count: z.coerce.number().min(0),
   infants_count: z.coerce.number().min(0),
   pets_count: z.coerce.number().min(0),
-  status: z.enum(["pending", "accepted", "confirmed", "completed", "cancelled", "rejected"]).optional(),
+  status: z.enum(["pending", "waiting_payment", "accepted", "confirmed", "completed", "cancelled", "rejected"]).optional(),
   admin_notes: z.string().optional(),
 })
 
@@ -230,31 +230,38 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
                         <SelectContent>
                           {/* عرض الحالة الحالية */}
                           <SelectItem value={booking.status}>
-                            {booking.status === "pending" && "بانتظار الدفع (الحالة الحالية)"}
-                            {booking.status === "accepted" && "تأكيد الحالة (الحالة الحالية)"}
+                            {booking.status === "pending" && "قيد الانتظار (الحالة الحالية)"}
+                            {booking.status === "waiting_payment" && "انتظار الدفع (الحالة الحالية)"}
+                            {booking.status === "accepted" && "تأكيد الإتاحية (الحالة الحالية)"}
                             {booking.status === "confirmed" && "مؤكد (الحالة الحالية)"}
                             {booking.status === "completed" && "مكتمل (الحالة الحالية)"}
-                            {booking.status === "cancelled" && "ملغي (الحالة الحالية)"}
+                            {booking.status === "cancelled" && "ملغى (الحالة الحالية)"}
                             {booking.status === "rejected" && "مرفوض (الحالة الحالية)"}
                           </SelectItem>
 
                           {/* عرض الحالات المتاحة للتحديث */}
                           {booking.status === "pending" && (
                             <>
-                              <SelectItem value="accepted">تم تأكيد الحالة</SelectItem>
-                              <SelectItem value="rejected">مرفوض</SelectItem>
+                              <SelectItem value="accepted">تأكيد الإتاحية</SelectItem>
+                              <SelectItem value="rejected">رفض</SelectItem>
+                            </>
+                          )}
+                          {booking.status === "waiting_payment" && (
+                            <>
+                              <SelectItem value="confirmed">تأكيد الدفع</SelectItem>
+                              <SelectItem value="cancelled">إلغاء</SelectItem>
                             </>
                           )}
                           {booking.status === "accepted" && (
                             <>
-                              <SelectItem value="confirmed">مؤكد</SelectItem>
-                              <SelectItem value="cancelled">ملغي</SelectItem>
+                              <SelectItem value="confirmed">تأكيد الدفع</SelectItem>
+                              <SelectItem value="cancelled">إلغاء</SelectItem>
                             </>
                           )}
                           {booking.status === "confirmed" && (
                             <>
-                              <SelectItem value="completed">مكتمل</SelectItem>
-                              <SelectItem value="cancelled">ملغي</SelectItem>
+                              <SelectItem value="completed">إكمال</SelectItem>
+                              <SelectItem value="cancelled">إلغاء</SelectItem>
                             </>
                           )}
                         </SelectContent>
