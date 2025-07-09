@@ -196,7 +196,7 @@ export default function UserDetailsPage({
   params: { id: string };
 }) {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("listings");
   const router = useRouter();
   const { toast } = useToast();
 
@@ -492,14 +492,14 @@ export default function UserDetailsPage({
             className="w-full"
           >
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger
+              <TabsList className="grid w-full grid-cols-4">
+                {/* <TabsTrigger
                   value="profile"
                   className="flex items-center gap-1"
                 >
                   <User className="h-4 w-4" />
                   <span>الملف الشخصي</span>
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger
                   value="listings"
                   className="flex items-center gap-1"

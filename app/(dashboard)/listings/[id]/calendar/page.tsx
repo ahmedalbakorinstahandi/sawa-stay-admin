@@ -32,6 +32,7 @@ interface Listing {
     en: string;
   };
   available_dates: string[];
+  not_available_dates: string[];
 }
 
 export default function ListingCalendarPage() {
@@ -44,11 +45,11 @@ export default function ListingCalendarPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [date, setDate] = useState<Date>(new Date());
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [notAvailableDates, setNotAvailableDates] = useState<Date[]>([]);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [removedDates, setRemovedDates] = useState<Date[]>([]);
 
-  // جلب بيانات العقار والتواريخ المتاحة
+  // جلب بيانات العقار والتواريخ غير المتاحة
   useEffect(() => {
     const fetchListing = async () => {
       try {
@@ -60,22 +61,21 @@ export default function ListingCalendarPage() {
           const listingData = response.data.data;
           setListing(listingData);
           console.log("Listing Data:", listingData);
-          
-          // تحويل التواريخ المتاحة إلى كائنات Date
-          // استخدام available_dates_pro التي تحتوي على التواريخ بصيغة YYYY-MM-DD
-          if (listingData.available_dates_pro && listingData.available_dates_pro.length > 0) {
-            console.log("Raw Available Dates:", listingData.available_dates_pro);
-            
-            const dates = listingData.available_dates_pro.map((dateStr: string) =>
+
+          // تحويل التواريخ غير المتاحة إلى كائنات Date
+          if (listingData.not_available_dates && listingData.not_available_dates.length > 0) {
+            console.log("Raw Not Available Dates:", listingData.not_available_dates);
+
+            const dates = listingData.not_available_dates.map((dateStr: string) =>
               parseISO(dateStr)
             );
-            console.log("Parsed Available Dates:", dates);
-            
-            setAvailableDates(dates);
+            console.log("Parsed Not Available Dates:", dates);
+
+            setNotAvailableDates(dates);
             setSelectedDates(dates);
           } else {
-            console.log("No available dates found");
-            setAvailableDates([]);
+            console.log("No not available dates found");
+            setNotAvailableDates([]);
             setSelectedDates([]);
           }
         } else {
@@ -101,21 +101,21 @@ export default function ListingCalendarPage() {
       return;
     }
 
-    // التحقق مما إذا كان التاريخ محدداً بالفعل
+    // التحقق مما إذا كان التاريخ محدداً بالفعل كغير متاح
     const isSelected = selectedDates.some((selectedDate) =>
       isSameDay(selectedDate, date)
     );
 
     if (isSelected) {
-      // إزالة التاريخ من القائمة المحددة
+      // إزالة التاريخ من القائمة المحددة (جعله متاح)
       setSelectedDates(selectedDates.filter((d) => !isSameDay(d, date)));
 
-      // إذا كان التاريخ متاحاً بالفعل، أضفه إلى قائمة التواريخ المحذوفة
-      if (availableDates.some((d) => isSameDay(d, date))) {
+      // إذا كان التاريخ غير متاح بالفعل، أضفه إلى قائمة التواريخ المحذوفة
+      if (notAvailableDates.some((d) => isSameDay(d, date))) {
         setRemovedDates([...removedDates, date]);
       }
     } else {
-      // إضافة التاريخ إلى القائمة المحددة
+      // إضافة التاريخ إلى القائمة المحددة (جعله غير متاح)
       setSelectedDates([...selectedDates, date]);
 
       // إذا كان التاريخ في قائمة التواريخ المحذوفة، قم بإزالته منها
@@ -128,16 +128,16 @@ export default function ListingCalendarPage() {
     setIsSaving(true);
 
     try {
-      // تحديد التواريخ الجديدة (التي لم تكن متاحة من قبل)
-      const newDates = selectedDates.filter(
-        (date) => !availableDates.some((d) => isSameDay(d, date))
+      // تحديد التواريخ الجديدة غير المتاحة (التي لم تكن غير متاحة من قبل)
+      const newNotAvailableDates = selectedDates.filter(
+        (date) => !notAvailableDates.some((d) => isSameDay(d, date))
       );
 
       // تنسيق التواريخ بالصيغة المطلوبة (YYYY-MM-DD)
-      const formattedNewDates = newDates.map((date) =>
+      const formattedNewNotAvailableDates = newNotAvailableDates.map((date) =>
         format(date, "yyyy-MM-dd")
       );
-      const formattedRemovedDates = removedDates.map((date) =>
+      const formattedRemovedNotAvailableDates = removedDates.map((date) =>
         format(date, "yyyy-MM-dd")
       );
 
@@ -145,31 +145,31 @@ export default function ListingCalendarPage() {
       const response = await api.put(
         `/admin/listings/${listingId}/available-dates`,
         {
-          available_dates: formattedNewDates,
-          removed_available_dates: formattedRemovedDates,
+          not_available_dates: formattedNewNotAvailableDates,
+          removed_not_available_dates: formattedRemovedNotAvailableDates,
         }
       );
 
       if (response.data.success) {
         toast.success(response.data.message);
 
-        // تحديث قائمة التواريخ المتاحة
-        const updatedAvailableDates = [
-          ...availableDates.filter(
+        // تحديث قائمة التواريخ غير المتاحة
+        const updatedNotAvailableDates = [
+          ...notAvailableDates.filter(
             (date) => !removedDates.some((d) => isSameDay(d, date))
           ),
-          ...newDates,
+          ...newNotAvailableDates,
         ];
 
-        setAvailableDates(updatedAvailableDates);
-        setSelectedDates(updatedAvailableDates);
+        setNotAvailableDates(updatedNotAvailableDates);
+        setSelectedDates(updatedNotAvailableDates);
         setRemovedDates([]);
       } else {
-        toast.error("فشل في تحديث التواريخ المتاحة");
+        toast.error("فشل في تحديث التواريخ غير المتاحة");
       }
     } catch (error) {
-      console.error("Error updating available dates:", error);
-      toast.error("حدث خطأ أثناء تحديث التواريخ المتاحة");
+      console.error("Error updating not available dates:", error);
+      toast.error("حدث خطأ أثناء تحديث التواريخ غير المتاحة");
     } finally {
       setIsSaving(false);
     }
@@ -270,7 +270,7 @@ export default function ListingCalendarPage() {
 
                   {/* أيام الشهر */}
                   {getDaysInMonth().map((day) => {
-                    const isAvailable = selectedDates.some((d) =>
+                    const isNotAvailable = selectedDates.some((d) =>
                       isSameDay(d, day)
                     );
                     const isPast =
@@ -282,13 +282,12 @@ export default function ListingCalendarPage() {
                         type="button"
                         onClick={() => handleDateClick(day)}
                         disabled={isPast}
-                        className={`h-12 rounded-md flex items-center justify-center text-sm transition-colors ${
-                          isPast
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : isAvailable
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-white border border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`h-12 rounded-md flex items-center justify-center text-sm transition-colors ${isPast
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : isNotAvailable
+                            ? "bg-red-100 text-red-800 hover:bg-red-200"
+                            : "bg-green-100 text-green-800 hover:bg-green-200"
+                          }`}
                       >
                         {format(day, "d")}
                       </button>
@@ -351,7 +350,7 @@ export default function ListingCalendarPage() {
 
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">
-                      التواريخ المتاحة
+                      التواريخ غير المتاحة
                     </h3>
                     <p className="font-medium">{selectedDates.length} يوم</p>
                   </div>
@@ -362,21 +361,21 @@ export default function ListingCalendarPage() {
                     </h3>
                     <div className="space-y-1 mt-1">
                       <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-green-500 ml-2"></div>
+                        <div className="w-3 h-3 rounded-full bg-red-500 ml-2"></div>
                         <span className="text-sm">
                           {
                             selectedDates.filter(
                               (date) =>
-                                !availableDates.some((d) => isSameDay(d, date))
+                                !notAvailableDates.some((d) => isSameDay(d, date))
                             ).length
                           }{" "}
-                          تواريخ مضافة
+                          تواريخ غير متاحة مضافة
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-red-500 ml-2"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500 ml-2"></div>
                         <span className="text-sm">
-                          {removedDates.length} تواريخ محذوفة
+                          {removedDates.length} تواريخ عادت للإتاحة
                         </span>
                       </div>
                     </div>
@@ -389,7 +388,7 @@ export default function ListingCalendarPage() {
                     <ul className="text-sm space-y-1 list-disc list-inside">
                       <li>انقر على التاريخ لتحديده كمتاح أو غير متاح</li>
                       <li>التواريخ الخضراء متاحة للحجز</li>
-                      <li>التواريخ البيضاء غير متاحة للحجز</li>
+                      <li>التواريخ الحمراء غير متاحة للحجز</li>
                       <li>لا يمكن تحديد التواريخ السابقة</li>
                     </ul>
                   </div>
