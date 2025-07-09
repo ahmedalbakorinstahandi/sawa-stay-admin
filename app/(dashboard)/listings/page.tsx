@@ -37,23 +37,24 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import {
+  ArrowUpDown,
+  Calendar,
   CheckCircle,
   Edit,
   Eye,
+  Heart,
   Home,
+  ListFilter,
+  Loader2,
   MoreHorizontal,
   PauseCircle,
   Plus,
-  Search,
-  Trash2,
-  XCircle,
-  ListFilter,
-  Tag,
-  Heart,
-  Loader2,
   RefreshCcw,
-  Calendar,
-  ArrowUpDown,
+  Search,
+  Tag,
+  Trash2,
+  User, // إضافة أيقونة المستخدم
+  XCircle,
   Star,
 } from "lucide-react";
 import {
@@ -71,6 +72,7 @@ import { CategoryDialog } from "@/components/listings/category-dialog";
 import { CategoryDeleteDialog } from "@/components/listings/category-delete-dialog";
 import { FeatureDialog } from "@/components/listings/feature-dialog";
 import { FeatureDeleteDialog } from "@/components/listings/feature-delete-dialog";
+import { ChangeOwnerDialog } from "@/components/listings/change-owner-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -222,6 +224,7 @@ export default function ListingsPage() {
     useState(false);
   const [isListingReorderDialogOpen, setIsListingReorderDialogOpen] =
     useState(false);
+  const [isChangeOwnerDialogOpen, setIsChangeOwnerDialogOpen] = useState(false); // إضافة state لحوار تغيير المالك
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isCategoryDeleteDialogOpen, setIsCategoryDeleteDialogOpen] =
     useState(false);
@@ -593,6 +596,11 @@ export default function ListingsPage() {
   const handleReorderListing = (listing: any) => {
     setSelectedListing(listing);
     setIsListingReorderDialogOpen(true);
+  };
+
+  const handleChangeOwner = (listing: any) => {
+    setSelectedListing(listing);
+    setIsChangeOwnerDialogOpen(true);
   };
 
   const handleReorderListingConfirm = async (listingId: number, newIndex: number) => {
@@ -1327,6 +1335,12 @@ export default function ListingsPage() {
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                     ترتيب الإعلان
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleChangeOwner(listing)}
+                                  >
+                                    <User className="ml-2 h-4 w-4" />
+                                    تغيير مالك العقار
+                                  </DropdownMenuItem>
                                   {listing.status !== "approved" && (
                                     <DropdownMenuItem
                                       onClick={() =>
@@ -1752,6 +1766,15 @@ export default function ListingsPage() {
         listing={selectedListing}
         totalCount={totalCount}
         onReorder={handleReorderListingConfirm}
+      />
+
+      <ChangeOwnerDialog
+        open={isChangeOwnerDialogOpen}
+        onOpenChange={setIsChangeOwnerDialogOpen}
+        listing={selectedListing}
+        onSuccess={() => {
+          fetchListings();
+        }}
       />
 
       <CategoryDialog
