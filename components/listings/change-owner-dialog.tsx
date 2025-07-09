@@ -36,12 +36,29 @@ export function ChangeOwnerDialog({
 }: ChangeOwnerDialogProps) {
     const { toast } = useToast();
     const [selectedHostId, setSelectedHostId] = useState<string | undefined>();
+    const [selectedHostLabel, setSelectedHostLabel] = useState<string>("");
+    const [selectedUserCache, setSelectedUserCache] = useState<Map<string, string>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
+
+    // الحصول على اسم المالك الحالي
+    const getCurrentOwnerLabel = () => {
+        if (listing?.host) {
+            return `${listing.host.first_name} ${listing.host.last_name} (${listing.host.country_code}${listing.host.phone_number})`;
+        }
+        return "";
+    };
 
     // إعادة تعيين القيم عند فتح الحوار
     useEffect(() => {
         if (open && listing) {
             setSelectedHostId(listing.host_id?.toString());
+            const currentOwnerLabel = getCurrentOwnerLabel() + " - المالك الحالي";
+            setSelectedHostLabel(currentOwnerLabel);
+            
+            // إضافة المالك الحالي إلى الكاش
+            const newCache = new Map();
+            newCache.set(listing.host_id?.toString(), currentOwnerLabel);
+            setSelectedUserCache(newCache);
         }
     }, [open, listing]);
 
@@ -60,16 +77,95 @@ export function ChangeOwnerDialog({
 
             const response = await api.get("/admin/users", { params });
 
+            let users: UserOption[] = [];
+
             if (response.data?.success && response.data?.data) {
-                return response.data.data.map((user: any) => ({
+                users = response.data.data.map((user: any) => ({
                     value: user.id.toString(),
-                    label: `${user.first_name} ${user.last_name} (${listing.host.country_code}${listing.host.phone_number})`,
+                    label: `${user.first_name} ${user.last_name} (${user.country_code}${user.phone_number})`,
                 }));
+
+                // إضافة المستخدمين إلى الكاش
+                users.forEach(user => {
+                    setSelectedUserCache(prev => new Map(prev.set(user.value, user.label)));
+                });
             }
-            return [];
+
+            // دائماً أضف المالك الحالي في بداية القائمة إذا كان موجوداً
+            if (listing?.host) {
+                const currentOwnerExists = users.some((user: UserOption) => user.value === listing.host_id.toString());
+                
+                if (!currentOwnerExists) {
+                    // إضافة المالك الحالي في بداية القائمة
+                    const currentOwnerLabel = `${listing.host.first_name} ${listing.host.last_name} (${listing.host.country_code}${listing.host.phone_number}) - المالك الحالي`;
+                    users.unshift({
+                        value: listing.host_id.toString(),
+                        label: currentOwnerLabel,
+                    });
+                } else {
+                    // تحديث تسمية المالك الحالي لتتضمن "المالك الحالي"
+                    const currentOwnerIndex = users.findIndex((user: UserOption) => user.value === listing.host_id.toString());
+                    if (currentOwnerIndex !== -1) {
+                        users[currentOwnerIndex].label = `${listing.host.first_name} ${listing.host.last_name} (${listing.host.country_code}${listing.host.phone_number}) - المالك الحالي`;
+                        // نقل المالك الحالي إلى بداية القائمة
+                        const currentOwner = users.splice(currentOwnerIndex, 1)[0];
+                        users.unshift(currentOwner);
+                    }
+                }
+            }
+
+            // إضافة أي مستخدمين مختارين سابقاً من الكاش إذا لم يكونوا في النتائج
+            selectedUserCache.forEach((label, userId) => {
+                const userExists = users.some(user => user.value === userId);
+                if (!userExists && userId !== listing?.host_id?.toString()) {
+                    users.push({
+                        value: userId,
+                        label: label,
+                    });
+                }
+            });
+
+            return users;
         } catch (error) {
             console.error("Error loading users:", error);
+            // في حالة الخطأ، تأكد من إرجاع المالك الحالي على الأقل
+            if (listing?.host) {
+                return [{
+                    value: listing.host_id.toString(),
+                    label: `${listing.host.first_name} ${listing.host.last_name} (${listing.host.country_code}${listing.host.phone_number}) - المالك الحالي`,
+                }];
+            }
             return [];
+        }
+    };
+
+    // دالة لمعالجة تغيير الاختيار
+    const handleHostChange = (value: string | undefined, option?: UserOption) => {
+        setSelectedHostId(value);
+        
+        if (value && option) {
+            // استخدام البيانات المُرسلة مباشرة من المكون
+            setSelectedHostLabel(option.label);
+            // إضافة المستخدم إلى الكاش
+            setSelectedUserCache(prev => new Map(prev.set(value, option.label)));
+        } else if (value) {
+            // البحث في الكاش أولاً
+            const cachedLabel = selectedUserCache.get(value);
+            if (cachedLabel) {
+                setSelectedHostLabel(cachedLabel);
+            } else {
+                // إذا لم يكن في الكاش، ابحث في النتائج
+                loadUserOptions("").then((users) => {
+                    const selectedUser = users.find(user => user.value === value);
+                    if (selectedUser) {
+                        setSelectedHostLabel(selectedUser.label);
+                        // إضافة المستخدم إلى الكاش
+                        setSelectedUserCache(prev => new Map(prev.set(value, selectedUser.label)));
+                    }
+                });
+            }
+        } else {
+            setSelectedHostLabel("");
         }
     };
 
@@ -130,15 +226,8 @@ export function ChangeOwnerDialog({
 
     const handleCancel = () => {
         setSelectedHostId(listing?.host_id?.toString());
+        setSelectedHostLabel(getCurrentOwnerLabel() + " - المالك الحالي");
         onOpenChange(false);
-    };
-
-    // الحصول على اسم المالك الحالي
-    const getCurrentOwnerLabel = () => {
-        if (listing?.host) {
-            return `${listing.host.first_name} ${listing.host.last_name} (${listing.host.country_code}${listing.host.phone_number})`;
-        }
-        return "";
     };
 
     return (
@@ -167,9 +256,9 @@ export function ChangeOwnerDialog({
                         <AsyncSelectComponent
                             placeholder="ابحث عن مستخدم..."
                             value={selectedHostId}
-                            onChange={setSelectedHostId}
+                            onChange={handleHostChange}
                             loadOptions={loadUserOptions}
-                            defaultLabel={getCurrentOwnerLabel()}
+                            defaultLabel={selectedHostLabel}
                         />
                     </div>
                 </div>

@@ -12,7 +12,7 @@ interface Option {
 interface AsyncSelectProps {
   placeholder?: string;
   value?: string;
-  onChange: (value: string | undefined) => void;
+  onChange: (value: string | undefined, option?: Option) => void;
   loadOptions: (inputValue: string) => Promise<Option[]>;
   isLoading?: boolean;
   isDisabled?: boolean;
@@ -38,12 +38,20 @@ const AsyncSelectComponent: React.FC<AsyncSelectProps> = ({
       setSelectedOption({ value, label: defaultLabel });
     } else if (!value) {
       setSelectedOption(null);
+    } else if (value && !defaultLabel) {
+      // إذا كان هناك قيمة ولكن لا يوجد defaultLabel، حاول البحث عن الخيار
+      loadOptions("").then((options) => {
+        const foundOption = options.find(option => option.value === value);
+        if (foundOption) {
+          setSelectedOption(foundOption);
+        }
+      });
     }
-  }, [value, defaultLabel]);
+  }, [value, defaultLabel, loadOptions]);
 
   const handleChange = (selectedOption: Option | null) => {
     setSelectedOption(selectedOption);
-    onChange(selectedOption?.value);
+    onChange(selectedOption?.value, selectedOption || undefined);
   };
 
   const customStyles = {
