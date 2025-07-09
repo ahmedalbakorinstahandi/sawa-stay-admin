@@ -204,7 +204,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                 return (
                     <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
                         <CheckCircle className="h-3 w-3" />
-                        مؤكد
+                        تأكيد الإتاحية
                     </Badge>
                 )
             case "paid":
@@ -312,6 +312,14 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                         <div className="font-semibold">
                                             {bookingDetails?.listing?.title?.ar || `إعلان رقم #${bookingDetails?.listing_id || 'N/A'}`}
                                         </div>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => window.location.href = `/listings/${bookingDetails.listing_id}`}
+                                            className="text-xs"
+                                        >
+                                            عرض الإعلان
+                                        </Button>
                                     </div>
                                     {bookingDetails.listing?.description?.ar && (
                                         <p className="text-sm text-muted-foreground">
@@ -688,7 +696,7 @@ export const BookingDetails = ({ open, onOpenChange, booking, onStatusChange }: 
                                     className="gap-2"
                                 >
                                     <CheckCircle className="h-4 w-4" />
-                                    تأكيد الدفع
+                                    تأكيد الإتاحية
                                 </Button>
                             )}
                             {booking.status === "accepted" && (

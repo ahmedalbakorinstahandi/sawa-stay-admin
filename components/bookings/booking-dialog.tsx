@@ -231,17 +231,17 @@ export function BookingDialog({ open, onOpenChange, booking, onSave }: BookingDi
                           {/* عرض الحالة الحالية */}
                           <SelectItem value={booking.status}>
                             {booking.status === "pending" && "بانتظار الدفع (الحالة الحالية)"}
-                            {booking.status === "accepted" && "مقبول (الحالة الحالية)"}
+                            {booking.status === "accepted" && "تأكيد الحالة (الحالة الحالية)"}
                             {booking.status === "confirmed" && "مؤكد (الحالة الحالية)"}
                             {booking.status === "completed" && "مكتمل (الحالة الحالية)"}
                             {booking.status === "cancelled" && "ملغي (الحالة الحالية)"}
                             {booking.status === "rejected" && "مرفوض (الحالة الحالية)"}
                           </SelectItem>
-                          
+
                           {/* عرض الحالات المتاحة للتحديث */}
                           {booking.status === "pending" && (
                             <>
-                              <SelectItem value="accepted">تم الدفع</SelectItem>
+                              <SelectItem value="accepted">تم تأكيد الحالة</SelectItem>
                               <SelectItem value="rejected">مرفوض</SelectItem>
                             </>
                           )}

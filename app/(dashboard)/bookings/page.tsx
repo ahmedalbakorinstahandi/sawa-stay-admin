@@ -212,7 +212,8 @@ export default function BookingsPage() {
       case "accepted":
         return (<Badge variant="outline" className="flex items-center gap-1 border-success text-success">
           <CheckCircle className="h-3 w-3" />
-          تم الدفع
+          تم تأكيد الإتاحية
+
         </Badge>
         )
       case "paid":
@@ -390,7 +391,7 @@ export default function BookingsPage() {
         switch (newStatus) {
           case "confirmed":
           case "accepted":
-            statusText = "تأكيد"
+            statusText = "تأكيد الإتاحية"
             break
           case "paid":
             statusText = "تأكيد دفع"
@@ -598,7 +599,7 @@ export default function BookingsPage() {
                 </SelectItem>
                 <SelectItem value="accepted" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-info"></div>
-                  مقبول
+                  تأكيد الإتاحية
                 </SelectItem>
                 <SelectItem value="confirmed" className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success"></div>
@@ -719,7 +720,12 @@ export default function BookingsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
+                            <DropdownMenuItem
+
+                              // onClick={() => handleViewDetails(booking)}
+                              onClick={() => window.location.href = `/bookings/${booking.id}`}
+
+                            >
                               <Eye className="ml-2 h-4 w-4" />
                               عرض التفاصيل
                             </DropdownMenuItem>
@@ -731,7 +737,8 @@ export default function BookingsPage() {
                               <>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "accepted")}>
                                   <CheckCircle className="ml-2 h-4 w-4" />
-                                  تم الدفع
+                                  تأكيد الإتاحية
+
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleUpdateStatus(booking, "rejected")}>
                                   <XCircle className="ml-2 h-4 w-4" />
@@ -816,12 +823,12 @@ export default function BookingsPage() {
                   />
                 </PaginationItem>{/* First page */}                {totalPages > 0 && (
                   <PaginationItem>                      <PaginationLink
-                        onClick={() => handlePageChange(1)}
-                        isActive={page === 1}
-                        className={`cursor-pointer ${page === 1 ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card border shadow-sm hover:bg-muted transition-colors'}`}
-                      >
-                        1
-                      </PaginationLink>
+                    onClick={() => handlePageChange(1)}
+                    isActive={page === 1}
+                    className={`cursor-pointer ${page === 1 ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card border shadow-sm hover:bg-muted transition-colors'}`}
+                  >
+                    1
+                  </PaginationLink>
                   </PaginationItem>
                 )}
 

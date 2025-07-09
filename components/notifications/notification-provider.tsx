@@ -17,7 +17,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     // Initialize notifications only once when component mounts
     if (!isInitialized && isSupported) {
       console.log('Initializing notification provider...');
-      
+
       initializeFirebase().then(() => {
         setIsInitialized(true);
         console.log('Notification provider initialized');
@@ -34,7 +34,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         if (event.data?.type === 'NOTIFICATION_RECEIVED') {
           const payload = event.data.payload;
           console.log('Received notification from service worker:', payload);
-          
+
           // Show toast for background notifications when app is visible
           if (document.visibilityState === 'visible') {
             toast({
@@ -55,15 +55,15 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   }, [isInitialized, toast]);
 
   // Show a debug toast when notifications are ready (only in development)
-  useEffect(() => {
-    if (isInitialized && process.env.NODE_ENV === 'development') {
-      toast({
-        title: "نظام الإشعارات جاهز",
-        description: "ستظهر الإشعارات كـ toast عند وصولها",
-        duration: 3000,
-      });
-    }
-  }, [isInitialized, toast]);
+  // useEffect(() => {
+  //   if (isInitialized && process.env.NODE_ENV === 'development') {
+  //     toast({
+  //       title: "نظام الإشعارات جاهز",
+  //       description: "ستظهر الإشعارات كـ toast عند وصولها",
+  //       duration: 3000,
+  //     });
+  //   }
+  // }, [isInitialized, toast]);
 
   return <>{children}</>;
 };

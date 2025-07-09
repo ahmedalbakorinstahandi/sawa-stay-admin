@@ -28,6 +28,7 @@ type Booking = {
     id: number
     listing_id: number
     host_id: number
+    total_price: number
     guest_id: number
     start_date: string
     end_date: string
@@ -208,7 +209,9 @@ export default function BookingDetails() {
                 return (
                     <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-500">
                         <CheckCircle className="h-3 w-3" />
-                        مؤكد
+                        تأكيد الإتاحية
+
+
                     </Badge>
                 )
             case "paid":
@@ -354,6 +357,14 @@ export default function BookingDetails() {
                                             <div className="font-semibold">
                                                 {bookingDetails?.listing?.title?.ar || `إعلان رقم #${bookingDetails?.listing_id || 'N/A'}`}
                                             </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => window.location.href = `/listings/${bookingDetails.listing_id}`}
+                                                className="text-xs"
+                                            >
+                                                عرض الإعلان
+                                            </Button>
                                         </div>
                                         {bookingDetails.listing?.description?.ar && (
                                             <p className="text-sm text-muted-foreground">
@@ -426,7 +437,7 @@ export default function BookingDetails() {
                                                 <div className="flex items-center justify-between">
                                                     <span>السعر الأساسي</span>
                                                     <span>
-                                                        {bookingDetails.price} {bookingDetails.currency}
+                                                        {bookingDetails.total_price} {bookingDetails.currency}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
@@ -445,7 +456,7 @@ export default function BookingDetails() {
                                                 <div className="flex items-center justify-between font-bold">
                                                     <span>المجموع</span>
                                                     <span>
-                                                        {bookingDetails.price + bookingDetails.service_fees} {bookingDetails.currency}
+                                                        {bookingDetails.total_price + bookingDetails.service_fees + bookingDetails.commission} {bookingDetails.currency}
                                                     </span>
                                                 </div>
                                             </div>
@@ -730,7 +741,8 @@ export default function BookingDetails() {
                                         className="gap-2"
                                     >
                                         <CheckCircle className="h-4 w-4" />
-                                        تأكيد الدفع
+                                        تأكيد الإتاحية
+
                                     </Button>
                                 )}
                                 {bookingDetails && bookingDetails.status === "accepted" && (
