@@ -44,7 +44,7 @@ export default function NotificationsPage() {
     let redirectPath = null
 
     switch (notificationType) {
-      case  "general":
+      case "general":
         redirectPath = "/"
         break
       case "booking":
@@ -328,9 +328,10 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Test helper for notifications */}
+      {/* Test helper for notifications
+      
       <NotificationBehaviorTester />
-      <NotificationTestHelper />
+      <NotificationTestHelper /> */}
 
       <Card>
         <CardHeader>
@@ -409,7 +410,7 @@ export default function NotificationsPage() {
                             >
                               <Bell className="h-5 w-5" />
                             </div>
-                            <div 
+                            <div
                               className="flex-1 cursor-pointer hover:bg-muted/30 rounded-md p-2 -m-2 transition-colors"
                               onClick={() => handleNotificationClick(notification)}
                             >
