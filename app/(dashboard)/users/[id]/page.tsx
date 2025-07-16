@@ -42,6 +42,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useToast } from "@/hooks/use-toast";
 import { api, usersAPI, bookingsAPI, transactionsAPI, listingsAPI } from "@/lib/api";
 import Loading from "../loading";
@@ -153,16 +162,31 @@ export default function UserDetailsPage({
   const [isLoadingListings, setIsLoadingListings] = useState(false);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  
+  // Pagination state for each tab
+  const [listingsPage, setListingsPage] = useState(1);
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [transactionsPage, setTransactionsPage] = useState(1);
+  const [listingsTotalPages, setListingsTotalPages] = useState(1);
+  const [bookingsTotalPages, setBookingsTotalPages] = useState(1);
+  const [transactionsTotalPages, setTransactionsTotalPages] = useState(1);
+  const [listingsTotalCount, setListingsTotalCount] = useState(0);
+  const [bookingsTotalCount, setBookingsTotalCount] = useState(0);
+  const [transactionsTotalCount, setTransactionsTotalCount] = useState(0);
+  const perPage = 10;
   const router = useRouter();
   const { toast } = useToast();
 
   // Fetch user listings
-  const fetchUserListings = async () => {
+  const fetchUserListings = async (page: number = listingsPage) => {
     setIsLoadingListings(true);
     try {
-      const response = await listingsAPI.getAll(1, 50, { host_id: resolvedParams.id });
+      const response = await listingsAPI.getAll(page, perPage, { host_id: resolvedParams.id });
       if (response.success) {
         setUserListings(response.data || []);
+        setListingsTotalPages(response.meta?.last_page || 1);
+        setListingsTotalCount(response.meta?.total || 0);
+        setListingsPage(page);
       } else {
         toast({
           title: "خطأ",
@@ -183,12 +207,15 @@ export default function UserDetailsPage({
   };
 
   // Fetch user bookings
-  const fetchUserBookings = async () => {
+  const fetchUserBookings = async (page: number = bookingsPage) => {
     setIsLoadingBookings(true);
     try {
-      const response = await bookingsAPI.getAll(1, 50, { host_id: resolvedParams.id });
+      const response = await bookingsAPI.getAll(page, perPage, { host_id: resolvedParams.id });
       if (response.success) {
         setUserBookings(response.data || []);
+        setBookingsTotalPages(response.meta?.last_page || 1);
+        setBookingsTotalCount(response.meta?.total || 0);
+        setBookingsPage(page);
       } else {
         toast({
           title: "خطأ",
@@ -207,14 +234,71 @@ export default function UserDetailsPage({
       setIsLoadingBookings(false);
     }
   };
-
+const getStatusBadgeBooking = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-warning text-warning">
+            <Calendar className="h-3 w-3" />
+            قيد الانتظار
+          </Badge>
+        )
+      case "accepted":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-info text-لقثث">
+            <Calendar className="h-3 w-3" />
+            انتظار الدفع
+          </Badge>
+        )
+      // case "accepted":
+      //   return (
+      //     <Badge variant="outline" className="flex items-center gap-1 border-info text-info">
+      //       <CheckCircle className="h-3 w-3" />
+      //       تأكيد الإتاحية
+      //     </Badge>
+      //   )
+      case "confirmed":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-success text-success">
+            <CheckCircle className="h-3 w-3" />
+            مؤكد
+          </Badge>
+        )
+      case "completed":
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 border-success text-success">
+            <CheckCircle className="h-3 w-3" />
+            مكتمل
+          </Badge>
+        )
+      case "cancelled":
+        return (
+          <Badge variant="destructive" className="flex items-center gap-1">
+            <XCircle className="h-3 w-3" />
+            ملغى
+          </Badge>
+        )
+      case "rejected":
+        return (
+          <Badge variant="destructive" className="flex items-center gap-1">
+            <XCircle className="h-3 w-3" />
+            مرفوض
+          </Badge>
+        )
+      default:
+        return <Badge>{status}</Badge>
+    }
+  }
   // Fetch user transactions
-  const fetchUserTransactions = async () => {
+  const fetchUserTransactions = async (page: number = transactionsPage) => {
     setIsLoadingTransactions(true);
     try {
-      const response = await transactionsAPI.getAll(1, 50, { user_id: resolvedParams.id });
+      const response = await transactionsAPI.getAll(page, perPage, { user_id: resolvedParams.id });
       if (response.success) {
         setUserTransactions(response.data || []);
+        setTransactionsTotalPages(response.meta?.last_page || 1);
+        setTransactionsTotalCount(response.meta?.total || 0);
+        setTransactionsPage(page);
       } else {
         toast({
           title: "خطأ",
@@ -435,6 +519,10 @@ export default function UserDetailsPage({
         return (
           <Badge className="bg-red-100 text-red-600">فشل</Badge>
         );
+      case "refund":
+        return (
+          <Badge className="bg-orange-100 text-orange-600">استرداد</Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
@@ -500,6 +588,19 @@ export default function UserDetailsPage({
       }
     }
     return listing.property_type || "غير محدد";
+  };
+
+  // Pagination handlers
+  const handleListingsPageChange = (page: number) => {
+    fetchUserListings(page);
+  };
+
+  const handleBookingsPageChange = (page: number) => {
+    fetchUserBookings(page);
+  };
+
+  const handleTransactionsPageChange = (page: number) => {
+    fetchUserTransactions(page);
   };
 
   return (
@@ -981,6 +1082,104 @@ export default function UserDetailsPage({
                       </Table>
                     </div>
                   )}
+
+                  {/* Pagination for Listings */}
+                  {listingsTotalPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        عرض {userListings.length} من {listingsTotalCount} إعلان
+                      </p>
+                      <Pagination className="w-auto">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => listingsPage > 1 && handleListingsPageChange(listingsPage - 1)}
+                              className={listingsPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          
+                          {listingsTotalPages <= 7 ? (
+                            // Show all pages if there are 7 or fewer
+                            Array.from({ length: listingsTotalPages }, (_, i) => i + 1).map((page) => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => handleListingsPageChange(page)}
+                                  isActive={page === listingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))
+                          ) : (
+                            // Show truncated pagination for more than 7 pages
+                            <>
+                              {/* First page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleListingsPageChange(1)}
+                                  isActive={1 === listingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  1
+                                </PaginationLink>
+                              </PaginationItem>
+
+                              {/* Ellipsis if current page is far from start */}
+                              {listingsPage > 3 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Current page and neighbors */}
+                              {Array.from(
+                                { length: Math.min(3, listingsTotalPages - 2) },
+                                (_, i) => Math.max(2, Math.min(listingsPage - 1 + i, listingsTotalPages - 1))
+                              )
+                                .filter((page, index, arr) => arr.indexOf(page) === index)
+                                .map((page) => (
+                                  <PaginationItem key={page}>
+                                    <PaginationLink
+                                      onClick={() => handleListingsPageChange(page)}
+                                      isActive={page === listingsPage}
+                                      className="cursor-pointer"
+                                    >
+                                      {page}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                ))}
+
+                              {/* Ellipsis if current page is far from end */}
+                              {listingsPage < listingsTotalPages - 2 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Last page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleListingsPageChange(listingsTotalPages)}
+                                  isActive={listingsTotalPages === listingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {listingsTotalPages}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </>
+                          )}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => listingsPage < listingsTotalPages && handleListingsPageChange(listingsPage + 1)}
+                              className={listingsPage === listingsTotalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -1049,12 +1248,110 @@ export default function UserDetailsPage({
                                 {booking.total_price} {booking.currency}
                               </TableCell>
                               <TableCell>
-                                {getBookingStatusBadge(booking.status)}
+                                {getStatusBadgeBooking(booking.status)}
                               </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
+                    </div>
+                  )}
+
+                  {/* Pagination for Bookings */}
+                  {bookingsTotalPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        عرض {userBookings.length} من {bookingsTotalCount} حجز
+                      </p>
+                      <Pagination className="w-auto">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => bookingsPage > 1 && handleBookingsPageChange(bookingsPage - 1)}
+                              className={bookingsPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          
+                          {bookingsTotalPages <= 7 ? (
+                            // Show all pages if there are 7 or fewer
+                            Array.from({ length: bookingsTotalPages }, (_, i) => i + 1).map((page) => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => handleBookingsPageChange(page)}
+                                  isActive={page === bookingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))
+                          ) : (
+                            // Show truncated pagination for more than 7 pages
+                            <>
+                              {/* First page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleBookingsPageChange(1)}
+                                  isActive={1 === bookingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  1
+                                </PaginationLink>
+                              </PaginationItem>
+
+                              {/* Ellipsis if current page is far from start */}
+                              {bookingsPage > 3 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Current page and neighbors */}
+                              {Array.from(
+                                { length: Math.min(3, bookingsTotalPages - 2) },
+                                (_, i) => Math.max(2, Math.min(bookingsPage - 1 + i, bookingsTotalPages - 1))
+                              )
+                                .filter((page, index, arr) => arr.indexOf(page) === index)
+                                .map((page) => (
+                                  <PaginationItem key={page}>
+                                    <PaginationLink
+                                      onClick={() => handleBookingsPageChange(page)}
+                                      isActive={page === bookingsPage}
+                                      className="cursor-pointer"
+                                    >
+                                      {page}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                ))}
+
+                              {/* Ellipsis if current page is far from end */}
+                              {bookingsPage < bookingsTotalPages - 2 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Last page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleBookingsPageChange(bookingsTotalPages)}
+                                  isActive={bookingsTotalPages === bookingsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {bookingsTotalPages}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </>
+                          )}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => bookingsPage < bookingsTotalPages && handleBookingsPageChange(bookingsPage + 1)}
+                              className={bookingsPage === bookingsTotalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
                   )}
                 </div>
@@ -1134,6 +1431,104 @@ export default function UserDetailsPage({
                           ))}
                         </TableBody>
                       </Table>
+                    </div>
+                  )}
+
+                  {/* Pagination for Transactions */}
+                  {transactionsTotalPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        عرض {userTransactions.length} من {transactionsTotalCount} معاملة
+                      </p>
+                      <Pagination className="w-auto">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => transactionsPage > 1 && handleTransactionsPageChange(transactionsPage - 1)}
+                              className={transactionsPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          
+                          {transactionsTotalPages <= 7 ? (
+                            // Show all pages if there are 7 or fewer
+                            Array.from({ length: transactionsTotalPages }, (_, i) => i + 1).map((page) => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => handleTransactionsPageChange(page)}
+                                  isActive={page === transactionsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))
+                          ) : (
+                            // Show truncated pagination for more than 7 pages
+                            <>
+                              {/* First page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleTransactionsPageChange(1)}
+                                  isActive={1 === transactionsPage}
+                                  className="cursor-pointer"
+                                >
+                                  1
+                                </PaginationLink>
+                              </PaginationItem>
+
+                              {/* Ellipsis if current page is far from start */}
+                              {transactionsPage > 3 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Current page and neighbors */}
+                              {Array.from(
+                                { length: Math.min(3, transactionsTotalPages - 2) },
+                                (_, i) => Math.max(2, Math.min(transactionsPage - 1 + i, transactionsTotalPages - 1))
+                              )
+                                .filter((page, index, arr) => arr.indexOf(page) === index)
+                                .map((page) => (
+                                  <PaginationItem key={page}>
+                                    <PaginationLink
+                                      onClick={() => handleTransactionsPageChange(page)}
+                                      isActive={page === transactionsPage}
+                                      className="cursor-pointer"
+                                    >
+                                      {page}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                ))}
+
+                              {/* Ellipsis if current page is far from end */}
+                              {transactionsPage < transactionsTotalPages - 2 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+
+                              {/* Last page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => handleTransactionsPageChange(transactionsTotalPages)}
+                                  isActive={transactionsTotalPages === transactionsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {transactionsTotalPages}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </>
+                          )}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => transactionsPage < transactionsTotalPages && handleTransactionsPageChange(transactionsPage + 1)}
+                              className={transactionsPage === transactionsTotalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
                   )}
                 </div>
