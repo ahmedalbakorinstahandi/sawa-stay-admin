@@ -748,4 +748,38 @@ export const reviewsAPI = {
   },
 }
 
+// Transactions API
+export const transactionsAPI = {
+  getAll: async (page = 1, perPage = 10, filters = {}) => {
+    try {
+      const response = await api.get(`/admin/transactions`, {
+        params: {
+          page,
+          limit: perPage,
+          ...filters,
+        },
+      })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch transactions" }
+    }
+  },
+  get: async (id: number) => {
+    try {
+      const response = await api.get(`/admin/transactions/${id}`)
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to fetch transaction" }
+    }
+  },
+  updateStatus: async (id: number, status: string) => {
+    try {
+      const response = await api.put(`/admin/transactions/${id}`, { status })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || "Failed to update transaction status" }
+    }
+  },
+}
+
 export default api

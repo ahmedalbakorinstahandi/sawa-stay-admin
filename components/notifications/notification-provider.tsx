@@ -83,11 +83,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // Show a debug toast when notifications are ready (only in development)
   useEffect(() => {
     if (isInitialized && process.env.NODE_ENV === 'development') {
-      toast({
-        title: "نظام الإشعارات جاهز",
-        description: "ستظهر الإشعارات كـ toast داخل الموقع عند فتحه",
-        duration: 3000,
-      });
+      // toast({
+      //   title: "نظام الإشعارات جاهز",
+      //   description: "ستظهر الإشعارات كـ toast داخل الموقع عند فتحه",
+      //   duration: 3000,
+      // });
     }
   }, [isInitialized, toast]);
 

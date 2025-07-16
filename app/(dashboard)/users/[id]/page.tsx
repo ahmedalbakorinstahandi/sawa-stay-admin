@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -25,21 +25,25 @@ import {
 import {
   ArrowLeft,
   Calendar,
+  CheckCircle,
   CreditCard,
   Edit,
+  Eye,
   Home,
   Mail,
   MapPin,
+  PauseCircle,
   Phone,
   Shield,
   Star,
   User,
   UserCheck,
   UserX,
+  XCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { api, usersAPI } from "@/lib/api";
+import { api, usersAPI, bookingsAPI, transactionsAPI, listingsAPI } from "@/lib/api";
 import Loading from "../loading";
 import UserDetailsLoading from "./loading";
 import axios from "axios";
@@ -72,138 +76,168 @@ interface UserData {
   my_listings_count: number;
 }
 
-const userListings = [
-  {
-    id: 1,
-    title: "شقة فاخرة في وسط دمشق",
-    property_type: "Apartment",
-    price: 50000,
-    currency: "USD",
-    status: "approved",
-    created_at: "2023-01-15T10:30:00Z",
-    image: "/placeholder.svg?height=80&width=120",
-    bookings_count: 8,
-  },
-  {
-    id: 2,
-    title: "استوديو مفروش في المزة",
-    property_type: "Studio",
-    price: 35000,
-    currency: "USD",
-    status: "approved",
-    created_at: "2023-02-20T14:45:00Z",
-    image: "/placeholder.svg?height=80&width=120",
-    bookings_count: 5,
-  },
-  {
-    id: 3,
-    title: "شقة مع إطلالة على جبل قاسيون",
-    property_type: "Apartment",
-    price: 65000,
-    currency: "USD",
-    status: "in_review",
-    created_at: "2023-03-10T09:15:00Z",
-    image: "/placeholder.svg?height=80&width=120",
-    bookings_count: 0,
-  },
-];
+interface Listing {
+  id: number;
+  title: {
+    ar: string;
+    en?: string;
+  };
 
-const userBookings = [
-  {
-    id: 1,
-    listing_title: "فيلا مع مسبح في اللاذقية",
-    host_name: "سارة أحمد",
-    check_in: "2023-04-10T14:00:00Z",
-    check_out: "2023-04-15T12:00:00Z",
-    guests: 4,
-    total_price: 120000,
-    currency: "USD",
-    status: "completed",
-    created_at: "2023-03-20T10:30:00Z",
-  },
-  {
-    id: 2,
-    listing_title: "شاليه على البحر في طرطوس",
-    host_name: "خالد عمر",
-    check_in: "2023-05-05T14:00:00Z",
-    check_out: "2023-05-08T12:00:00Z",
-    guests: 2,
-    total_price: 75000,
-    currency: "USD",
-    status: "completed",
-    created_at: "2023-04-15T16:45:00Z",
-  },
-  {
-    id: 3,
-    listing_title: "بيت ريفي في ريف دمشق",
-    host_name: "فاطمة حسن",
-    check_in: "2023-06-20T14:00:00Z",
-    check_out: "2023-06-25T12:00:00Z",
-    guests: 6,
-    total_price: 150000,
-    currency: "USD",
-    status: "upcoming",
-    created_at: "2023-05-30T09:15:00Z",
-  },
-];
+  property_type: string;
+  price: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  image?: string;
+  images?: { url: string }[];
+  bookings_count?: number;
+  house_type?: {
+    name: { ar: string; en?: string } | string;
+  };
+}
 
-const userTransactions = [
-  {
-    id: 1,
-    type: "booking_payment",
-    amount: 120000,
-    currency: "USD",
-    status: "completed",
-    created_at: "2023-03-20T10:35:00Z",
-    description: "دفع حجز فيلا مع مسبح في اللاذقية",
-    payment_method: "credit_card",
-  },
-  {
-    id: 2,
-    type: "booking_payment",
-    amount: 75000,
-    currency: "USD",
-    status: "completed",
-    created_at: "2023-04-15T16:50:00Z",
-    description: "دفع حجز شاليه على البحر في طرطوس",
-    payment_method: "wallet",
-  },
-  {
-    id: 3,
-    type: "booking_payment",
-    amount: 150000,
-    currency: "USD",
-    status: "pending",
-    created_at: "2023-05-30T09:20:00Z",
-    description: "دفع حجز بيت ريفي في ريف دمشق",
-    payment_method: "credit_card",
-  },
-  {
-    id: 4,
-    type: "host_payout",
-    amount: 47500,
-    currency: "USD",
-    status: "completed",
-    created_at: "2023-04-16T10:00:00Z",
-    description: "دفعة مستحقة عن حجوزات مكتملة",
-    payment_method: "bank_transfer",
-  },
-];
+interface Booking {
+  id: number;
+  listing_title?: string;
+  listing?: {
+    title: {
+      ar: string;
+      en?: string;
+    }
+  };
+  host_name?: string;
+  host?: { first_name: string; last_name: string };
+  check_in: string;
+  check_out: string;
+  guests: number;
+  total_price: number;
+  currency: string;
+  status: string;
+  created_at: string;
+}
+
+interface Transaction {
+  id: number;
+  type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  description?: {
+    ar: string;
+    en?: string;
+  };
+  payment_method?: string;
+  booking?: {
+    listing?: {
+      title: {
+        ar: string;
+        en?: string;
+
+      }
+    }
+  };
+}
 
 export default function UserDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const resolvedParams = use(params);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [userBookings, setUserBookings] = useState<Booking[]>([]);
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState("listings");
+  const [isLoadingListings, setIsLoadingListings] = useState(false);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  // Fetch user listings
+  const fetchUserListings = async () => {
+    setIsLoadingListings(true);
+    try {
+      const response = await listingsAPI.getAll(1, 50, { host_id: resolvedParams.id });
+      if (response.success) {
+        setUserListings(response.data || []);
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب إعلانات المستخدم",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user listings:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب إعلانات المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingListings(false);
+    }
+  };
+
+  // Fetch user bookings
+  const fetchUserBookings = async () => {
+    setIsLoadingBookings(true);
+    try {
+      const response = await bookingsAPI.getAll(1, 50, { host_id: resolvedParams.id });
+      if (response.success) {
+        setUserBookings(response.data || []);
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب حجوزات المستخدم",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user bookings:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب حجوزات المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  // Fetch user transactions
+  const fetchUserTransactions = async () => {
+    setIsLoadingTransactions(true);
+    try {
+      const response = await transactionsAPI.getAll(1, 50, { user_id: resolvedParams.id });
+      if (response.success) {
+        setUserTransactions(response.data || []);
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء جلب معاملات المستخدم",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب معاملات المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingTransactions(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await usersAPI.get(parseInt(params.id));
+        const response = await usersAPI.get(parseInt(resolvedParams.id));
         if (response.success) {
           setUserData(response.data);
         } else {
@@ -223,17 +257,46 @@ export default function UserDetailsPage({
       }
     };
 
-    if (params.id) {
+    if (resolvedParams.id) {
       fetchUserData();
     }
-  }, [params.id, toast]);
+  }, [resolvedParams.id, toast]);
+  const getPropertyTypeLabel = (type: string) => {
+    switch (type) {
+      case "House":
+        return "منزل";
+      case "Apartment":
+        return "شقة";
+      case "Guesthouse":
+        return "غرفة مشتركة";
+      default:
+        return type;
+    }
+  };
+  // Fetch data when tab changes
+  useEffect(() => {
+    if (!userData) return;
+
+    switch (activeTab) {
+      case "listings":
+        fetchUserListings();
+        break;
+      case "bookings":
+        fetchUserBookings();
+        break;
+      case "transactions":
+        fetchUserTransactions();
+        break;
+    }
+  }, [activeTab, userData]);
 
   if (!userData) {
     return <UserDetailsLoading />;
   }
+
   const fetchUserData = async () => {
     try {
-      const response = await usersAPI.get(parseInt(params.id));
+      const response = await usersAPI.get(parseInt(resolvedParams.id));
       if (response.success) {
         setUserData(response.data);
       } else {
@@ -247,7 +310,6 @@ export default function UserDetailsPage({
       console.error("Error fetching user data:", error);
       toast({
         title: "خطأ",
-
         description: "حدث خطأ أثناء جلب بيانات المستخدم",
         variant: "destructive",
       });
@@ -284,21 +346,60 @@ export default function UserDetailsPage({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case "approved":
         return (
-          <Badge variant="default" className="bg-green-100 text-green-600">
-            نشط
+          <Badge
+            variant="default"
+            className="flex items-center gap-1 bg-green-100 text-green-800"
+          >
+            <CheckCircle className="h-3 w-3" />
+            معتمد
           </Badge>
         );
-      case "inactive":
-        return <Badge variant="secondary">غير نشط</Badge>;
-      case "blocked":
-        return <Badge variant="destructive">محظور</Badge>;
+      case "in_review":
+        return (
+          <Badge
+            variant="destructive"
+            className="flex items-center gap-1 bg-yellow-100 text-yellow-800"
+          >
+            <Eye className="h-3 w-3" />
+            قيد المراجعة
+          </Badge>
+        );
+      case "draft":
+        return (
+          <Badge
+            variant="outline"
+            className="flex items-center gap-1 bg-gray-100 text-gray-800"
+          >
+            <PauseCircle className="h-3 w-3" />
+            مسودة
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge
+            variant="destructive"
+            className="flex items-center gap-1 bg-red-100 text-red-800"
+          >
+            <XCircle className="h-3 w-3" />
+            مرفوض
+          </Badge>
+        );
+      case "paused":
+        return (
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-1 bg-blue-100 text-blue-800"
+          >
+            <PauseCircle className="h-3 w-3" />
+            متوقف
+          </Badge>
+        );
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
     }
   };
-
   const getBookingStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -323,14 +424,16 @@ export default function UserDetailsPage({
   const getTransactionStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        <Badge className="bg-green-100 text-green-600">مكتمل</Badge>;
+        return (
+          <Badge className="bg-green-100 text-green-600">مكتمل</Badge>
+        );
       case "pending":
         return (
           <Badge className="bg-yellow-100 text-yellow-600">قيد الانتظار</Badge>
         );
       case "failed":
         return (
-          <Badge className="bg-blue-100 text-blue-600">قيد الانتظار</Badge>
+          <Badge className="bg-red-100 text-red-600">فشل</Badge>
         );
       default:
         return <Badge>{status}</Badge>;
@@ -363,6 +466,40 @@ export default function UserDetailsPage({
 
   const getFullName = (user: UserData) => {
     return `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  };
+
+  const getImageSrc = (imageUrl?: string | null) => {
+    if (imageUrl && imageUrl.trim() !== "") {
+      return imageUrl;
+    }
+    return "/placeholder.svg";
+  };
+
+  const getListingImageSrc = (listing: Listing) => {
+    if (listing.images && listing.images.length > 0 && listing.images[0].url) {
+      const imageUrl = listing.images[0].url.trim();
+      if (imageUrl !== "") {
+        return imageUrl;
+      }
+    }
+    if (listing.image && listing.image.trim() !== "") {
+      return listing.image;
+    }
+    return "/placeholder.svg";
+  };
+
+  const getHouseTypeName = (listing: Listing) => {
+    if (listing.house_type?.name) {
+      // Check if name is an object with ar property
+      if (typeof listing.house_type.name === 'object' && listing.house_type.name.ar) {
+        return listing.house_type.name.ar;
+      }
+      // Check if name is a string
+      if (typeof listing.house_type.name === 'string') {
+        return listing.house_type.name;
+      }
+    }
+    return listing.property_type || "غير محدد";
   };
 
   return (
@@ -412,7 +549,7 @@ export default function UserDetailsPage({
             <div className="flex flex-col items-center space-y-3">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src={userData.avatar_url || "/placeholder.svg"}
+                  src={getImageSrc(userData.avatar_url)}
                   alt={getFullName(userData)}
                 />
                 <AvatarFallback>
@@ -428,7 +565,20 @@ export default function UserDetailsPage({
                 </p>
               </div>
               <div className="flex items-center gap-1">
-                {getStatusBadge(userData.status)}
+                {userData.status === "active" ? (
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    <CheckCircle className="h-3 w-3" /> نشط
+                  </Badge>
+                ) : userData.status === "banneded" ? (
+                  <Badge variant="destructive" className="bg-red-100 text-red-800">
+                    <XCircle className="h-3 w-3" /> محظور
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                    <PauseCircle className="h-3 w-3" /> متوقف
+                  </Badge>
+                )
+                }
                 {userData.is_verified && (
                   <Badge
                     variant="outline"
@@ -492,7 +642,7 @@ export default function UserDetailsPage({
             className="w-full"
           >
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 {/* <TabsTrigger
                   value="profile"
                   className="flex items-center gap-1"
@@ -522,13 +672,13 @@ export default function UserDetailsPage({
                   <span>المعاملات</span>
                 </TabsTrigger>
                 {/* verifications */}
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="verifications"
                   className="flex items-center gap-1"
                 >
                   <Shield className="h-4 w-4" />
                   <span>التحقق</span>
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
 
             </CardHeader>
@@ -768,7 +918,14 @@ export default function UserDetailsPage({
                     </Button>
                   </div>
 
-                  {userListings.length === 0 ? (
+                  {isLoadingListings ? (
+                    <div className="flex justify-center p-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">جاري تحميل الإعلانات...</p>
+                      </div>
+                    </div>
+                  ) : userListings.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
                       <h4 className="text-lg font-semibold">لا توجد إعلانات</h4>
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -784,7 +941,7 @@ export default function UserDetailsPage({
                             <TableHead>نوع العقار</TableHead>
                             <TableHead>السعر</TableHead>
                             <TableHead>الحالة</TableHead>
-                            <TableHead>الحجوزات</TableHead>
+                            {/* <TableHead>الحجوزات</TableHead> */}
                             <TableHead>تاريخ الإنشاء</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -794,23 +951,25 @@ export default function UserDetailsPage({
                               <TableCell className="font-medium">
                                 <div className="flex items-center gap-3">
                                   <Image
-                                    src={listing.image || "/placeholder.svg"}
-                                    alt={listing.title}
+                                    src={getListingImageSrc(listing)}
+                                    alt={listing.title.ar}
                                     width={80}
                                     height={60}
                                     className="h-12 w-16 rounded-md object-cover"
                                   />
-                                  <span>{listing.title}</span>
+                                  <span>{listing.title.ar}</span>
                                 </div>
                               </TableCell>
-                              <TableCell>{listing.property_type}</TableCell>
+                              <TableCell>
+                                {getPropertyTypeLabel(listing.property_type)}
+                              </TableCell>
                               <TableCell>
                                 {listing.price} {listing.currency}
                               </TableCell>
                               <TableCell>
                                 {getStatusBadge(listing.status)}
                               </TableCell>
-                              <TableCell>{listing.bookings_count}</TableCell>
+                              {/* <TableCell>{listing.bookings_count || 0}</TableCell> */}
                               <TableCell>
                                 {new Date(
                                   listing.created_at
@@ -838,7 +997,14 @@ export default function UserDetailsPage({
                     </Button>
                   </div>
 
-                  {userBookings.length === 0 ? (
+                  {isLoadingBookings ? (
+                    <div className="flex justify-center p-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">جاري تحميل الحجوزات...</p>
+                      </div>
+                    </div>
+                  ) : userBookings.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
                       <h4 className="text-lg font-semibold">لا توجد حجوزات</h4>
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -862,9 +1028,13 @@ export default function UserDetailsPage({
                           {userBookings.map((booking) => (
                             <TableRow key={booking.id}>
                               <TableCell className="font-medium">
-                                {booking.listing_title}
+                                {booking.listing?.title.ar || booking.listing_title || "غير محدد"}
                               </TableCell>
-                              <TableCell>{booking.host_name}</TableCell>
+                              <TableCell>
+                                {booking.host
+                                  ? `${booking.host.first_name} ${booking.host.last_name}`
+                                  : booking.host_name || "غير محدد"}
+                              </TableCell>
                               <TableCell>
                                 {new Date(booking.check_in).toLocaleDateString(
                                   "ar-SY"
@@ -903,7 +1073,14 @@ export default function UserDetailsPage({
                     </Button>
                   </div>
 
-                  {userTransactions.length === 0 ? (
+                  {isLoadingTransactions ? (
+                    <div className="flex justify-center p-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">جاري تحميل المعاملات...</p>
+                      </div>
+                    </div>
+                  ) : userTransactions.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
                       <h4 className="text-lg font-semibold">لا توجد معاملات</h4>
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -933,12 +1110,17 @@ export default function UserDetailsPage({
                               <TableCell>
                                 {getTransactionTypeBadge(transaction.type)}
                               </TableCell>
-                              <TableCell>{transaction.description}</TableCell>
+                              <TableCell>
+                                {transaction.description?.ar ||
+                                  (transaction.booking?.listing?.title.ar ?
+                                    `معاملة لإعلان: ${transaction.booking.listing.title.ar}` :
+                                    "غير محدد")}
+                              </TableCell>
                               <TableCell>
                                 {transaction.amount} {transaction.currency}
                               </TableCell>
                               <TableCell>
-                                {transaction.payment_method}
+                                {transaction.payment_method || "غير محدد"}
                               </TableCell>
                               <TableCell>
                                 {getTransactionStatusBadge(transaction.status)}
