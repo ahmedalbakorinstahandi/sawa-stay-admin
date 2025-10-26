@@ -173,22 +173,22 @@ export default function ListingDetailsPage() {
           // Transform API data to match UI structure
           const transformedData = {
             id: result.data.id,
-            title: result.data.title.ar, // Using Arabic title
-            description: result.data.description.ar, // Using Arabic description
+            title: result.data.title?.ar || result.data.title || "عنوان غير محدد", // Using Arabic title
+            description: result.data.description?.ar || result.data.description || "وصف غير محدد", // Using Arabic description
             host: {
-              id: result.data.host.id,
-              name: `${result.data.host.first_name} ${result.data.host.last_name}`,
-              email: result.data.host.email,
-              phone: `${result.data.host.country_code}${result.data.host.phone_number}`,
-              avatar: result.data.host.avatar_url,
+              id: result.data.host?.id || 0,
+              name: `${result.data.host?.first_name || ""} ${result.data.host?.last_name || ""}`.trim() || "مضيف غير معروف",
+              email: result.data.host?.email || "",
+              phone: `${result.data.host?.country_code || ""}${result.data.host?.phone_number || ""}`,
+              avatar: result.data.host?.avatar_url || "/placeholder.svg",
               rating: 4.8, // Default since not in API
               reviews_count: 0, // Default since not in API
-              joined_at: result.data.host.created_at,
-              verified: result.data.host.is_verified,
+              joined_at: result.data.host?.created_at || new Date().toISOString(),
+              verified: result.data.host?.is_verified || false,
             },
             property_type: result.data.property_type,
-            category_id: result.data.categories[0]?.id,
-            category_name: result.data.categories[0]?.name.ar,
+            category_id: result.data.categories?.[0]?.id || 0,
+            category_name: result.data.categories?.[0]?.name?.ar || "تصنيف غير محدد",
             price: result.data.price,
             currency: result.data.currency,
             commission: result.data.commission,
@@ -204,27 +204,27 @@ export default function ListingDetailsPage() {
             allows_families_only: result.data.rule?.allows_families_only || false,
             created_at: result.data.created_at,
             updated_at: result.data.created_at,
-            images: result.data.images.map((img: any) => ({
+            images: result.data.images?.map((img: any) => ({
               id: img.id,
               url: img.url,
-              is_primary: img.id === result.data.images[0].id, // First image is primary
-            })),
+              is_primary: img.id === result.data.images?.[0]?.id, // First image is primary
+            })) || [],
             address: {
-              street: result.data.address.street_address,
-              city: result.data.address.city?.name.ar || "",
-              state: result.data.address.state,
-              country: result.data.address.country,
-              zip_code: result.data.address.zip_code,
-              latitude: result.data.address.latitude,
-              longitude: result.data.address.longitude,
+              street: result.data.address?.street_address || "",
+              city: result.data.address?.city?.name?.ar || "",
+              state: result.data.address?.state || "",
+              country: result.data.address?.country || "",
+              zip_code: result.data.address?.zip_code || "",
+              latitude: result.data.address?.latitude || 33.5138,
+              longitude: result.data.address?.longitude || 36.2765,
             },
-            features: result.data.features.map((feature: any) => ({
+            features: result.data.features?.map((feature: any) => ({
               id: feature.id,
-              name: feature.name.ar,
+              name: feature.name?.ar || feature.name || "ميزة غير محددة",
               icon: feature.icon_url,
-            })),
+            })) || [],
             rating: 4.7, // Default since not in API
-            reviews_count: result.data.reviews.length,
+            reviews_count: result.data.reviews?.length || 0,
             favorites_count: 0, // Not provided in API
             views_count: 0, // Not provided in API
             bookings_count: 0, // Not provided in API
