@@ -207,9 +207,9 @@ const listingSchema = z.object({
     en: z.string().optional(),
   }),
 
-  house_type_id: z.number().min(1, { message: "يرجى اختيار نوع الإعلان" }),
+  house_type_id: z.number({ message: "يرجى اختيار نوع المنزل" }).min(1, { message: "يرجى اختيار نوع المنزل" }),
   property_type: z.enum(["House", "Apartment", "Guesthouse"], {
-    required_error: "يرجى اختيار نوع الإعلان",
+    message: "يرجى اختيار نوع الإعلان",
   }),
   price: z.number().min(1, { message: "يجب أن يكون السعر أكبر من صفر" }),
   currency: z.string().optional(),
@@ -242,7 +242,7 @@ const listingSchema = z.object({
   check_in_time: z.string().optional(),
   check_out_time: z.string().optional(),
   allow_pets: z.boolean({
-    required_error: "لا يمكن تخطي السماح بالحيوانات الأليفة",
+    message: "لا يمكن تخطي السماح بالحيوانات الأليفة",
   }),
   vip: z.boolean().default(false),
   starts: z.number().min(0).max(5).optional(),
@@ -253,10 +253,10 @@ const listingSchema = z.object({
       latitude: z.number().optional(),
       longitude: z.number().optional(),
       street_address: z
-        .string({ required_error: "يرجى إدخال عنوان الشارع" })
+        .string({ message: "يرجى إدخال عنوان الشارع" })
         .nonempty("يرجى إدخال عنوان الشارع"),
       extra_address: z
-        .string({ required_error: "يرجى إدخال عنوان إضافي" })
+        .string({ message: "يرجى إدخال عنوان إضافي" })
         .nonempty("يرجى إدخال عنوان إضافي")
         .optional(),
     })
@@ -333,6 +333,9 @@ export default function AddListingPage() {
   );
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  
+  // معالجة الأخطاء
+  const [apiErrors, setApiErrors] = useState<any>(null);
   useEffect(() => {
     const fetchListing = async () => {
       try {
@@ -371,7 +374,7 @@ export default function AddListingPage() {
     defaultValues: {
       title: { ar: "", en: "" },
       description: { ar: "", en: "" },
-      house_type_id: 0,
+      house_type_id: undefined,
       property_type: "Apartment",
       price: 0,
       currency: "SYP",
@@ -543,17 +546,14 @@ export default function AddListingPage() {
 
   const onSubmit = async (data: any) => {
     setIsSaving(true);
+    setApiErrors(null); // مسح الأخطاء السابقة
 
     try {
-      // رفع الصور الجديدة
-      // const uploadedImagePaths =propertyImages;
-
       // تجهيز البيانات للإرسال
       const formData = {
         ...data,
         images: [
           ...propertyImages,
-          // ...(listing?.images.filter((img) => !imagesToDelete.includes(img.id)).map((img) => img.path) || []),
         ].map((item: any) => (item?.image_name ? item?.image_name : item)),
         delete_images: imagesToDelete,
       };
@@ -569,9 +569,34 @@ export default function AddListingPage() {
         });
         router.push("/listings");
       } else {
+        // معالجة الأخطاء من الاستجابة
+        if (response.data.errors) {
+          setApiErrors(response.data.errors);
+          toast.toast({
+            title: "خطأ في البيانات",
+            description: "يرجى مراجعة البيانات المدخلة وإصلاح الأخطاء.",
+            variant: "destructive",
+          });
+        }
       }
-    } catch (error) {
-      console.error("Error updating listing:", error);
+    } catch (error: any) {
+      console.error("Error creating listing:", error);
+      
+      // معالجة أخطاء API
+      if (error.response?.data?.errors) {
+        setApiErrors(error.response.data.errors);
+        toast.toast({
+          title: "خطأ في البيانات",
+          description: error.response.data.message || "يرجى مراجعة البيانات المدخلة وإصلاح الأخطاء.",
+          variant: "destructive",
+        });
+      } else {
+        toast.toast({
+          title: "خطأ في الاتصال",
+          description: "حدث خطأ أثناء إرسال البيانات. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -626,6 +651,28 @@ export default function AddListingPage() {
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* عرض رسائل الخطأ */}
+            {apiErrors && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <h3 className="text-red-800 font-semibold">يرجى إصلاح الأخطاء التالية:</h3>
+                    {Object.entries(apiErrors).map(([field, errors]: [string, any]) => (
+                      <div key={field} className="text-red-700">
+                        <strong>{field === 'house_type_id' ? 'نوع المنزل' : 
+                                field === 'property_type' ? 'نوع العقار' :
+                                field === 'title.ar' ? 'العنوان بالعربية' :
+                                field === 'description.ar' ? 'الوصف بالعربية' :
+                                field === 'price' ? 'السعر' :
+                                field === 'location.street_address' ? 'عنوان الشارع' :
+                                field}:</strong> {Array.isArray(errors) ? errors.join(', ') : errors}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* معلومات أساسية */}
             <Card>
               <CardContent className="pt-6">
@@ -1410,9 +1457,10 @@ export default function AddListingPage() {
                       <FormItem>
                         <FormLabel>نوع المنزل</FormLabel>
                         <Select
-                          onValueChange={(value) =>
-                            field.onChange(Number.parseInt(value))
-                          }
+                          onValueChange={(value) => {
+                            field.onChange(Number.parseInt(value));
+                            setApiErrors(null); // مسح الأخطاء عند تغيير القيمة
+                          }}
                           defaultValue={field.value?.toString()}
                         >
                           <FormControl>
@@ -2054,6 +2102,17 @@ export default function AddListingPage() {
                     <h3 className="text-md font-medium mb-2">
                       إضافة صور جديدة
                     </h3>
+                    
+                    {/* مؤشر رفع الصور */}
+                    {uploadingImages && (
+                      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin text-blue-600 ml-2" />
+                          <span className="text-blue-800">جاري رفع الصور...</span>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
                       <div className="flex flex-col items-center">
                         <Upload className="h-12 w-12 text-gray-400 mb-4" />
@@ -2068,6 +2127,7 @@ export default function AddListingPage() {
                           accept="image/*"
                           className="hidden"
                           onChange={handlePropertyImageChange}
+                          disabled={uploadingImages}
                         />
                         <Button
                           type="button"
@@ -2075,8 +2135,16 @@ export default function AddListingPage() {
                           onClick={() =>
                             document.getElementById("property-images")?.click()
                           }
+                          disabled={uploadingImages}
                         >
-                          اختيار الصور
+                          {uploadingImages ? (
+                            <>
+                              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                              جاري الرفع...
+                            </>
+                          ) : (
+                            "اختيار الصور"
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -2137,10 +2205,10 @@ export default function AddListingPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isSaving || uploadingImages}
+                disabled={isSaving}
                 className="bg-rose-500 hover:bg-rose-600"
               >
-                {isSaving || uploadingImages ? (
+                {isSaving ? (
                   <>
                     <Loader2 className="h-4 w-4 ml-2 animate-spin" />
                     جاري الحفظ...
